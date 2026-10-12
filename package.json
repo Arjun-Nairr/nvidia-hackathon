@@ -1,0 +1,11 @@
+{
+  "name": "ecom-agents-dev-tools",
+  "private": true,
+  "description": "Development-only lint tooling for the local prototype. Not used at runtime; see lint.bat.",
+  "devDependencies": {
+    "@eslint/js": "10.0.1",
+    "eslint": "10.12.0",
+    "eslint-plugin-html": "8.2.1",
+    "globals": "17.13.0"
+  }
+}

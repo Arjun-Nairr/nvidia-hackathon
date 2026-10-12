@@ -1,0 +1,32 @@
+# Secrets and credentials: only the placeholder template is tracked.
+secrets/*
+!secrets/local.env.template
+.env
+*.env
+!*.env.template
+auth.json
+*.pem
+*.key
+*.p12
+*.pfx
+
+# Runtime state: databases, Hermes profiles/memory/sessions, logs, downloaded images.
+runtime/
+*.db
+*.sqlite
+*.sqlite3
+*.log
+
+# Environments, dependencies, caches, generated files.
+.venv-laya/
+.venv-lint/
+node_modules/
+.ruff_cache/
+__pycache__/
+*.pyc
+
+# Local-only working copies, backups and archives that hold runtime or private data.
+backups/
+demo/
+.scratch/
+research/live-archive/

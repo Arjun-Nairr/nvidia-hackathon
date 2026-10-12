@@ -1,0 +1,4496 @@
+{
+ "schema": 1,
+ "live": true,
+ "source": "ScrapeCreators Facebook Marketplace (documented endpoints)",
+ "note": "Redacted: seller ids pseudonymised, names/profile data not kept, phone/email patterns removed, photo URLs stripped of signed query strings. Photo bytes are NOT stored here (third-party images; kept only in git-ignored runtime/).",
+ "usage": {
+  "api_requests": 19,
+  "max_requests": 20,
+  "by_endpoint": {
+   "location": 2,
+   "search": 4,
+   "item": 13
+  },
+  "by_outcome": {
+   "network_error": 1,
+   "not_found": 1,
+   "ok": 17
+  },
+  "credits_charged_reported": 17,
+  "requests_with_reported_credits": 18,
+  "credits_remaining_last_reported": 7015,
+  "documented_cost_per_request": 1,
+  "api_time_ms": 74249,
+  "image_fetches": 3
+ },
+ "locations_checked": [
+  {
+   "name": "Dallas",
+   "subtitle": "Dallas, BC, Canada · 4,274 people checked in here",
+   "latitude": 50.666038,
+   "longitude": -120.16089,
+   "city": "Kamloops"
+  },
+  {
+   "name": "Dallas, Texas",
+   "subtitle": "City",
+   "latitude": 32.7774,
+   "longitude": -96.7977,
+   "city": "Dallas"
+  },
+  {
+   "name": "Dallas, Georgia",
+   "subtitle": "City",
+   "latitude": 33.9245,
+   "longitude": -84.8413,
+   "city": "Dallas"
+  },
+  {
+   "name": "Dallas, Oregon",
+   "subtitle": "City",
+   "latitude": 44.9211,
+   "longitude": -123.316,
+   "city": "Dallas"
+  },
+  {
+   "name": "Dallas, Pennsylvania",
+   "subtitle": "City",
+   "latitude": 41.3332,
+   "longitude": -75.9668,
+   "city": "Dallas"
+  },
+  {
+   "name": "Dallas, Wisconsin",
+   "subtitle": "City",
+   "latitude": 45.25916,
+   "longitude": -91.81526,
+   "city": "Dallas"
+  },
+  {
+   "name": "Dallas, Victoria",
+   "subtitle": "Dallas, VIC, Australia · 5,208 people checked in here",
+   "latitude": -37.668,
+   "longitude": 144.94,
+   "city": "Melbourne"
+  },
+  {
+   "name": "Dallas, Moray",
+   "subtitle": "Dallas, UK · 3,307 people checked in here",
+   "latitude": 57.5531,
+   "longitude": -3.4646,
+   "city": "Forres"
+  },
+  {
+   "name": "Lake Dallas, Texas",
+   "subtitle": "City",
+   "latitude": 33.1283,
+   "longitude": -97.0276,
+   "city": "Lake Dallas"
+  },
+  {
+   "name": "Dallas, North Carolina",
+   "subtitle": "City",
+   "latitude": 35.3148,
+   "longitude": -81.1752,
+   "city": "Dallas"
+  }
+ ],
+ "searches": [
+  {
+   "query": "comforter set",
+   "filters": {
+    "lat": 32.7774,
+    "lng": -96.7977,
+    "radius_km": 50.0,
+    "condition": "new"
+   },
+   "page": 1,
+   "results": 16,
+   "new_listings": 16,
+   "skipped_without_id": 0,
+   "has_next_page": true,
+   "cursor": "eyJwZyI6MCwiYjJjIjp7ImJyIjoiIiwiaXQiOjAsImhtc3IiOmZhbHNlLCJ0YmkiOjB9LCJjMmMiOnsiYnIiOiJBYm9BQkJJMWNyaWxMTkl6ZmlxempReExUZWpXMU0wbjFjQlFWTXd2WDlqZTNiODU2alR3eDY4QlM3WWJQZHVtUHc1cXF1S3p3RVdFcjViNnpNREtXa043ZUZUWXVrbmtaNUFvdmVDWWN3M0FkMkdVbjAwMDlQeWVyUTVvYVlvbFRXRjF6NDR5Y2IzTmsxMElLMkxUY1ZrYnpCN3dqV3llNC1adW93djBqbTRVZFZlZjRUb0tOWTdhcFEyOU5pYnRtOUk4LVc5d3hwWEpOMkFiSjBTeTRldDcyalNlbXZpQUQ2aDVqUW5oOGVMSW9JaVRzM0VXMWtnN0Q0dk9xc1NtUS1DTEsxQWNtM2gxWHNkLTJMN1RfQTk3OGF0cEZ3M0dxSmRpMW1CeEs2d3dWYnZPVlZtX1dnZGdCQzlBYktINFg4dVpveTVkamVYWWRrY0ZqWGExS2h3b2x1dEltTjJkT1V1b2VyVXFwVGd2UV9uMkRyb183MlpPcjJURXVJYU5Nb3h1ckZwV0F6S3g0NjYtZmV3eDVURllyWktzLWZxblBkV2F3Y1AtREJUYm0ybGhxbzRjdGxNeG4tUHY3M1dQZEdpdWozdnJvdHp5bWI1eHRTc3FsbVQwd1hHUV9TZDFPdlJGdG9JNjFCVF9HU1B4VlRMMzY5Z0duYzlrN183Wks1dFRIcXlIMGNBb2U4ODBiYU5Rem5Lb2JaR01PQXhTODg4THppWEVRU2txU0YwVzJLSy1lTlRWY3lTTEl5SThsUG8iLCJpdCI6MCwicnBiciI6IiIsInJwaHIiOmZhbHNlLCJybWhyIjpmYWxzZSwic3NpIjpmYWxzZSwic3NjbyI6MCwic3NwaSI6WyIyODIyNzgzMzY2MDI1MDIzNyIsIjI4NDkzNTc4MjEzNjQzNTY2IiwiMzg3NTczMjE4OTA1MjU2NjgiLCIyNzYzNDY5MjgzOTQ3MjkyNyIsIjI5MzI5NTI5MTAzNDAxNDgwIiwiMjk0OTQ3NTk3OTY3Nzk3MjMiLCIyNzU1MTg4Mjg5NDQ2MjUyOSIsIjI3NTUyODc0ODIxMDc4ODgwIiwiMzgyMTUxODU0NjQ3NDczMjEiLCIyODgzMTQ1NjU2NjQ4ODg2OSIsIjI4MDYzMjE3MzQwMDAwODk1IiwiMjM5MzU5MzgzMTYwMDIyNDciLCIzODc1NTc2NzUyNDA2Nzg1OSIsIjI3OTAzMjk0MTgyNjgzMzk3IiwiMjg4MzgwNTc1NjI0NTQ3NTUiLCIyOTQ5NTQ2Njg2MDA0MTI2MyJdfSwiaXJyIjpmYWxzZSwic2VycF9jdGEiOmZhbHNlLCJydWkiOltdLCJtcGlkIjpbXSwidWJwIjpudWxsLCJuY3JuZCI6MCwiaXJzciI6ZmFsc2UsImJtcHIiOltdLCJibXBlaWQiOltdLCJubWJtcCI6ZmFsc2UsInNrcnIiOmZhbHNlLCJpb291ciI6ZmFsc2UsImlzZSI6ZmFsc2UsInNtc19jdXJzb3IiOnsicGFnZV9pbmRleCI6MCwiYmxlbmRlZF9hZF9pbmRleCI6MCwib3JnYW5pY3Nfc2luY2VfbGFzdF9hZCI6MCwicGFnZV9vcmdhbmljX2NvdW50IjowLCJibGVuZGVkX29yZ2FuaWNfaW5kZXgiOjAsInJldHVybmVkX2FkX2luZGV4IjowLCJ0b3RhbF9pbmRleCI6MH19",
+   "request_no": 3,
+   "retrieved_at": "2026-10-10T10:47:43Z"
+  },
+  {
+   "query": "curtains",
+   "filters": {
+    "lat": 32.7774,
+    "lng": -96.7977,
+    "radius_km": 50.0,
+    "condition": "new"
+   },
+   "page": 1,
+   "results": 15,
+   "new_listings": 15,
+   "skipped_without_id": 0,
+   "has_next_page": true,
+   "cursor": "eyJwZyI6MCwiYjJjIjp7ImJyIjoiIiwiaXQiOjAsImhtc3IiOmZhbHNlLCJ0YmkiOjB9LCJjMmMiOnsiYnIiOiJBYnAwcDI0a0hOZVY5elNtSTJCRS02aXN4dTBIWXhhUUhRWklYQm13RkxlWnFiOFhzcTQ3aWZvZ3JnV2lmYnQzdnd1bnVvSGVCQ0J5c1dKblpNOFZmb19XYjllZklzekxPZmtPTXgzQmRSV0Rxd3l5MUl0NGRiZ181aXdfazJPMThXS1dJMXhIRVZqbTRucDhtRzBVWmVSdmp6aTFiS0V6QWJrTjBKQ0xBRE5iMnh0elAzOW15dG1Ga1RoYUwtR2RwTzhkZ2tuc0pWNUZVVFhrQUFtSk1CeTRLdjVIWEpFWUtWVlJ3ZmFwWE1zQWZBRkVGTTVBLTlyRktPb0M1OXFQVi1Ydjc4T09MdDA5TmFXU2tnZ3dQRERFLXZQRFpJbjVmMXFaN3E3YjhwQXpKR1FBcW93Zk1hVUpCcU5YLTJyUWszcGdvVU1qTHRhYkROUTNucldBVVE4UHRzeEoyYmF5MkxESUtpaFNwWk1KMUhlLXZUY2ZEbHVHMnNhb01uclZqQUFUSjNoTVZQV2ZfTkhBTkVYTmxsZFRnUTh5SzkwNnBESm51c3RrelUycXBGeWdkMVlOdnhXWGUyMmxDdFJOWjMzTUhFd3pVLVZwalJ4bXF2VmJQY2JrX3AxSE9fenRubTZzNUU4ZFIwTGdzUmh6SUk5QjBjS2VySEhhaHBYeDZ5WmZmV3UybDJfRWNFWkdCbGQ0SFpZcEFRNEowbzhRRzYwMU9XdllIUFJxYmdqVHhUc3YtaDhORGJHemRIX2x6ZmMiLCJpdCI6MCwicnBiciI6IiIsInJwaHIiOmZhbHNlLCJybWhyIjpmYWxzZSwic3NpIjpmYWxzZSwic3NjbyI6MCwic3NwaSI6WyIzODUwNjU2NDYyMjI2ODA1MSIsIjI5MjQyMjc4ODA4NjkyMDQ4IiwiMjU5OTg1Nzc5NDY1MDYwNjciLCIyODYxOTI3MjM1MTA5MzM5NiIsIjI4NzMxNjY4Mzc5ODUxMzA1IiwiMjgyMTk4OTEzMTc3MDQyMTkiLCIyOTE0OTM5NDk0MTMxMTk2NyIsIjI4NTg3ODY2NzQ3NDY1NzU1IiwiMjkyODY1ODczOTc1OTU0ODciLCIyODAzNzY0MDg1OTI1NDk1OCIsIjM4NDIzOTI1NjIzOTIxMzEzIiwiMjc2MzE1NDc4NTY0ODgwOTIiLCIzNzQ1NTY4NzgxNDA0NjgzNiIsIjI3NDkxNjk5Nzk3MTg4MDc5IiwiMjcwNzQwMzM0NzU2MTIwNjYiXX0sImlyciI6ZmFsc2UsInNlcnBfY3RhIjpmYWxzZSwicnVpIjpbXSwibXBpZCI6W10sInVicCI6bnVsbCwibmNybmQiOjAsImlyc3IiOmZhbHNlLCJibXByIjpbXSwiYm1wZWlkIjpbXSwibm1ibXAiOmZhbHNlLCJza3JyIjpmYWxzZSwiaW9vdXIiOmZhbHNlLCJpc2UiOmZhbHNlLCJzbXNfY3Vyc29yIjp7InBhZ2VfaW5kZXgiOjAsImJsZW5kZWRfYWRfaW5kZXgiOjAsIm9yZ2FuaWNzX3NpbmNlX2xhc3RfYWQiOjAsInBhZ2Vfb3JnYW5pY19jb3VudCI6MCwiYmxlbmRlZF9vcmdhbmljX2luZGV4IjowLCJyZXR1cm5lZF9hZF9pbmRleCI6MCwidG90YWxfaW5kZXgiOjB9fQ",
+   "request_no": 4,
+   "retrieved_at": "2026-10-10T10:48:01Z"
+  },
+  {
+   "query": "throw blanket",
+   "filters": {
+    "lat": 32.7774,
+    "lng": -96.7977,
+    "radius_km": 50.0,
+    "condition": "new"
+   },
+   "page": 1,
+   "results": 15,
+   "new_listings": 15,
+   "skipped_without_id": 0,
+   "has_next_page": true,
+   "cursor": "eyJwZyI6MCwiYjJjIjp7ImJyIjoiIiwiaXQiOjAsImhtc3IiOmZhbHNlLCJ0YmkiOjB9LCJjMmMiOnsiYnIiOiJBYm8tcmVoXzB1ZE1ubUJwNTFId3hGRmpnN1Q3eHVPOUk0T245VmhVZnExdk5ya2JOMm9EZ29NMG5VR3FyeFhMWm1uLW92N19FS2N3c1VXQ2hOODN3SDZveF9oODBibmdnRldzbHBrQkNKUG9jQmpRdEJsdTQ2SlJUdWpxZm5pSEhYUDBkV2hWTk9zZ1A5SnFyV3huRVQ0ekNmZXhmNWhjTlJFUFdOQjA0SGYteDRfcEliTmw5elRSWDk0UmloaTNnNS13b3dxVnZOVm5ZaHhLWW8tM0FPNGl1UXNJODdBcDdnbFlCMUg3X2RMQUxJVERLMkM3c3Q4U3NFS2Jrc2NBaExDUUQ2RVIxNUpZQnJuSVN1X0tNcTd0WVp5bUc5eFVRc2NRcE1BeU1fZjJubDkyU1RaWkU5OEJTb3dfSzMtRjhES1pjdDVaVDl3ajUySTVoUHIzcEJVTm41cVB1dzV0ZmI3dGk3R204SnhSbE5TZkU0a3E4eXhIYVZub1ZqemxYaC1iY0dmY2tlSFZTbEN5X3V4akRvZ1JIUTBWaEItaHkwZXZ2WElFSDE0Y3lJRUhiQkpxM005aVZzYjlROGxTSHAxLVBtVjdIRGNUT29tMXRQaXRZcHRUZmdObDR6SmlFVUpYZXZOdC0zLTUtdUFnNk1wdFFLcjRxcFhaSTk5Z2pqeW5ieUNZTjNWVkpiUFcwcVhzVVhwRkRZa2VIS2s0VWkzNjBna2xyWjhDZHpYdF9lT2NZRGdpU0xBTV9ySzBMX3MiLCJpdCI6MCwicnBiciI6IiIsInJwaHIiOmZhbHNlLCJybWhyIjpmYWxzZSwic3NpIjpmYWxzZSwic3NjbyI6MCwic3NwaSI6WyIyODY5ODAxNjEyMzE0NzkwNyIsIjI3NjQwODgyNTI4OTIxNzcwIiwiMjgzMjE1ODEyNjQxMTkzNjkiLCIyODY1OTg3NjM0Njk4MDUyNSIsIjI4OTMzNjA2Nzk2MzI5NTE2IiwiMjgyNTI0MTEyMzQzODY3ODIiLCIyOTI2NDMxMTQ0MzE1MjM2MCIsIjI3OTI4MjQyNjgzNTI1MDc0IiwiMjgyMzI4MzY4NTI5Nzc3MjkiLCIyNzU5MjcwODAyNzA5MDA3MiIsIjI4ODA4MDI5ODU4ODg3NDExIiwiMjgxMDY5OTA1NDg5MzU4MjAiLCIyNjU4MDQ3NTA4NDkyNTk2MCIsIjI4NTIwMzYzOTM3NjAyNTg4IiwiMjgwODAxMzA4NzgyNjAyNDkiXX0sImlyciI6ZmFsc2UsInNlcnBfY3RhIjpmYWxzZSwicnVpIjpbXSwibXBpZCI6W10sInVicCI6bnVsbCwibmNybmQiOjAsImlyc3IiOmZhbHNlLCJibXByIjpbXSwiYm1wZWlkIjpbXSwibm1ibXAiOmZhbHNlLCJza3JyIjpmYWxzZSwiaW9vdXIiOmZhbHNlLCJpc2UiOmZhbHNlLCJzbXNfY3Vyc29yIjp7InBhZ2VfaW5kZXgiOjAsImJsZW5kZWRfYWRfaW5kZXgiOjAsIm9yZ2FuaWNzX3NpbmNlX2xhc3RfYWQiOjAsInBhZ2Vfb3JnYW5pY19jb3VudCI6MCwiYmxlbmRlZF9vcmdhbmljX2luZGV4IjowLCJyZXR1cm5lZF9hZF9pbmRleCI6MCwidG90YWxfaW5kZXgiOjB9fQ",
+   "request_no": 5,
+   "retrieved_at": "2026-10-10T10:48:05Z"
+  },
+  {
+   "query": "bedding set",
+   "filters": {
+    "lat": 32.7774,
+    "lng": -96.7977,
+    "radius_km": 50.0,
+    "condition": "new"
+   },
+   "page": 1,
+   "results": 15,
+   "new_listings": 13,
+   "skipped_without_id": 0,
+   "has_next_page": true,
+   "cursor": "eyJwZyI6MCwiYjJjIjp7ImJyIjoiIiwiaXQiOjAsImhtc3IiOmZhbHNlLCJ0YmkiOjB9LCJjMmMiOnsiYnIiOiJBYnIwdlFFcWNPSFdncElaMTdMcXoyTG1rakFWMHR0LW9pZ1JBeWdUWVJqbkw3cnVPMVAxN0hRX0J0ajRQTUpnajhFN0hJMEV0OXBpUXh1dGlYelBvdVlPY2N0MEpxdFltWDNjV2JBOWtQUXZVTHhUVThDQzhaX3BWOHFib1NOMGdQMGNMdTFNdUxDVmpoNmtKY0d6ajNhTklwNWtrMFZoT2owYWgyR2dRRDBvOVFvaWlRcWx4N3VXb3VORHpfdmNpU0hYeHNLcEhyd3hfR19pTzg3bnEzejRzM1pyQlJBNkxFMlBlRjdBbGs2Tm5HWmdzX2lhT0ZwZXlPMFd3RXZTSE1DbFA2eDQ5WjNlU1R3N19jdGpqUEZxbFFRREJ4Szhxc3NSRVRsTE9OWE5Yc2w5MzhzVzdZMXN2SmxJQTh2aldKRUJOMlVvVnJXZlBXZDN4bHhmMGdmV2J1ZmhXLXdpRHZpQXlPN2U4WDJlYzZnOFVCSDJ1ODBsTWtRVjhUbVdhSGIwX2VoRGt6aVRjTGJYNHFMZ2ozYUsyWmtmMjBFakVTU1dyZjU0c0RLSnZQVVR3aWtWWEVUQ2lPN0tlbFhBUjM5YWs3UWl2QjI0UXA1cS0zMktCVTNSaE5mVW9nZ1BBRXgxXzU3SWgwWHY2a3ZqVGpiR3E4dE1QbjQtbkVPRng0clVIUUp6TzFyT1lCNU1TNVpnRnVQMzNVNnZBdE1oNlNYZlcyOHN6bmVzTmVVaDNKbGd0cl9xNE9kQUhJZjliOXMiLCJpdCI6MCwicnBiciI6IiIsInJwaHIiOmZhbHNlLCJybWhyIjpmYWxzZSwic3NpIjpmYWxzZSwic3NjbyI6MCwic3NwaSI6WyIyODUyODg0Nzg4Njc1MzUyNSIsIjM3NTEzNzEzOTI0OTM5MzE4IiwiMjkxMTM4NTUyMjQ5NzIyNDciLCIyOTMyOTUyOTEwMzQwMTQ4MCIsIjM3OTM5MzczMjI5MDQzOTY5IiwiMjg5Nzg2ODM0MDgzOTM0NDgiLCIzNjYyNjU0NzkxMDMyNjg4NyIsIjI4MDM4MDIzMzgyNTM0MDE2IiwiMjcwMDkxNTIyNTIwOTcxOTkiLCIyODA2MzIxNzM0MDAwMDg5NSIsIjI4NDMxNDcxODgzMjA3MDA3IiwiMjgxNDk3OTAyMjEzMjQ2MjIiLCIyNzY4NjA4NTU5MTAzMjM1NCIsIjI4MTk1NjQ1MDgzNDEwODQzIiwiMjgyMDY2ODA3Nzg5NjY0NjAiXX0sImlyciI6ZmFsc2UsInNlcnBfY3RhIjpmYWxzZSwicnVpIjpbXSwibXBpZCI6W10sInVicCI6bnVsbCwibmNybmQiOjAsImlyc3IiOmZhbHNlLCJibXByIjpbXSwiYm1wZWlkIjpbXSwibm1ibXAiOmZhbHNlLCJza3JyIjpmYWxzZSwiaW9vdXIiOmZhbHNlLCJpc2UiOmZhbHNlLCJzbXNfY3Vyc29yIjp7InBhZ2VfaW5kZXgiOjAsImJsZW5kZWRfYWRfaW5kZXgiOjAsIm9yZ2FuaWNzX3NpbmNlX2xhc3RfYWQiOjAsInBhZ2Vfb3JnYW5pY19jb3VudCI6MCwiYmxlbmRlZF9vcmdhbmljX2luZGV4IjowLCJyZXR1cm5lZF9hZF9pbmRleCI6MCwidG90YWxfaW5kZXgiOjB9fQ",
+   "request_no": 6,
+   "retrieved_at": "2026-10-10T10:48:09Z"
+  }
+ ],
+ "listings": [
+  {
+   "listing_id": "1638806271151287",
+   "source_url": "https://www.facebook.com/marketplace/item/1638806271151287/",
+   "title": "King comforter set new",
+   "description": "New never opened but has been stored for a while . Size KING.",
+   "price": {
+    "amount": 20,
+    "currency": "USD",
+    "formatted": "$20"
+   },
+   "location": {
+    "city": "Dallas",
+    "state": "TX",
+    "display_name": "Dallas, Texas",
+    "text": "Dallas, TX",
+    "latitude": 32.769470214844,
+    "longitude": -96.784057617188
+   },
+   "seller": {
+    "id": "seller_1",
+    "exposed": true,
+    "fields": [
+     "__isActor",
+     "__isActorWithCustomizableCommerceProfile",
+     "__isProfile",
+     "__typename",
+     "commerce_profile_picture_with_fallback_112",
+     "commerce_profile_picture_with_fallback_160",
+     "commerce_profile_picture_with_fallback_50",
+     "commerce_profile_picture_with_fallback_60",
+     "commerce_profile_picture_with_fallback_64",
+     "id",
+     "join_time",
+     "marketplace_ratings_stats_by_role_v2",
+     "marketplace_should_display_verified_badge",
+     "marketplace_user_profile",
+     "name",
+     "profile_picture",
+     "profile_picture_112",
+     "profile_picture_160",
+     "profile_picture_50",
+     "profile_picture_60",
+     "profile_picture_64",
+     "user_id"
+    ]
+   },
+   "photos": [
+    {
+     "id": "1405817471680676",
+     "url": "https://scontent-lga3-2.xx.fbcdn.net/v/t39.84726-6/836918454_1405817481680675_6818679034754920117_n.jpg",
+     "width": 720,
+     "height": 960,
+     "caption": "No photo description available."
+    },
+    {
+     "id": "2382446602577508",
+     "url": "https://scontent-lga3-3.xx.fbcdn.net/v/t45.5328-4/837327440_2382446609244174_1126515467789151057_n.jpg",
+     "width": 720,
+     "height": 960,
+     "caption": "No photo description available."
+    },
+    {
+     "id": "1674990290904843",
+     "url": "https://scontent-lga3-2.xx.fbcdn.net/v/t45.5328-4/834299326_1674990294238176_6664502996706017936_n.jpg",
+     "width": 720,
+     "height": 960,
+     "caption": "No photo description available."
+    }
+   ],
+   "primary_photo": {
+    "id": "1405817471680676",
+    "url": "https://scontent-iad6-1.xx.fbcdn.net/v/t39.84726-6/836918454_1405817481680675_6818679034754920117_n.jpg"
+   },
+   "category_id": "613858625416355",
+   "condition": "new",
+   "creation_time": "2026-10-04T19:07:23.000Z",
+   "status": {
+    "is_live": true,
+    "is_sold": false,
+    "is_pending": false,
+    "is_hidden": false
+   },
+   "delivery_types": [
+    "IN_PERSON"
+   ],
+   "provenance": [
+    {
+     "endpoint": "search",
+     "query": "comforter set",
+     "filters": {
+      "lat": 32.7774,
+      "lng": -96.7977,
+      "radius_km": 50.0,
+      "condition": "new"
+     },
+     "request_no": 3
+    },
+    {
+     "endpoint": "item",
+     "request_no": 7
+    }
+   ],
+   "retrieved_at": "2026-10-10T10:48:23Z",
+   "attributes": [
+    {
+     "attribute_name": "Condition",
+     "value": "new",
+     "label": "New"
+    }
+   ],
+   "manual_review": {
+    "verdict": "relevant",
+    "note": "Codex inspected listing title, description, Texas location and new-condition detail; home-textile comparison candidate. Only three photos visually sampled, not every listing.",
+    "by": "codex-manual",
+    "basis": "search_and_item_text"
+   },
+   "heuristic_textile_terms": [
+    "comforter"
+   ]
+  },
+  {
+   "listing_id": "955699870493854",
+   "source_url": "https://www.facebook.com/marketplace/item/955699870493854/",
+   "title": "White 4-Piece Reversible Comforter Set – Twin/Twin XL",
+   "description": null,
+   "price": {
+    "amount": 10,
+    "currency": null,
+    "formatted": "$10"
+   },
+   "location": {
+    "city": "Euless",
+    "state": "TX",
+    "display_name": "Fort Worth, Texas",
+    "text": null
+   },
+   "seller": {
+    "id": null,
+    "exposed": false,
+    "fields": []
+   },
+   "photos": [],
+   "primary_photo": {
+    "id": "1156339716956447",
+    "url": "https://scontent-iad3-1.xx.fbcdn.net/v/t39.84726-6/842970158_1156339720289780_3268660615662135791_n.jpg"
+   },
+   "category_id": "1569171756675761",
+   "condition": null,
+   "creation_time": "2026-10-08T23:05:02.000Z",
+   "status": {
+    "is_live": true,
+    "is_sold": false,
+    "is_pending": false,
+    "is_hidden": false
+   },
+   "delivery_types": [
+    "IN_PERSON"
+   ],
+   "provenance": [
+    {
+     "endpoint": "search",
+     "query": "comforter set",
+     "filters": {
+      "lat": 32.7774,
+      "lng": -96.7977,
+      "radius_km": 50.0,
+      "condition": "new"
+     },
+     "request_no": 3
+    }
+   ],
+   "retrieved_at": "2026-10-10T10:47:43Z",
+   "manual_review": null,
+   "heuristic_textile_terms": [
+    "comforter"
+   ]
+  },
+  {
+   "listing_id": "2161861864398379",
+   "source_url": "https://www.facebook.com/marketplace/item/2161861864398379/",
+   "title": "Mainstays Comforter Set",
+   "description": null,
+   "price": {
+    "amount": 15,
+    "currency": null,
+    "formatted": "$15"
+   },
+   "location": {
+    "city": "Dallas",
+    "state": "GA",
+    "display_name": "Dallas, Georgia",
+    "text": null
+   },
+   "seller": {
+    "id": null,
+    "exposed": false,
+    "fields": []
+   },
+   "photos": [],
+   "primary_photo": {
+    "id": "1596117882294988",
+    "url": "https://scontent-iad3-1.xx.fbcdn.net/v/t39.84726-6/789728540_1596117885628321_3654787272347419552_n.jpg"
+   },
+   "category_id": "1569171756675761",
+   "condition": null,
+   "creation_time": "2026-09-01T01:57:49.000Z",
+   "status": {
+    "is_live": true,
+    "is_sold": false,
+    "is_pending": false,
+    "is_hidden": false
+   },
+   "delivery_types": [
+    "IN_PERSON",
+    "SHIPPING_ONSITE"
+   ],
+   "provenance": [
+    {
+     "endpoint": "search",
+     "query": "comforter set",
+     "filters": {
+      "lat": 32.7774,
+      "lng": -96.7977,
+      "radius_km": 50.0,
+      "condition": "new"
+     },
+     "request_no": 3
+    }
+   ],
+   "retrieved_at": "2026-10-10T10:47:43Z",
+   "manual_review": {
+    "verdict": "irrelevant",
+    "note": "Dallas, Georgia; outside the intended Dallas, Texas region.",
+    "by": "codex-manual"
+   },
+   "heuristic_textile_terms": [
+    "comforter"
+   ]
+  },
+  {
+   "listing_id": "1573707084343506",
+   "source_url": "https://www.facebook.com/marketplace/item/1573707084343506/",
+   "title": "Comforter Set with Sham Twin/Twin Xl",
+   "description": "Pick up in Oak Cliff area 75233 \nNew \nSize Twin/Twin Xl",
+   "price": {
+    "amount": 15,
+    "currency": "USD",
+    "formatted": "$15"
+   },
+   "location": {
+    "city": "Dallas",
+    "state": "TX",
+    "display_name": "Dallas, Texas",
+    "text": "Dallas, TX",
+    "latitude": 32.774963378906,
+    "longitude": -96.795043945312
+   },
+   "seller": {
+    "id": "seller_2",
+    "exposed": true,
+    "fields": [
+     "__isActor",
+     "__isActorWithCustomizableCommerceProfile",
+     "__isProfile",
+     "__typename",
+     "commerce_profile_picture_with_fallback_112",
+     "commerce_profile_picture_with_fallback_160",
+     "commerce_profile_picture_with_fallback_50",
+     "commerce_profile_picture_with_fallback_60",
+     "commerce_profile_picture_with_fallback_64",
+     "id",
+     "join_time",
+     "marketplace_ratings_stats_by_role_v2",
+     "marketplace_should_display_verified_badge",
+     "marketplace_user_profile",
+     "name",
+     "profile_picture",
+     "profile_picture_112",
+     "profile_picture_160",
+     "profile_picture_50",
+     "profile_picture_60",
+     "profile_picture_64",
+     "user_id"
+    ]
+   },
+   "photos": [
+    {
+     "id": "816765988092217",
+     "url": "https://scontent-lga3-1.xx.fbcdn.net/v/t39.84726-6/755332248_816765998092216_2893230705884632501_n.jpg",
+     "width": 720,
+     "height": 960,
+     "caption": "No photo description available."
+    },
+    {
+     "id": "1357408749313080",
+     "url": "https://scontent-lga3-3.xx.fbcdn.net/v/t45.5328-4/756577887_1357408752646413_7914555559458760322_n.jpg",
+     "width": 720,
+     "height": 960,
+     "caption": "No photo description available."
+    }
+   ],
+   "primary_photo": {
+    "id": "816765988092217",
+    "url": "https://scontent-iad6-1.xx.fbcdn.net/v/t39.84726-6/755332248_816765998092216_2893230705884632501_n.jpg"
+   },
+   "category_id": "1569171756675761",
+   "condition": "new",
+   "creation_time": "2026-07-25T23:36:35.000Z",
+   "status": {
+    "is_live": true,
+    "is_sold": false,
+    "is_pending": false,
+    "is_hidden": false
+   },
+   "delivery_types": [
+    "IN_PERSON"
+   ],
+   "provenance": [
+    {
+     "endpoint": "search",
+     "query": "comforter set",
+     "filters": {
+      "lat": 32.7774,
+      "lng": -96.7977,
+      "radius_km": 50.0,
+      "condition": "new"
+     },
+     "request_no": 3
+    },
+    {
+     "endpoint": "item",
+     "request_no": 10
+    }
+   ],
+   "retrieved_at": "2026-10-10T10:48:58Z",
+   "attributes": [
+    {
+     "attribute_name": "Condition",
+     "value": "new",
+     "label": "New"
+    },
+    {
+     "attribute_name": "Bed Size",
+     "value": "Twin XL",
+     "label": "Twin XL"
+    }
+   ],
+   "manual_review": {
+    "verdict": "relevant",
+    "note": "Codex inspected listing title, description, Texas location and new-condition detail; home-textile comparison candidate. Only three photos visually sampled, not every listing.",
+    "by": "codex-manual",
+    "basis": "search_and_item_text"
+   },
+   "heuristic_textile_terms": [
+    "comforter",
+    "sham"
+   ]
+  },
+  {
+   "listing_id": "2626789881057695",
+   "source_url": "https://www.facebook.com/marketplace/item/2626789881057695/",
+   "title": "Bedsure Queen Comforter Set, Dark Red Soft Prewashed Bedding For All Seasons, 3 Pieces GentleSoft™ B",
+   "description": null,
+   "price": {
+    "amount": 25,
+    "currency": null,
+    "formatted": "$25"
+   },
+   "location": {
+    "city": "Mesquite",
+    "state": "TX",
+    "display_name": "Mesquite, Texas",
+    "text": null
+   },
+   "seller": {
+    "id": null,
+    "exposed": false,
+    "fields": []
+   },
+   "photos": [],
+   "primary_photo": {
+    "id": "1112545545038770",
+    "url": "https://scontent-phl2-1.xx.fbcdn.net/v/t39.84726-6/836514538_1112545555038769_5822205915784821019_n.jpg"
+   },
+   "category_id": "1569171756675761",
+   "condition": null,
+   "creation_time": "2026-10-04T17:40:09.000Z",
+   "status": {
+    "is_live": true,
+    "is_sold": false,
+    "is_pending": false,
+    "is_hidden": false
+   },
+   "delivery_types": [
+    "IN_PERSON",
+    "DOOR_PICKUP"
+   ],
+   "provenance": [
+    {
+     "endpoint": "search",
+     "query": "comforter set",
+     "filters": {
+      "lat": 32.7774,
+      "lng": -96.7977,
+      "radius_km": 50.0,
+      "condition": "new"
+     },
+     "request_no": 3
+    },
+    {
+     "endpoint": "search",
+     "query": "bedding set",
+     "filters": {
+      "lat": 32.7774,
+      "lng": -96.7977,
+      "radius_km": 50.0,
+      "condition": "new"
+     },
+     "request_no": 6
+    }
+   ],
+   "retrieved_at": "2026-10-10T10:48:09Z",
+   "manual_review": {
+    "verdict": "unsure",
+    "note": "Relevant search candidate, but item detail returned404; current availability/details unresolved.",
+    "by": "codex-manual"
+   },
+   "heuristic_textile_terms": [
+    "bedding",
+    "comforter"
+   ]
+  },
+  {
+   "listing_id": "1090942113622348",
+   "source_url": "https://www.facebook.com/marketplace/item/1090942113622348/",
+   "title": "Full Size Comforter Sets Seersucker 7 Pieces",
+   "description": "Full Size Comforter Sets Seersucker 7 Pieces, All Season Luxury Bed in a Bag for Bedroom, Bedding Set with Comforters, Sheets, Pillowcases & Shams, Dark Grey\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\nH230",
+   "price": {
+    "amount": 25,
+    "currency": "USD",
+    "formatted": "$25"
+   },
+   "location": {
+    "city": "Garland",
+    "state": "TX",
+    "display_name": "Garland, Texas",
+    "text": "Garland, TX",
+    "latitude": 32.906799316406,
+    "longitude": -96.630249023438
+   },
+   "seller": {
+    "id": "seller_3",
+    "exposed": true,
+    "fields": [
+     "__isActor",
+     "__isActorWithCustomizableCommerceProfile",
+     "__isProfile",
+     "__typename",
+     "commerce_profile_picture_with_fallback_112",
+     "commerce_profile_picture_with_fallback_160",
+     "commerce_profile_picture_with_fallback_50",
+     "commerce_profile_picture_with_fallback_60",
+     "commerce_profile_picture_with_fallback_64",
+     "id",
+     "join_time",
+     "marketplace_ratings_stats_by_role_v2",
+     "marketplace_should_display_verified_badge",
+     "marketplace_user_profile",
+     "name",
+     "profile_picture",
+     "profile_picture_112",
+     "profile_picture_160",
+     "profile_picture_50",
+     "profile_picture_60",
+     "profile_picture_64",
+     "user_id"
+    ]
+   },
+   "photos": [
+    {
+     "id": "1086104040447214",
+     "url": "https://scontent-phl2-1.xx.fbcdn.net/v/t39.84726-6/796691197_1086104043780547_6254208790023483278_n.jpg",
+     "width": 931,
+     "height": 960,
+     "caption": "No photo description available."
+    },
+    {
+     "id": "1750720086254183",
+     "url": "https://scontent-phl2-1.xx.fbcdn.net/v/t45.5328-4/796832642_1750720089587516_2885943931113125785_n.jpg",
+     "width": 909,
+     "height": 960,
+     "caption": "No photo description available."
+    },
+    {
+     "id": "1011116051977726",
+     "url": "https://scontent-phl2-1.xx.fbcdn.net/v/t45.5328-4/794413960_1011116055311059_3724730563823633478_n.jpg",
+     "width": 930,
+     "height": 960,
+     "caption": "No photo description available."
+    },
+    {
+     "id": "2386783588794205",
+     "url": "https://scontent-phl2-1.xx.fbcdn.net/v/t45.5328-4/797745140_2386783592127538_6370537706738271308_n.jpg",
+     "width": 960,
+     "height": 720,
+     "caption": "No photo description available."
+    },
+    {
+     "id": "1055158654068379",
+     "url": "https://scontent-phl2-1.xx.fbcdn.net/v/t45.5328-4/793458579_1055158657401712_5823779463564344557_n.jpg",
+     "width": 720,
+     "height": 960,
+     "caption": "No photo description available."
+    }
+   ],
+   "primary_photo": {
+    "id": "1086104040447214",
+    "url": "https://scontent-iad3-2.xx.fbcdn.net/v/t39.84726-6/796691197_1086104043780547_6254208790023483278_n.jpg"
+   },
+   "category_id": "1569171756675761",
+   "condition": "new",
+   "creation_time": "2026-09-04T23:12:23.000Z",
+   "status": {
+    "is_live": true,
+    "is_sold": false,
+    "is_pending": false,
+    "is_hidden": false
+   },
+   "delivery_types": [
+    "IN_PERSON"
+   ],
+   "provenance": [
+    {
+     "endpoint": "search",
+     "query": "comforter set",
+     "filters": {
+      "lat": 32.7774,
+      "lng": -96.7977,
+      "radius_km": 50.0,
+      "condition": "new"
+     },
+     "request_no": 3
+    },
+    {
+     "endpoint": "item",
+     "request_no": 11
+    }
+   ],
+   "retrieved_at": "2026-10-10T10:49:02Z",
+   "attributes": [
+    {
+     "attribute_name": "Condition",
+     "value": "new",
+     "label": "New"
+    },
+    {
+     "attribute_name": "Bed Size",
+     "value": "Full",
+     "label": "Full"
+    }
+   ],
+   "manual_review": {
+    "verdict": "relevant",
+    "note": "Codex inspected listing title, description, Texas location and new-condition detail; home-textile comparison candidate. Only three photos visually sampled, not every listing.",
+    "by": "codex-manual",
+    "basis": "search_and_item_text"
+   },
+   "heuristic_textile_terms": [
+    "bed",
+    "bedding",
+    "comforter",
+    "comforters",
+    "shams",
+    "sheets"
+   ]
+  },
+  {
+   "listing_id": "27770156632624828",
+   "source_url": "https://www.facebook.com/marketplace/item/27770156632624828/",
+   "title": "Comforter set with sham Twin/Twin Xl",
+   "description": null,
+   "price": {
+    "amount": 15,
+    "currency": null,
+    "formatted": "$15"
+   },
+   "location": {
+    "city": "Dallas",
+    "state": "TX",
+    "display_name": "Dallas, Texas",
+    "text": null
+   },
+   "seller": {
+    "id": null,
+    "exposed": false,
+    "fields": []
+   },
+   "photos": [],
+   "primary_photo": {
+    "id": "892824770079845",
+    "url": "https://scontent-iad3-1.xx.fbcdn.net/v/t39.84726-6/753812527_892824780079844_6176716384901591576_n.jpg"
+   },
+   "category_id": "1569171756675761",
+   "condition": null,
+   "creation_time": "2026-07-25T23:34:55.000Z",
+   "status": {
+    "is_live": true,
+    "is_sold": false,
+    "is_pending": false,
+    "is_hidden": false
+   },
+   "delivery_types": [
+    "IN_PERSON"
+   ],
+   "provenance": [
+    {
+     "endpoint": "search",
+     "query": "comforter set",
+     "filters": {
+      "lat": 32.7774,
+      "lng": -96.7977,
+      "radius_km": 50.0,
+      "condition": "new"
+     },
+     "request_no": 3
+    }
+   ],
+   "retrieved_at": "2026-10-10T10:47:43Z",
+   "manual_review": null,
+   "heuristic_textile_terms": [
+    "comforter",
+    "sham"
+   ]
+  },
+  {
+   "listing_id": "1411562264189867",
+   "source_url": "https://www.facebook.com/marketplace/item/1411562264189867/",
+   "title": "Comforter sets for the Dorm",
+   "description": null,
+   "price": {
+    "amount": 20,
+    "currency": null,
+    "formatted": "$20"
+   },
+   "location": {
+    "city": "Cedar Hill",
+    "state": "TX",
+    "display_name": "Cedar Hill, Texas",
+    "text": null
+   },
+   "seller": {
+    "id": null,
+    "exposed": false,
+    "fields": []
+   },
+   "photos": [],
+   "primary_photo": {
+    "id": "1584922426601135",
+    "url": "https://scontent-iad3-1.xx.fbcdn.net/v/t39.84726-6/780087894_1584922429934468_7701229504499710935_n.jpg"
+   },
+   "category_id": "1569171756675761",
+   "condition": null,
+   "creation_time": "2026-08-22T13:28:35.000Z",
+   "status": {
+    "is_live": true,
+    "is_sold": false,
+    "is_pending": false,
+    "is_hidden": false
+   },
+   "delivery_types": [
+    "IN_PERSON"
+   ],
+   "provenance": [
+    {
+     "endpoint": "search",
+     "query": "comforter set",
+     "filters": {
+      "lat": 32.7774,
+      "lng": -96.7977,
+      "radius_km": 50.0,
+      "condition": "new"
+     },
+     "request_no": 3
+    }
+   ],
+   "retrieved_at": "2026-10-10T10:47:43Z",
+   "manual_review": {
+    "verdict": "relevant",
+    "note": "Title identifies a comforter set; Texas search location and primary photo reference present. Detail, seller and photo pixels not checked for this listing.",
+    "by": "codex-manual",
+    "basis": "search_text_only"
+   },
+   "heuristic_textile_terms": [
+    "comforter"
+   ]
+  },
+  {
+   "listing_id": "1369600044569575",
+   "source_url": "https://www.facebook.com/marketplace/item/1369600044569575/",
+   "title": "New comforters & MORE",
+   "description": null,
+   "price": {
+    "amount": 20,
+    "currency": null,
+    "formatted": "$20"
+   },
+   "location": {
+    "city": "Grand Prairie",
+    "state": "TX",
+    "display_name": "Grand Prairie, Texas",
+    "text": null
+   },
+   "seller": {
+    "id": null,
+    "exposed": false,
+    "fields": []
+   },
+   "photos": [],
+   "primary_photo": {
+    "id": "1698998044684941",
+    "url": "https://scontent-iad3-1.xx.fbcdn.net/v/t39.84726-6/749355114_1698998064684939_3956170113968211479_n.jpg"
+   },
+   "category_id": "1569171756675761",
+   "condition": null,
+   "creation_time": "2026-07-17T14:00:51.000Z",
+   "status": {
+    "is_live": true,
+    "is_sold": false,
+    "is_pending": false,
+    "is_hidden": false
+   },
+   "delivery_types": [
+    "IN_PERSON"
+   ],
+   "provenance": [
+    {
+     "endpoint": "search",
+     "query": "comforter set",
+     "filters": {
+      "lat": 32.7774,
+      "lng": -96.7977,
+      "radius_km": 50.0,
+      "condition": "new"
+     },
+     "request_no": 3
+    }
+   ],
+   "retrieved_at": "2026-10-10T10:47:43Z",
+   "manual_review": null,
+   "heuristic_textile_terms": [
+    "comforters"
+   ]
+  },
+  {
+   "listing_id": "1850791742720668",
+   "source_url": "https://www.facebook.com/marketplace/item/1850791742720668/",
+   "title": "Comforter set",
+   "description": null,
+   "price": {
+    "amount": 30,
+    "currency": null,
+    "formatted": "$30"
+   },
+   "location": {
+    "city": "Dallas",
+    "state": "TX",
+    "display_name": "Dallas, Texas",
+    "text": null
+   },
+   "seller": {
+    "id": null,
+    "exposed": false,
+    "fields": []
+   },
+   "photos": [],
+   "primary_photo": {
+    "id": "1360083833853599",
+    "url": "https://scontent-iad6-1.xx.fbcdn.net/v/t39.84726-6/830152988_1360083847186931_7596162913710972431_n.jpg"
+   },
+   "category_id": "1569171756675761",
+   "condition": null,
+   "creation_time": "2026-10-01T02:17:12.000Z",
+   "status": {
+    "is_live": true,
+    "is_sold": false,
+    "is_pending": false,
+    "is_hidden": false
+   },
+   "delivery_types": [
+    "IN_PERSON",
+    "DOOR_PICKUP",
+    "DOOR_DROPOFF"
+   ],
+   "provenance": [
+    {
+     "endpoint": "search",
+     "query": "comforter set",
+     "filters": {
+      "lat": 32.7774,
+      "lng": -96.7977,
+      "radius_km": 50.0,
+      "condition": "new"
+     },
+     "request_no": 3
+    }
+   ],
+   "retrieved_at": "2026-10-10T10:47:43Z",
+   "manual_review": {
+    "verdict": "relevant",
+    "note": "Title identifies a comforter set; Texas search location and primary photo reference present. Detail, seller and photo pixels not checked for this listing.",
+    "by": "codex-manual",
+    "basis": "search_text_only"
+   },
+   "heuristic_textile_terms": [
+    "comforter"
+   ]
+  },
+  {
+   "listing_id": "4578090289091943",
+   "source_url": "https://www.facebook.com/marketplace/item/4578090289091943/",
+   "title": "Bedsure King Comforter Set 7 Pieces",
+   "description": "Bedsure King Comforter Set 7 Pieces, Burnt Orange Striped Bedding Set for All Seasons, Reversible, Cationic Dyeing Bed in a Bag with Comforter, Sheets, Pillowcases & Shams",
+   "price": {
+    "amount": 60,
+    "currency": "USD",
+    "formatted": "$60"
+   },
+   "location": {
+    "city": "Dallas",
+    "state": "TX",
+    "display_name": "Dallas, Texas",
+    "text": "Dallas, TX",
+    "latitude": 32.774963378906,
+    "longitude": -96.795043945312
+   },
+   "seller": {
+    "id": "seller_4",
+    "exposed": true,
+    "fields": [
+     "__isActor",
+     "__isActorWithCustomizableCommerceProfile",
+     "__isProfile",
+     "__typename",
+     "commerce_profile_picture_with_fallback_112",
+     "commerce_profile_picture_with_fallback_160",
+     "commerce_profile_picture_with_fallback_50",
+     "commerce_profile_picture_with_fallback_60",
+     "commerce_profile_picture_with_fallback_64",
+     "id",
+     "join_time",
+     "marketplace_ratings_stats_by_role_v2",
+     "marketplace_should_display_verified_badge",
+     "marketplace_user_profile",
+     "name",
+     "profile_picture",
+     "profile_picture_112",
+     "profile_picture_160",
+     "profile_picture_50",
+     "profile_picture_60",
+     "profile_picture_64",
+     "user_id"
+    ]
+   },
+   "photos": [
+    {
+     "id": "1056103750354534",
+     "url": "https://scontent-sjc6-1.xx.fbcdn.net/v/t39.84726-6/782018942_1056103760354533_8932931923926122338_n.jpg",
+     "width": 702,
+     "height": 960,
+     "caption": "No photo description available."
+    },
+    {
+     "id": "1048722211302557",
+     "url": "https://scontent-sjc3-1.xx.fbcdn.net/v/t45.5328-4/783590276_1048722214635890_4493492122225955501_n.jpg",
+     "width": 762,
+     "height": 960,
+     "caption": "No photo description available."
+    },
+    {
+     "id": "1850019349713546",
+     "url": "https://scontent-sjc6-1.xx.fbcdn.net/v/t45.5328-4/779957786_1850019366380211_7893526594818168558_n.jpg",
+     "width": 754,
+     "height": 960,
+     "caption": "No photo description available."
+    },
+    {
+     "id": "1558782385271700",
+     "url": "https://scontent-sjc3-1.xx.fbcdn.net/v/t45.5328-4/783590147_1558782388605033_2591566308370107812_n.jpg",
+     "width": 749,
+     "height": 960,
+     "caption": "No photo description available."
+    },
+    {
+     "id": "1584722013111894",
+     "url": "https://scontent-sjc3-1.xx.fbcdn.net/v/t45.5328-4/781006524_1584722019778560_185256778341369750_n.jpg",
+     "width": 803,
+     "height": 960,
+     "caption": "No photo description available."
+    },
+    {
+     "id": "1570306204636224",
+     "url": "https://scontent-sjc6-1.xx.fbcdn.net/v/t45.5328-4/779976407_1570306207969557_781472171770793832_n.jpg",
+     "width": 815,
+     "height": 960,
+     "caption": "No photo description available."
+    },
+    {
+     "id": "1099543019305990",
+     "url": "https://scontent-sjc6-1.xx.fbcdn.net/v/t45.5328-4/783205555_1099543022639323_6006640625531130744_n.jpg",
+     "width": 629,
+     "height": 960,
+     "caption": "No photo description available."
+    },
+    {
+     "id": "2113119459553613",
+     "url": "https://scontent-sjc6-1.xx.fbcdn.net/v/t45.5328-4/779946103_2113119466220279_2908823714399908083_n.jpg",
+     "width": 646,
+     "height": 960,
+     "caption": "No photo description available."
+    },
+    {
+     "id": "1759494451720096",
+     "url": "https://scontent-sjc6-1.xx.fbcdn.net/v/t45.5328-4/783255973_1759494475053427_5188005433079872440_n.jpg",
+     "width": 781,
+     "height": 960,
+     "caption": "No photo description available."
+    }
+   ],
+   "primary_photo": {
+    "id": "1056103750354534",
+    "url": "https://scontent-phl2-1.xx.fbcdn.net/v/t39.84726-6/782018942_1056103760354533_8932931923926122338_n.jpg"
+   },
+   "category_id": "1569171756675761",
+   "condition": "new",
+   "creation_time": "2026-08-21T17:06:09.000Z",
+   "status": {
+    "is_live": true,
+    "is_sold": false,
+    "is_pending": false,
+    "is_hidden": false
+   },
+   "delivery_types": [
+    "IN_PERSON"
+   ],
+   "provenance": [
+    {
+     "endpoint": "search",
+     "query": "comforter set",
+     "filters": {
+      "lat": 32.7774,
+      "lng": -96.7977,
+      "radius_km": 50.0,
+      "condition": "new"
+     },
+     "request_no": 3
+    },
+    {
+     "endpoint": "search",
+     "query": "bedding set",
+     "filters": {
+      "lat": 32.7774,
+      "lng": -96.7977,
+      "radius_km": 50.0,
+      "condition": "new"
+     },
+     "request_no": 6
+    },
+    {
+     "endpoint": "item",
+     "request_no": 12
+    }
+   ],
+   "retrieved_at": "2026-10-10T10:49:06Z",
+   "attributes": [
+    {
+     "attribute_name": "Condition",
+     "value": "new",
+     "label": "New"
+    },
+    {
+     "attribute_name": "Bed Size",
+     "value": "King",
+     "label": "King"
+    }
+   ],
+   "manual_review": {
+    "verdict": "relevant",
+    "note": "Codex inspected listing title, description, Texas location and new-condition detail; home-textile comparison candidate. Only three photos visually sampled, not every listing.",
+    "by": "codex-manual",
+    "basis": "search_and_item_text"
+   },
+   "heuristic_textile_terms": [
+    "bed",
+    "bedding",
+    "comforter",
+    "shams",
+    "sheets"
+   ]
+  },
+  {
+   "listing_id": "1040842621000040",
+   "source_url": "https://www.facebook.com/marketplace/item/1040842621000040/",
+   "title": "Madison Park",
+   "description": null,
+   "price": {
+    "amount": 45,
+    "currency": null,
+    "formatted": "$45"
+   },
+   "location": {
+    "city": "Dallas",
+    "state": "TX",
+    "display_name": "Dallas, Texas",
+    "text": null
+   },
+   "seller": {
+    "id": null,
+    "exposed": false,
+    "fields": []
+   },
+   "photos": [],
+   "primary_photo": {
+    "id": "1020643083487729",
+    "url": "https://scontent-iad3-2.xx.fbcdn.net/v/t39.84726-6/569212189_1020643116821059_6379533415721567215_n.jpg"
+   },
+   "category_id": "613858625416355",
+   "condition": null,
+   "creation_time": "2025-05-26T21:23:31.000Z",
+   "status": {
+    "is_live": true,
+    "is_sold": false,
+    "is_pending": false,
+    "is_hidden": false
+   },
+   "delivery_types": [
+    "IN_PERSON",
+    "PUBLIC_MEETUP"
+   ],
+   "provenance": [
+    {
+     "endpoint": "search",
+     "query": "comforter set",
+     "filters": {
+      "lat": 32.7774,
+      "lng": -96.7977,
+      "radius_km": 50.0,
+      "condition": "new"
+     },
+     "request_no": 3
+    }
+   ],
+   "retrieved_at": "2026-10-10T10:47:43Z",
+   "manual_review": null,
+   "heuristic_textile_terms": []
+  },
+  {
+   "listing_id": "1123259450249204",
+   "source_url": "https://www.facebook.com/marketplace/item/1123259450249204/",
+   "title": "Comforter set",
+   "description": null,
+   "price": {
+    "amount": 30,
+    "currency": null,
+    "formatted": "$30"
+   },
+   "location": {
+    "city": "Fort Worth",
+    "state": "TX",
+    "display_name": "Fort Worth, Texas",
+    "text": null
+   },
+   "seller": {
+    "id": null,
+    "exposed": false,
+    "fields": []
+   },
+   "photos": [],
+   "primary_photo": {
+    "id": "1568846814980422",
+    "url": "https://scontent-iad3-2.xx.fbcdn.net/v/t39.84726-6/825278413_1568846818313755_2539546956332027466_n.jpg"
+   },
+   "category_id": "1569171756675761",
+   "condition": null,
+   "creation_time": "2026-09-26T22:56:29.000Z",
+   "status": {
+    "is_live": true,
+    "is_sold": false,
+    "is_pending": false,
+    "is_hidden": false
+   },
+   "delivery_types": [
+    "IN_PERSON"
+   ],
+   "provenance": [
+    {
+     "endpoint": "search",
+     "query": "comforter set",
+     "filters": {
+      "lat": 32.7774,
+      "lng": -96.7977,
+      "radius_km": 50.0,
+      "condition": "new"
+     },
+     "request_no": 3
+    }
+   ],
+   "retrieved_at": "2026-10-10T10:47:43Z",
+   "manual_review": null,
+   "heuristic_textile_terms": [
+    "comforter"
+   ]
+  },
+  {
+   "listing_id": "1414168053394202",
+   "source_url": "https://www.facebook.com/marketplace/item/1414168053394202/",
+   "title": "Sábanas reversible comforter set",
+   "description": null,
+   "price": {
+    "amount": 25,
+    "currency": null,
+    "formatted": "$25"
+   },
+   "location": {
+    "city": "Arlington",
+    "state": "TX",
+    "display_name": "Arlington, Texas",
+    "text": null
+   },
+   "seller": {
+    "id": null,
+    "exposed": false,
+    "fields": []
+   },
+   "photos": [],
+   "primary_photo": {
+    "id": "28802898436026512",
+    "url": "https://scontent-iad6-1.xx.fbcdn.net/v/t45.5328-4/836262377_28802898439359845_147898625328647989_n.jpg"
+   },
+   "category_id": "1557869527812749",
+   "condition": null,
+   "creation_time": "2026-09-20T18:10:25.000Z",
+   "status": {
+    "is_live": true,
+    "is_sold": false,
+    "is_pending": false,
+    "is_hidden": false
+   },
+   "delivery_types": [
+    "IN_PERSON"
+   ],
+   "provenance": [
+    {
+     "endpoint": "search",
+     "query": "comforter set",
+     "filters": {
+      "lat": 32.7774,
+      "lng": -96.7977,
+      "radius_km": 50.0,
+      "condition": "new"
+     },
+     "request_no": 3
+    }
+   ],
+   "retrieved_at": "2026-10-10T10:47:43Z",
+   "manual_review": null,
+   "heuristic_textile_terms": [
+    "comforter"
+   ]
+  },
+  {
+   "listing_id": "1639572284460989",
+   "source_url": "https://www.facebook.com/marketplace/item/1639572284460989/",
+   "title": "Rachel Zoe queen comforter",
+   "description": null,
+   "price": {
+    "amount": 0,
+    "currency": null,
+    "formatted": "$0"
+   },
+   "location": {
+    "city": "Corinth",
+    "state": "TX",
+    "display_name": "Corinth, Texas",
+    "text": null
+   },
+   "seller": {
+    "id": null,
+    "exposed": false,
+    "fields": []
+   },
+   "photos": [],
+   "primary_photo": {
+    "id": "1072703132421230",
+    "url": "https://scontent-iad3-2.xx.fbcdn.net/v/t39.84726-6/840561586_1072703139087896_3145008293064632617_n.jpg"
+   },
+   "category_id": "1569171756675761",
+   "condition": null,
+   "creation_time": "2026-10-06T05:37:51.000Z",
+   "status": {
+    "is_live": true,
+    "is_sold": false,
+    "is_pending": false,
+    "is_hidden": false
+   },
+   "delivery_types": [
+    "IN_PERSON"
+   ],
+   "provenance": [
+    {
+     "endpoint": "search",
+     "query": "comforter set",
+     "filters": {
+      "lat": 32.7774,
+      "lng": -96.7977,
+      "radius_km": 50.0,
+      "condition": "new"
+     },
+     "request_no": 3
+    }
+   ],
+   "retrieved_at": "2026-10-10T10:47:43Z",
+   "manual_review": null,
+   "heuristic_textile_terms": [
+    "comforter"
+   ]
+  },
+  {
+   "listing_id": "1472997174661509",
+   "source_url": "https://www.facebook.com/marketplace/item/1472997174661509/",
+   "title": "New comforter set",
+   "description": null,
+   "price": {
+    "amount": 30,
+    "currency": null,
+    "formatted": "$30"
+   },
+   "location": {
+    "city": "Plano",
+    "state": "TX",
+    "display_name": "Plano, Texas",
+    "text": null
+   },
+   "seller": {
+    "id": null,
+    "exposed": false,
+    "fields": []
+   },
+   "photos": [],
+   "primary_photo": {
+    "id": "1983157608999903",
+    "url": "https://scontent-iad6-1.xx.fbcdn.net/v/t39.84726-6/828551620_1983157618999902_5028057277232209158_n.jpg"
+   },
+   "category_id": "1569171756675761",
+   "condition": null,
+   "creation_time": "2026-09-30T21:53:31.000Z",
+   "status": {
+    "is_live": true,
+    "is_sold": false,
+    "is_pending": false,
+    "is_hidden": false
+   },
+   "delivery_types": [
+    "IN_PERSON"
+   ],
+   "provenance": [
+    {
+     "endpoint": "search",
+     "query": "comforter set",
+     "filters": {
+      "lat": 32.7774,
+      "lng": -96.7977,
+      "radius_km": 50.0,
+      "condition": "new"
+     },
+     "request_no": 3
+    }
+   ],
+   "retrieved_at": "2026-10-10T10:47:43Z",
+   "manual_review": {
+    "verdict": "relevant",
+    "note": "Title identifies a comforter set; Texas search location and primary photo reference present. Detail, seller and photo pixels not checked for this listing.",
+    "by": "codex-manual",
+    "basis": "search_text_only"
+   },
+   "heuristic_textile_terms": [
+    "comforter"
+   ]
+  },
+  {
+   "listing_id": "1408137457944530",
+   "source_url": "https://www.facebook.com/marketplace/item/1408137457944530/",
+   "title": "ALL CURTAINS MUST GO (price starts at)",
+   "description": "Curtains",
+   "price": {
+    "amount": 5,
+    "currency": "USD",
+    "formatted": "$5"
+   },
+   "location": {
+    "city": "Dallas",
+    "state": "TX",
+    "display_name": "Dallas, Texas",
+    "text": "Dallas, TX",
+    "latitude": 32.884826660156,
+    "longitude": -96.882934570312
+   },
+   "seller": {
+    "id": "seller_5",
+    "exposed": true,
+    "fields": [
+     "__isActor",
+     "__isActorWithCustomizableCommerceProfile",
+     "__isProfile",
+     "__typename",
+     "commerce_profile_picture_with_fallback_112",
+     "commerce_profile_picture_with_fallback_160",
+     "commerce_profile_picture_with_fallback_50",
+     "commerce_profile_picture_with_fallback_60",
+     "commerce_profile_picture_with_fallback_64",
+     "id",
+     "join_time",
+     "marketplace_ratings_stats_by_role_v2",
+     "marketplace_should_display_verified_badge",
+     "marketplace_user_profile",
+     "name",
+     "profile_picture",
+     "profile_picture_112",
+     "profile_picture_160",
+     "profile_picture_50",
+     "profile_picture_60",
+     "profile_picture_64",
+     "user_id"
+    ]
+   },
+   "photos": [
+    {
+     "id": "1072168559031466",
+     "url": "https://scontent-lga3-2.xx.fbcdn.net/v/t39.84726-6/781266753_1072168562364799_2970063185163606546_n.jpg",
+     "width": 442,
+     "height": 960,
+     "caption": "No photo description available."
+    }
+   ],
+   "primary_photo": {
+    "id": "1072168559031466",
+    "url": "https://scontent-phl2-1.xx.fbcdn.net/v/t39.84726-6/781266753_1072168562364799_2970063185163606546_n.jpg"
+   },
+   "category_id": "1569171756675761",
+   "condition": "new",
+   "creation_time": "2026-09-01T19:24:14.000Z",
+   "status": {
+    "is_live": true,
+    "is_sold": false,
+    "is_pending": false,
+    "is_hidden": false
+   },
+   "delivery_types": [
+    "IN_PERSON"
+   ],
+   "provenance": [
+    {
+     "endpoint": "search",
+     "query": "curtains",
+     "filters": {
+      "lat": 32.7774,
+      "lng": -96.7977,
+      "radius_km": 50.0,
+      "condition": "new"
+     },
+     "request_no": 4
+    },
+    {
+     "endpoint": "item",
+     "request_no": 9
+    }
+   ],
+   "retrieved_at": "2026-10-10T10:48:30Z",
+   "attributes": [
+    {
+     "attribute_name": "Condition",
+     "value": "new",
+     "label": "New"
+    }
+   ],
+   "manual_review": {
+    "verdict": "relevant",
+    "note": "Codex inspected listing title, description, Texas location and new-condition detail; home-textile comparison candidate. Only three photos visually sampled, not every listing.",
+    "by": "codex-manual",
+    "basis": "search_and_item_text"
+   },
+   "heuristic_textile_terms": [
+    "curtains"
+   ]
+  },
+  {
+   "listing_id": "1132178385923125",
+   "source_url": "https://www.facebook.com/marketplace/item/1132178385923125/",
+   "title": "Custom Curtains • Blackout & Light-Filtering • Free Estimates",
+   "description": null,
+   "price": {
+    "amount": 1,
+    "currency": null,
+    "formatted": "$1"
+   },
+   "location": {
+    "city": "Dallas",
+    "state": "TX",
+    "display_name": "Dallas, Texas",
+    "text": null
+   },
+   "seller": {
+    "id": null,
+    "exposed": false,
+    "fields": []
+   },
+   "photos": [],
+   "primary_photo": {
+    "id": "1101706792608640",
+    "url": "https://scontent-phl2-1.xx.fbcdn.net/v/t39.84726-6/840419467_1101706795941973_3072100114583473425_n.jpg"
+   },
+   "category_id": "1569171756675761",
+   "condition": null,
+   "creation_time": "2026-10-07T22:26:40.000Z",
+   "status": {
+    "is_live": true,
+    "is_sold": false,
+    "is_pending": false,
+    "is_hidden": false
+   },
+   "delivery_types": [
+    "IN_PERSON"
+   ],
+   "provenance": [
+    {
+     "endpoint": "search",
+     "query": "curtains",
+     "filters": {
+      "lat": 32.7774,
+      "lng": -96.7977,
+      "radius_km": 50.0,
+      "condition": "new"
+     },
+     "request_no": 4
+    }
+   ],
+   "retrieved_at": "2026-10-10T10:48:01Z",
+   "manual_review": {
+    "verdict": "unsure",
+    "note": "Custom-curtain service/estimate; not a directly comparable fixed-price product.",
+    "by": "codex-manual"
+   },
+   "heuristic_textile_terms": [
+    "blackout",
+    "curtains"
+   ]
+  },
+  {
+   "listing_id": "1051147117842198",
+   "source_url": "https://www.facebook.com/marketplace/item/1051147117842198/",
+   "title": "Curtains",
+   "description": null,
+   "price": {
+    "amount": 10,
+    "currency": null,
+    "formatted": "$10"
+   },
+   "location": {
+    "city": "Denton",
+    "state": "TX",
+    "display_name": "Denton, Texas",
+    "text": null
+   },
+   "seller": {
+    "id": null,
+    "exposed": false,
+    "fields": []
+   },
+   "photos": [],
+   "primary_photo": {
+    "id": "1771419527529407",
+    "url": "https://scontent-phl2-1.xx.fbcdn.net/v/t39.84726-6/775376346_1771419534196073_13857932011254840_n.jpg"
+   },
+   "category_id": "1569171756675761",
+   "condition": null,
+   "creation_time": "2026-08-20T00:38:15.000Z",
+   "status": {
+    "is_live": true,
+    "is_sold": false,
+    "is_pending": false,
+    "is_hidden": false
+   },
+   "delivery_types": [
+    "IN_PERSON"
+   ],
+   "provenance": [
+    {
+     "endpoint": "search",
+     "query": "curtains",
+     "filters": {
+      "lat": 32.7774,
+      "lng": -96.7977,
+      "radius_km": 50.0,
+      "condition": "new"
+     },
+     "request_no": 4
+    }
+   ],
+   "retrieved_at": "2026-10-10T10:48:01Z",
+   "manual_review": null,
+   "heuristic_textile_terms": [
+    "curtains"
+   ]
+  },
+  {
+   "listing_id": "1601671274689648",
+   "source_url": "https://www.facebook.com/marketplace/item/1601671274689648/",
+   "title": "Curtains",
+   "description": null,
+   "price": {
+    "amount": 0,
+    "currency": null,
+    "formatted": "$0"
+   },
+   "location": {
+    "city": "Grand Prairie",
+    "state": "TX",
+    "display_name": "Grand Prairie, Texas",
+    "text": null
+   },
+   "seller": {
+    "id": null,
+    "exposed": false,
+    "fields": []
+   },
+   "photos": [],
+   "primary_photo": {
+    "id": "2166391914275711",
+    "url": "https://scontent-phl2-1.xx.fbcdn.net/v/t39.84726-6/798709577_2166391920942377_2881444980084447373_n.jpg"
+   },
+   "category_id": "1569171756675761",
+   "condition": null,
+   "creation_time": "2026-09-06T13:29:49.000Z",
+   "status": {
+    "is_live": true,
+    "is_sold": false,
+    "is_pending": false,
+    "is_hidden": false
+   },
+   "delivery_types": [
+    "IN_PERSON"
+   ],
+   "provenance": [
+    {
+     "endpoint": "search",
+     "query": "curtains",
+     "filters": {
+      "lat": 32.7774,
+      "lng": -96.7977,
+      "radius_km": 50.0,
+      "condition": "new"
+     },
+     "request_no": 4
+    }
+   ],
+   "retrieved_at": "2026-10-10T10:48:01Z",
+   "manual_review": null,
+   "heuristic_textile_terms": [
+    "curtains"
+   ]
+  },
+  {
+   "listing_id": "918521891138262",
+   "source_url": "https://www.facebook.com/marketplace/item/918521891138262/",
+   "title": "Dk Gray Blkout Curtains-52×84",
+   "description": "2 panels of 52x84 Charcoal Gray Blkout curtains..  new**  cash only   ## Porch Pick up in Balch Springs 75180 ",
+   "price": {
+    "amount": 12,
+    "currency": "USD",
+    "formatted": "$12"
+   },
+   "location": {
+    "city": "Balch Springs",
+    "state": "TX",
+    "display_name": "Balch Springs, Texas",
+    "text": "Balch Springs, TX",
+    "latitude": 32.720031738281,
+    "longitude": -96.619262695312
+   },
+   "seller": {
+    "id": "seller_6",
+    "exposed": true,
+    "fields": [
+     "__isActor",
+     "__isActorWithCustomizableCommerceProfile",
+     "__isProfile",
+     "__typename",
+     "commerce_profile_picture_with_fallback_112",
+     "commerce_profile_picture_with_fallback_160",
+     "commerce_profile_picture_with_fallback_50",
+     "commerce_profile_picture_with_fallback_60",
+     "commerce_profile_picture_with_fallback_64",
+     "id",
+     "join_time",
+     "marketplace_ratings_stats_by_role_v2",
+     "marketplace_should_display_verified_badge",
+     "marketplace_user_profile",
+     "name",
+     "profile_picture",
+     "profile_picture_112",
+     "profile_picture_160",
+     "profile_picture_50",
+     "profile_picture_60",
+     "profile_picture_64",
+     "user_id"
+    ]
+   },
+   "photos": [
+    {
+     "id": "1413681690954636",
+     "url": "https://scontent-lga3-1.xx.fbcdn.net/v/t39.84726-6/837716550_1413681697621302_8889446661428813010_n.jpg",
+     "width": 960,
+     "height": 934,
+     "caption": "No photo description available."
+    },
+    {
+     "id": "2386796435479084",
+     "url": "https://scontent-lga3-3.xx.fbcdn.net/v/t45.5328-4/833041579_2386796438812417_3247475114166174709_n.jpg",
+     "width": 960,
+     "height": 950,
+     "caption": "No photo description available."
+    },
+    {
+     "id": "2393197354542171",
+     "url": "https://scontent-lga3-2.xx.fbcdn.net/v/t45.5328-4/833125802_2393197357875504_810981549479610459_n.jpg",
+     "width": 940,
+     "height": 960,
+     "caption": "No photo description available."
+    },
+    {
+     "id": "2588840914931514",
+     "url": "https://scontent-lga3-1.xx.fbcdn.net/v/t45.5328-4/834147563_2588840921598180_8027943144905701234_n.jpg",
+     "width": 949,
+     "height": 960,
+     "caption": "No photo description available."
+    },
+    {
+     "id": "1790799751852986",
+     "url": "https://scontent-lga3-3.xx.fbcdn.net/v/t45.5328-4/836112113_1790799758519652_5383405182329579131_n.jpg",
+     "width": 960,
+     "height": 895,
+     "caption": "No photo description available."
+    }
+   ],
+   "primary_photo": {
+    "id": "1413681690954636",
+    "url": "https://scontent-phl2-1.xx.fbcdn.net/v/t39.84726-6/837716550_1413681697621302_8889446661428813010_n.jpg"
+   },
+   "category_id": "1569171756675761",
+   "condition": "new",
+   "creation_time": "2026-10-07T22:33:29.000Z",
+   "status": {
+    "is_live": true,
+    "is_sold": false,
+    "is_pending": false,
+    "is_hidden": false
+   },
+   "delivery_types": [
+    "IN_PERSON",
+    "DOOR_PICKUP"
+   ],
+   "provenance": [
+    {
+     "endpoint": "search",
+     "query": "curtains",
+     "filters": {
+      "lat": 32.7774,
+      "lng": -96.7977,
+      "radius_km": 50.0,
+      "condition": "new"
+     },
+     "request_no": 4
+    },
+    {
+     "endpoint": "item",
+     "request_no": 13
+    }
+   ],
+   "retrieved_at": "2026-10-10T10:49:10Z",
+   "attributes": [
+    {
+     "attribute_name": "Condition",
+     "value": "new",
+     "label": "New"
+    }
+   ],
+   "manual_review": {
+    "verdict": "relevant",
+    "note": "Codex inspected listing title, description, Texas location and new-condition detail; home-textile comparison candidate. Only three photos visually sampled, not every listing.",
+    "by": "codex-manual",
+    "basis": "search_and_item_text"
+   },
+   "heuristic_textile_terms": [
+    "curtains"
+   ]
+  },
+  {
+   "listing_id": "975422398918110",
+   "source_url": "https://www.facebook.com/marketplace/item/975422398918110/",
+   "title": "Gray Blackout Curtains 42x63",
+   "description": null,
+   "price": {
+    "amount": 10,
+    "currency": null,
+    "formatted": "$10"
+   },
+   "location": {
+    "city": "Balch Springs",
+    "state": "TX",
+    "display_name": "Balch Springs, Texas",
+    "text": null
+   },
+   "seller": {
+    "id": null,
+    "exposed": false,
+    "fields": []
+   },
+   "photos": [],
+   "primary_photo": {
+    "id": "1056236174059877",
+    "url": "https://scontent-phl2-1.xx.fbcdn.net/v/t39.84726-6/793869058_1056236184059876_6586711035533547518_n.jpg"
+   },
+   "category_id": "1569171756675761",
+   "condition": null,
+   "creation_time": "2026-09-04T00:33:16.000Z",
+   "status": {
+    "is_live": true,
+    "is_sold": false,
+    "is_pending": false,
+    "is_hidden": false
+   },
+   "delivery_types": [
+    "IN_PERSON",
+    "DOOR_PICKUP"
+   ],
+   "provenance": [
+    {
+     "endpoint": "search",
+     "query": "curtains",
+     "filters": {
+      "lat": 32.7774,
+      "lng": -96.7977,
+      "radius_km": 50.0,
+      "condition": "new"
+     },
+     "request_no": 4
+    }
+   ],
+   "retrieved_at": "2026-10-10T10:48:01Z",
+   "manual_review": null,
+   "heuristic_textile_terms": [
+    "blackout",
+    "curtains"
+   ]
+  },
+  {
+   "listing_id": "1654758352891612",
+   "source_url": "https://www.facebook.com/marketplace/item/1654758352891612/",
+   "title": "MIULEE Blackout Curtains For Bedroom 2 Panels 40 X 63 Inch Long Black",
+   "description": "MIULEE Blackout Curtains For Bedroom 2 Panels 40 X 63 Inch Long Black. New in package. Mesquite 75149",
+   "price": {
+    "amount": 10,
+    "currency": "USD",
+    "formatted": "$10"
+   },
+   "location": {
+    "city": "Mesquite",
+    "state": "TX",
+    "display_name": "Mesquite, Texas",
+    "text": "Mesquite, TX",
+    "latitude": 32.769470214844,
+    "longitude": -96.619262695312
+   },
+   "seller": {
+    "id": "seller_7",
+    "exposed": true,
+    "fields": [
+     "__isActor",
+     "__isActorWithCustomizableCommerceProfile",
+     "__isProfile",
+     "__typename",
+     "commerce_profile_picture_with_fallback_112",
+     "commerce_profile_picture_with_fallback_160",
+     "commerce_profile_picture_with_fallback_50",
+     "commerce_profile_picture_with_fallback_60",
+     "commerce_profile_picture_with_fallback_64",
+     "id",
+     "join_time",
+     "marketplace_ratings_stats_by_role_v2",
+     "marketplace_should_display_verified_badge",
+     "marketplace_user_profile",
+     "name",
+     "profile_picture",
+     "profile_picture_112",
+     "profile_picture_160",
+     "profile_picture_50",
+     "profile_picture_60",
+     "profile_picture_64",
+     "user_id"
+    ]
+   },
+   "photos": [
+    {
+     "id": "4494033777536849",
+     "url": "https://scontent-phl2-1.xx.fbcdn.net/v/t39.84726-6/830681802_4494033780870182_3267950481592132245_n.jpg",
+     "width": 960,
+     "height": 960,
+     "caption": "No photo description available."
+    }
+   ],
+   "primary_photo": {
+    "id": "4494033777536849",
+    "url": "https://scontent-phl2-1.xx.fbcdn.net/v/t39.84726-6/830681802_4494033780870182_3267950481592132245_n.jpg"
+   },
+   "category_id": "1569171756675761",
+   "condition": "new",
+   "creation_time": "2026-10-03T16:13:44.000Z",
+   "status": {
+    "is_live": true,
+    "is_sold": false,
+    "is_pending": false,
+    "is_hidden": false
+   },
+   "delivery_types": [
+    "IN_PERSON",
+    "DOOR_PICKUP"
+   ],
+   "provenance": [
+    {
+     "endpoint": "search",
+     "query": "curtains",
+     "filters": {
+      "lat": 32.7774,
+      "lng": -96.7977,
+      "radius_km": 50.0,
+      "condition": "new"
+     },
+     "request_no": 4
+    },
+    {
+     "endpoint": "item",
+     "request_no": 14
+    }
+   ],
+   "retrieved_at": "2026-10-10T10:49:14Z",
+   "attributes": [
+    {
+     "attribute_name": "Condition",
+     "value": "new",
+     "label": "New"
+    }
+   ],
+   "manual_review": {
+    "verdict": "relevant",
+    "note": "Codex inspected listing title, description, Texas location and new-condition detail; home-textile comparison candidate. Only three photos visually sampled, not every listing.",
+    "by": "codex-manual",
+    "basis": "search_and_item_text"
+   },
+   "heuristic_textile_terms": [
+    "blackout",
+    "curtains"
+   ]
+  },
+  {
+   "listing_id": "2519706815159354",
+   "source_url": "https://www.facebook.com/marketplace/item/2519706815159354/",
+   "title": "Quince curtains - set of 2",
+   "description": "Brand new set of quince curtains. Each is 48 wide and 96 long",
+   "price": {
+    "amount": 50,
+    "currency": "USD",
+    "formatted": "$50"
+   },
+   "location": {
+    "city": "Dallas",
+    "state": "TX",
+    "display_name": "Dallas, Texas",
+    "text": "Dallas, TX",
+    "latitude": 32.774963378906,
+    "longitude": -96.795043945312
+   },
+   "seller": {
+    "id": "seller_8",
+    "exposed": true,
+    "fields": [
+     "__isActor",
+     "__isActorWithCustomizableCommerceProfile",
+     "__isProfile",
+     "__typename",
+     "commerce_profile_picture_with_fallback_112",
+     "commerce_profile_picture_with_fallback_160",
+     "commerce_profile_picture_with_fallback_50",
+     "commerce_profile_picture_with_fallback_60",
+     "commerce_profile_picture_with_fallback_64",
+     "id",
+     "join_time",
+     "marketplace_ratings_stats_by_role_v2",
+     "marketplace_should_display_verified_badge",
+     "marketplace_user_profile",
+     "name",
+     "profile_picture",
+     "profile_picture_112",
+     "profile_picture_160",
+     "profile_picture_50",
+     "profile_picture_60",
+     "profile_picture_64",
+     "user_id"
+    ]
+   },
+   "photos": [
+    {
+     "id": "4469458133326573",
+     "url": "https://scontent-lga3-3.xx.fbcdn.net/v/t39.84726-6/779201294_4469458139993239_4599797265463635807_n.jpg",
+     "width": 503,
+     "height": 960,
+     "caption": "No photo description available."
+    }
+   ],
+   "primary_photo": {
+    "id": "4469458133326573",
+    "url": "https://scontent-phl2-1.xx.fbcdn.net/v/t39.84726-6/779201294_4469458139993239_4599797265463635807_n.jpg"
+   },
+   "category_id": "1569171756675761",
+   "condition": "new",
+   "creation_time": "2026-08-19T00:02:06.000Z",
+   "status": {
+    "is_live": true,
+    "is_sold": false,
+    "is_pending": false,
+    "is_hidden": false
+   },
+   "delivery_types": [
+    "IN_PERSON"
+   ],
+   "provenance": [
+    {
+     "endpoint": "search",
+     "query": "curtains",
+     "filters": {
+      "lat": 32.7774,
+      "lng": -96.7977,
+      "radius_km": 50.0,
+      "condition": "new"
+     },
+     "request_no": 4
+    },
+    {
+     "endpoint": "item",
+     "request_no": 15
+    }
+   ],
+   "retrieved_at": "2026-10-10T10:49:36Z",
+   "attributes": [
+    {
+     "attribute_name": "Condition",
+     "value": "new",
+     "label": "New"
+    }
+   ],
+   "manual_review": {
+    "verdict": "relevant",
+    "note": "Codex inspected listing title, description, Texas location and new-condition detail; home-textile comparison candidate. Only three photos visually sampled, not every listing.",
+    "by": "codex-manual",
+    "basis": "search_and_item_text"
+   },
+   "heuristic_textile_terms": [
+    "curtains"
+   ]
+  },
+  {
+   "listing_id": "1470322311820985",
+   "source_url": "https://www.facebook.com/marketplace/item/1470322311820985/",
+   "title": "NICETOWN Doorway Curtains & Drapes 78 Inches Long - Grommet Window Treatment Thermal Insulated Priva",
+   "description": null,
+   "price": {
+    "amount": 5,
+    "currency": null,
+    "formatted": "$5"
+   },
+   "location": {
+    "city": "Denton",
+    "state": "TX",
+    "display_name": "Denton, Texas",
+    "text": null
+   },
+   "seller": {
+    "id": null,
+    "exposed": false,
+    "fields": []
+   },
+   "photos": [],
+   "primary_photo": {
+    "id": "1474197091202053",
+    "url": "https://scontent-phl2-1.xx.fbcdn.net/v/t39.84726-6/813406611_1474197097868719_4242370200162449094_n.jpg"
+   },
+   "category_id": "1569171756675761",
+   "condition": null,
+   "creation_time": "2026-09-17T01:09:18.000Z",
+   "status": {
+    "is_live": true,
+    "is_sold": false,
+    "is_pending": false,
+    "is_hidden": false
+   },
+   "delivery_types": [
+    "IN_PERSON"
+   ],
+   "provenance": [
+    {
+     "endpoint": "search",
+     "query": "curtains",
+     "filters": {
+      "lat": 32.7774,
+      "lng": -96.7977,
+      "radius_km": 50.0,
+      "condition": "new"
+     },
+     "request_no": 4
+    }
+   ],
+   "retrieved_at": "2026-10-10T10:48:01Z",
+   "manual_review": null,
+   "heuristic_textile_terms": [
+    "curtains",
+    "drapes"
+   ]
+  },
+  {
+   "listing_id": "2789079111473994",
+   "source_url": "https://www.facebook.com/marketplace/item/2789079111473994/",
+   "title": "Blackout curtains (extra wide)",
+   "description": null,
+   "price": {
+    "amount": 40,
+    "currency": null,
+    "formatted": "$40"
+   },
+   "location": {
+    "city": "Dallas",
+    "state": "TX",
+    "display_name": "Dallas, Texas",
+    "text": null
+   },
+   "seller": {
+    "id": null,
+    "exposed": false,
+    "fields": []
+   },
+   "photos": [],
+   "primary_photo": {
+    "id": "27858364520491675",
+    "url": "https://scontent-phl2-1.xx.fbcdn.net/v/t39.84726-6/774779573_27858364537158340_4619699051422257057_n.jpg"
+   },
+   "category_id": "1569171756675761",
+   "condition": null,
+   "creation_time": "2026-08-17T19:03:27.000Z",
+   "status": {
+    "is_live": true,
+    "is_sold": false,
+    "is_pending": false,
+    "is_hidden": false
+   },
+   "delivery_types": [
+    "IN_PERSON"
+   ],
+   "provenance": [
+    {
+     "endpoint": "search",
+     "query": "curtains",
+     "filters": {
+      "lat": 32.7774,
+      "lng": -96.7977,
+      "radius_km": 50.0,
+      "condition": "new"
+     },
+     "request_no": 4
+    }
+   ],
+   "retrieved_at": "2026-10-10T10:48:01Z",
+   "manual_review": null,
+   "heuristic_textile_terms": [
+    "blackout",
+    "curtains"
+   ]
+  },
+  {
+   "listing_id": "1760335438577531",
+   "source_url": "https://www.facebook.com/marketplace/item/1760335438577531/",
+   "title": "Set of 2 Curtains / Window Panels",
+   "description": null,
+   "price": {
+    "amount": 20,
+    "currency": null,
+    "formatted": "$20"
+   },
+   "location": {
+    "city": "Dallas",
+    "state": "TX",
+    "display_name": "Farmers Branch, Texas",
+    "text": null
+   },
+   "seller": {
+    "id": null,
+    "exposed": false,
+    "fields": []
+   },
+   "photos": [],
+   "primary_photo": {
+    "id": "1799974961318512",
+    "url": "https://scontent-phl2-1.xx.fbcdn.net/v/t39.84726-6/819854718_1799974967985178_242065814576086454_n.jpg"
+   },
+   "category_id": "1557869527812749",
+   "condition": null,
+   "creation_time": "2026-09-23T02:34:54.000Z",
+   "status": {
+    "is_live": true,
+    "is_sold": false,
+    "is_pending": false,
+    "is_hidden": false
+   },
+   "delivery_types": [
+    "IN_PERSON"
+   ],
+   "provenance": [
+    {
+     "endpoint": "search",
+     "query": "curtains",
+     "filters": {
+      "lat": 32.7774,
+      "lng": -96.7977,
+      "radius_km": 50.0,
+      "condition": "new"
+     },
+     "request_no": 4
+    }
+   ],
+   "retrieved_at": "2026-10-10T10:48:01Z",
+   "manual_review": null,
+   "heuristic_textile_terms": [
+    "curtains"
+   ]
+  },
+  {
+   "listing_id": "2230147194412258",
+   "source_url": "https://www.facebook.com/marketplace/item/2230147194412258/",
+   "title": "Blackout curtains set",
+   "description": null,
+   "price": {
+    "amount": 15,
+    "currency": null,
+    "formatted": "$15"
+   },
+   "location": {
+    "city": "Grand Prairie",
+    "state": "TX",
+    "display_name": "Grand Prairie, Texas",
+    "text": null
+   },
+   "seller": {
+    "id": null,
+    "exposed": false,
+    "fields": []
+   },
+   "photos": [],
+   "primary_photo": {
+    "id": "1003977072448363",
+    "url": "https://scontent-phl2-1.xx.fbcdn.net/v/t39.84726-6/748829635_1003977082448362_2565921904612801585_n.jpg"
+   },
+   "category_id": "1569171756675761",
+   "condition": null,
+   "creation_time": "2026-07-21T02:35:34.000Z",
+   "status": {
+    "is_live": true,
+    "is_sold": false,
+    "is_pending": false,
+    "is_hidden": false
+   },
+   "delivery_types": [
+    "IN_PERSON"
+   ],
+   "provenance": [
+    {
+     "endpoint": "search",
+     "query": "curtains",
+     "filters": {
+      "lat": 32.7774,
+      "lng": -96.7977,
+      "radius_km": 50.0,
+      "condition": "new"
+     },
+     "request_no": 4
+    }
+   ],
+   "retrieved_at": "2026-10-10T10:48:01Z",
+   "manual_review": null,
+   "heuristic_textile_terms": [
+    "blackout",
+    "curtains"
+   ]
+  },
+  {
+   "listing_id": "1427463525879179",
+   "source_url": "https://www.facebook.com/marketplace/item/1427463525879179/",
+   "title": "DWCN Blackout Curtains (Grey)",
+   "description": null,
+   "price": {
+    "amount": 25,
+    "currency": null,
+    "formatted": "$25"
+   },
+   "location": {
+    "city": "Dallas",
+    "state": "TX",
+    "display_name": "Dallas, Texas",
+    "text": null
+   },
+   "seller": {
+    "id": null,
+    "exposed": false,
+    "fields": []
+   },
+   "photos": [],
+   "primary_photo": {
+    "id": "1563841815296980",
+    "url": "https://scontent-phl2-1.xx.fbcdn.net/v/t39.84726-6/767755735_1563841821963646_4335107013546752368_n.jpg"
+   },
+   "category_id": "1569171756675761",
+   "condition": null,
+   "creation_time": "2026-08-05T22:38:46.000Z",
+   "status": {
+    "is_live": true,
+    "is_sold": false,
+    "is_pending": false,
+    "is_hidden": false
+   },
+   "delivery_types": [
+    "IN_PERSON"
+   ],
+   "provenance": [
+    {
+     "endpoint": "search",
+     "query": "curtains",
+     "filters": {
+      "lat": 32.7774,
+      "lng": -96.7977,
+      "radius_km": 50.0,
+      "condition": "new"
+     },
+     "request_no": 4
+    }
+   ],
+   "retrieved_at": "2026-10-10T10:48:01Z",
+   "manual_review": null,
+   "heuristic_textile_terms": [
+    "blackout",
+    "curtains"
+   ]
+  },
+  {
+   "listing_id": "889431613711656",
+   "source_url": "https://www.facebook.com/marketplace/item/889431613711656/",
+   "title": "2 Navy blue 7 foot curtains",
+   "description": null,
+   "price": {
+    "amount": 30,
+    "currency": null,
+    "formatted": "$30"
+   },
+   "location": {
+    "city": "Dallas",
+    "state": "TX",
+    "display_name": "Dallas, Texas",
+    "text": null
+   },
+   "seller": {
+    "id": null,
+    "exposed": false,
+    "fields": []
+   },
+   "photos": [],
+   "primary_photo": {
+    "id": "1770240187465423",
+    "url": "https://scontent-phl2-1.xx.fbcdn.net/v/t39.84726-6/747969897_1770240194132089_5140546336246479212_n.jpg"
+   },
+   "category_id": "1569171756675761",
+   "condition": null,
+   "creation_time": "2026-07-16T18:26:45.000Z",
+   "status": {
+    "is_live": true,
+    "is_sold": false,
+    "is_pending": false,
+    "is_hidden": false
+   },
+   "delivery_types": [
+    "IN_PERSON"
+   ],
+   "provenance": [
+    {
+     "endpoint": "search",
+     "query": "curtains",
+     "filters": {
+      "lat": 32.7774,
+      "lng": -96.7977,
+      "radius_km": 50.0,
+      "condition": "new"
+     },
+     "request_no": 4
+    }
+   ],
+   "retrieved_at": "2026-10-10T10:48:01Z",
+   "manual_review": null,
+   "heuristic_textile_terms": [
+    "curtains"
+   ]
+  },
+  {
+   "listing_id": "1513102260057683",
+   "source_url": "https://www.facebook.com/marketplace/item/1513102260057683/",
+   "title": "White curtains",
+   "description": null,
+   "price": {
+    "amount": 20,
+    "currency": null,
+    "formatted": "$20"
+   },
+   "location": {
+    "city": "Dallas",
+    "state": "TX",
+    "display_name": "Dallas, Texas",
+    "text": null
+   },
+   "seller": {
+    "id": null,
+    "exposed": false,
+    "fields": []
+   },
+   "photos": [],
+   "primary_photo": {
+    "id": "1511290700208156",
+    "url": "https://scontent-phl2-1.xx.fbcdn.net/v/t39.84726-6/749161432_1511290706874822_4817694031284331474_n.jpg"
+   },
+   "category_id": "1569171756675761",
+   "condition": null,
+   "creation_time": "2026-07-16T18:26:45.000Z",
+   "status": {
+    "is_live": true,
+    "is_sold": false,
+    "is_pending": false,
+    "is_hidden": false
+   },
+   "delivery_types": [
+    "IN_PERSON"
+   ],
+   "provenance": [
+    {
+     "endpoint": "search",
+     "query": "curtains",
+     "filters": {
+      "lat": 32.7774,
+      "lng": -96.7977,
+      "radius_km": 50.0,
+      "condition": "new"
+     },
+     "request_no": 4
+    }
+   ],
+   "retrieved_at": "2026-10-10T10:48:01Z",
+   "manual_review": null,
+   "heuristic_textile_terms": [
+    "curtains"
+   ]
+  },
+  {
+   "listing_id": "1135008265871828",
+   "source_url": "https://www.facebook.com/marketplace/item/1135008265871828/",
+   "title": "Burgundy throw blanket",
+   "description": "Description is in the pics , bought on vinted but it was the wrong color. Pickup is in uptown dallas ",
+   "price": {
+    "amount": 12,
+    "currency": "USD",
+    "formatted": "$12"
+   },
+   "location": {
+    "city": "Dallas",
+    "state": "TX",
+    "display_name": "Dallas, Texas",
+    "text": "Dallas, TX",
+    "latitude": 32.802429199219,
+    "longitude": -96.784057617188
+   },
+   "seller": {
+    "id": "seller_9",
+    "exposed": true,
+    "fields": [
+     "__isActor",
+     "__isActorWithCustomizableCommerceProfile",
+     "__isProfile",
+     "__typename",
+     "commerce_profile_picture_with_fallback_112",
+     "commerce_profile_picture_with_fallback_160",
+     "commerce_profile_picture_with_fallback_50",
+     "commerce_profile_picture_with_fallback_60",
+     "commerce_profile_picture_with_fallback_64",
+     "id",
+     "join_time",
+     "marketplace_ratings_stats_by_role_v2",
+     "marketplace_should_display_verified_badge",
+     "marketplace_user_profile",
+     "name",
+     "profile_picture",
+     "profile_picture_112",
+     "profile_picture_160",
+     "profile_picture_50",
+     "profile_picture_60",
+     "profile_picture_64",
+     "user_id"
+    ]
+   },
+   "photos": [
+    {
+     "id": "998960089915586",
+     "url": "https://scontent-sjc3-1.xx.fbcdn.net/v/t39.84726-6/833926783_998960103248918_784176796255392933_n.jpg",
+     "width": 443,
+     "height": 960,
+     "caption": "No photo description available."
+    },
+    {
+     "id": "3270741589783373",
+     "url": "https://scontent-sjc6-1.xx.fbcdn.net/v/t45.5328-4/832681523_3270741593116706_103517790375959247_n.jpg",
+     "width": 913,
+     "height": 960,
+     "caption": "No photo description available."
+    }
+   ],
+   "primary_photo": {
+    "id": "998960089915586",
+    "url": "https://scontent.fsac1-2.fna.fbcdn.net/v/t39.84726-6/833926783_998960103248918_784176796255392933_n.jpg"
+   },
+   "category_id": "1569171756675761",
+   "condition": "new",
+   "creation_time": "2026-10-04T21:52:15.000Z",
+   "status": {
+    "is_live": true,
+    "is_sold": false,
+    "is_pending": false,
+    "is_hidden": false
+   },
+   "delivery_types": [
+    "IN_PERSON"
+   ],
+   "provenance": [
+    {
+     "endpoint": "search",
+     "query": "throw blanket",
+     "filters": {
+      "lat": 32.7774,
+      "lng": -96.7977,
+      "radius_km": 50.0,
+      "condition": "new"
+     },
+     "request_no": 5
+    },
+    {
+     "endpoint": "item",
+     "request_no": 16
+    }
+   ],
+   "retrieved_at": "2026-10-10T10:49:40Z",
+   "attributes": [
+    {
+     "attribute_name": "Condition",
+     "value": "new",
+     "label": "New"
+    },
+    {
+     "attribute_name": "Material",
+     "value": "Channel",
+     "label": "Channel"
+    }
+   ],
+   "manual_review": {
+    "verdict": "relevant",
+    "note": "Codex inspected listing title, description, Texas location and new-condition detail; home-textile comparison candidate. Only three photos visually sampled, not every listing.",
+    "by": "codex-manual",
+    "basis": "search_and_item_text"
+   },
+   "heuristic_textile_terms": [
+    "blanket",
+    "throw"
+   ]
+  },
+  {
+   "listing_id": "4136884313277607",
+   "source_url": "https://www.facebook.com/marketplace/item/4136884313277607/",
+   "title": "Throw Blanket",
+   "description": null,
+   "price": {
+    "amount": 12,
+    "currency": null,
+    "formatted": "$12"
+   },
+   "location": {
+    "city": "Irving",
+    "state": "TX",
+    "display_name": "Irving, Texas",
+    "text": null
+   },
+   "seller": {
+    "id": null,
+    "exposed": false,
+    "fields": []
+   },
+   "photos": [],
+   "primary_photo": {
+    "id": "1083475004268589",
+    "url": "https://scontent.fsac1-1.fna.fbcdn.net/v/t39.84726-6/825273539_1083475017601921_4636855790531207073_n.jpg"
+   },
+   "category_id": "1569171756675761",
+   "condition": null,
+   "creation_time": "2026-09-26T16:04:12.000Z",
+   "status": {
+    "is_live": true,
+    "is_sold": false,
+    "is_pending": false,
+    "is_hidden": false
+   },
+   "delivery_types": [
+    "IN_PERSON",
+    "DOOR_PICKUP"
+   ],
+   "provenance": [
+    {
+     "endpoint": "search",
+     "query": "throw blanket",
+     "filters": {
+      "lat": 32.7774,
+      "lng": -96.7977,
+      "radius_km": 50.0,
+      "condition": "new"
+     },
+     "request_no": 5
+    }
+   ],
+   "retrieved_at": "2026-10-10T10:48:05Z",
+   "manual_review": null,
+   "heuristic_textile_terms": [
+    "blanket",
+    "throw"
+   ]
+  },
+  {
+   "listing_id": "1052325560977986",
+   "source_url": "https://www.facebook.com/marketplace/item/1052325560977986/",
+   "title": "Brand new throw blankets (bundle)",
+   "description": "Brand new throw blankets, selling as bundles. Perfect for gift giving!",
+   "price": {
+    "amount": 25,
+    "currency": "USD",
+    "formatted": "$25"
+   },
+   "location": {
+    "city": "Dallas",
+    "state": "TX",
+    "display_name": "Dallas, Texas",
+    "text": "Dallas, TX",
+    "latitude": 32.731018066406,
+    "longitude": -96.795043945312
+   },
+   "seller": {
+    "id": "seller_10",
+    "exposed": true,
+    "fields": [
+     "__isActor",
+     "__isActorWithCustomizableCommerceProfile",
+     "__isProfile",
+     "__typename",
+     "commerce_profile_picture_with_fallback_112",
+     "commerce_profile_picture_with_fallback_160",
+     "commerce_profile_picture_with_fallback_50",
+     "commerce_profile_picture_with_fallback_60",
+     "commerce_profile_picture_with_fallback_64",
+     "id",
+     "join_time",
+     "marketplace_ratings_stats_by_role_v2",
+     "marketplace_should_display_verified_badge",
+     "marketplace_user_profile",
+     "name",
+     "profile_picture",
+     "profile_picture_112",
+     "profile_picture_160",
+     "profile_picture_50",
+     "profile_picture_60",
+     "profile_picture_64",
+     "user_id"
+    ]
+   },
+   "photos": [
+    {
+     "id": "1559838385248116",
+     "url": "https://scontent-lga3-3.xx.fbcdn.net/v/t39.84726-6/812875474_1559838388581449_2842055430769390410_n.jpg",
+     "width": 720,
+     "height": 960,
+     "caption": "No photo description available."
+    },
+    {
+     "id": "1089659390197594",
+     "url": "https://scontent-lga3-1.xx.fbcdn.net/v/t45.5328-4/808103054_1089659393530927_5231326212816801822_n.jpg",
+     "width": 720,
+     "height": 960,
+     "caption": "No photo description available."
+    },
+    {
+     "id": "2104644886803011",
+     "url": "https://scontent-lga3-1.xx.fbcdn.net/v/t45.5328-4/808102402_2104644890136344_8477559194285703731_n.jpg",
+     "width": 720,
+     "height": 960,
+     "caption": "No photo description available."
+    }
+   ],
+   "primary_photo": {
+    "id": "1559838385248116",
+    "url": "https://scontent.fsac1-2.fna.fbcdn.net/v/t39.84726-6/812875474_1559838388581449_2842055430769390410_n.jpg"
+   },
+   "category_id": "1569171756675761",
+   "condition": "new",
+   "creation_time": "2026-09-15T22:19:37.000Z",
+   "status": {
+    "is_live": true,
+    "is_sold": false,
+    "is_pending": false,
+    "is_hidden": false
+   },
+   "delivery_types": [
+    "IN_PERSON"
+   ],
+   "provenance": [
+    {
+     "endpoint": "search",
+     "query": "throw blanket",
+     "filters": {
+      "lat": 32.7774,
+      "lng": -96.7977,
+      "radius_km": 50.0,
+      "condition": "new"
+     },
+     "request_no": 5
+    },
+    {
+     "endpoint": "item",
+     "request_no": 17
+    }
+   ],
+   "retrieved_at": "2026-10-10T10:49:47Z",
+   "attributes": [
+    {
+     "attribute_name": "Condition",
+     "value": "new",
+     "label": "New"
+    }
+   ],
+   "manual_review": {
+    "verdict": "relevant",
+    "note": "Codex inspected listing title, description, Texas location and new-condition detail; home-textile comparison candidate. Only three photos visually sampled, not every listing.",
+    "by": "codex-manual",
+    "basis": "search_and_item_text"
+   },
+   "heuristic_textile_terms": [
+    "blankets",
+    "throw"
+   ]
+  },
+  {
+   "listing_id": "1037472659295728",
+   "source_url": "https://www.facebook.com/marketplace/item/1037472659295728/",
+   "title": "Throw blanket",
+   "description": null,
+   "price": {
+    "amount": 8,
+    "currency": null,
+    "formatted": "$8"
+   },
+   "location": {
+    "city": "Dallas",
+    "state": "TX",
+    "display_name": "Dallas, Texas",
+    "text": null
+   },
+   "seller": {
+    "id": null,
+    "exposed": false,
+    "fields": []
+   },
+   "photos": [],
+   "primary_photo": {
+    "id": "4549536708698293",
+    "url": "https://scontent.fsac1-2.fna.fbcdn.net/v/t39.84726-6/825336567_4549536712031626_8781908916148558229_n.jpg"
+   },
+   "category_id": "1567543000236608",
+   "condition": null,
+   "creation_time": "2026-09-26T11:59:30.000Z",
+   "status": {
+    "is_live": true,
+    "is_sold": false,
+    "is_pending": false,
+    "is_hidden": false
+   },
+   "delivery_types": [
+    "IN_PERSON"
+   ],
+   "provenance": [
+    {
+     "endpoint": "search",
+     "query": "throw blanket",
+     "filters": {
+      "lat": 32.7774,
+      "lng": -96.7977,
+      "radius_km": 50.0,
+      "condition": "new"
+     },
+     "request_no": 5
+    }
+   ],
+   "retrieved_at": "2026-10-10T10:48:05Z",
+   "manual_review": null,
+   "heuristic_textile_terms": [
+    "blanket",
+    "throw"
+   ]
+  },
+  {
+   "listing_id": "1630713095247846",
+   "source_url": "https://www.facebook.com/marketplace/item/1630713095247846/",
+   "title": "throw  blankets",
+   "description": null,
+   "price": {
+    "amount": 15,
+    "currency": null,
+    "formatted": "$15"
+   },
+   "location": {
+    "city": "Irving",
+    "state": "TX",
+    "display_name": "Irving, Texas",
+    "text": null
+   },
+   "seller": {
+    "id": null,
+    "exposed": false,
+    "fields": []
+   },
+   "photos": [],
+   "primary_photo": {
+    "id": "1661081102267129",
+    "url": "https://scontent.fsac1-1.fna.fbcdn.net/v/t39.84726-6/839765916_1661081105600462_4297759286408395851_n.jpg"
+   },
+   "category_id": "1569171756675761",
+   "condition": null,
+   "creation_time": "2026-10-08T19:53:27.000Z",
+   "status": {
+    "is_live": true,
+    "is_sold": false,
+    "is_pending": false,
+    "is_hidden": false
+   },
+   "delivery_types": [
+    "IN_PERSON",
+    "PUBLIC_MEETUP"
+   ],
+   "provenance": [
+    {
+     "endpoint": "search",
+     "query": "throw blanket",
+     "filters": {
+      "lat": 32.7774,
+      "lng": -96.7977,
+      "radius_km": 50.0,
+      "condition": "new"
+     },
+     "request_no": 5
+    }
+   ],
+   "retrieved_at": "2026-10-10T10:48:05Z",
+   "manual_review": null,
+   "heuristic_textile_terms": [
+    "blankets",
+    "throw"
+   ]
+  },
+  {
+   "listing_id": "1400042755607757",
+   "source_url": "https://www.facebook.com/marketplace/item/1400042755607757/",
+   "title": "Blanket Throw",
+   "description": null,
+   "price": {
+    "amount": 10,
+    "currency": null,
+    "formatted": "$10"
+   },
+   "location": {
+    "city": "Dallas",
+    "state": "TX",
+    "display_name": "Dallas, Texas",
+    "text": null
+   },
+   "seller": {
+    "id": null,
+    "exposed": false,
+    "fields": []
+   },
+   "photos": [],
+   "primary_photo": {
+    "id": "1061183476694607",
+    "url": "https://scontent.fsac1-2.fna.fbcdn.net/v/t39.84726-6/811472282_1061183486694606_5917880773923876778_n.jpg"
+   },
+   "category_id": "1569171756675761",
+   "condition": null,
+   "creation_time": "2026-09-15T23:20:43.000Z",
+   "status": {
+    "is_live": true,
+    "is_sold": false,
+    "is_pending": false,
+    "is_hidden": false
+   },
+   "delivery_types": [
+    "IN_PERSON",
+    "DOOR_PICKUP"
+   ],
+   "provenance": [
+    {
+     "endpoint": "search",
+     "query": "throw blanket",
+     "filters": {
+      "lat": 32.7774,
+      "lng": -96.7977,
+      "radius_km": 50.0,
+      "condition": "new"
+     },
+     "request_no": 5
+    }
+   ],
+   "retrieved_at": "2026-10-10T10:48:05Z",
+   "manual_review": null,
+   "heuristic_textile_terms": [
+    "blanket",
+    "throw"
+   ]
+  },
+  {
+   "listing_id": "1459786482720121",
+   "source_url": "https://www.facebook.com/marketplace/item/1459786482720121/",
+   "title": "new  throw blanket",
+   "description": null,
+   "price": {
+    "amount": 6,
+    "currency": null,
+    "formatted": "$6"
+   },
+   "location": {
+    "city": "Bedford",
+    "state": "TX",
+    "display_name": "Bedford, Texas",
+    "text": null
+   },
+   "seller": {
+    "id": null,
+    "exposed": false,
+    "fields": []
+   },
+   "photos": [],
+   "primary_photo": {
+    "id": "1420976689372872",
+    "url": "https://scontent.fsac1-1.fna.fbcdn.net/v/t39.84726-6/833882771_1420976696039538_2534145665796901988_n.jpg"
+   },
+   "category_id": "1569171756675761",
+   "condition": null,
+   "creation_time": "2026-10-08T17:09:31.000Z",
+   "status": {
+    "is_live": true,
+    "is_sold": false,
+    "is_pending": false,
+    "is_hidden": false
+   },
+   "delivery_types": [
+    "IN_PERSON"
+   ],
+   "provenance": [
+    {
+     "endpoint": "search",
+     "query": "throw blanket",
+     "filters": {
+      "lat": 32.7774,
+      "lng": -96.7977,
+      "radius_km": 50.0,
+      "condition": "new"
+     },
+     "request_no": 5
+    }
+   ],
+   "retrieved_at": "2026-10-10T10:48:05Z",
+   "manual_review": null,
+   "heuristic_textile_terms": [
+    "blanket",
+    "throw"
+   ]
+  },
+  {
+   "listing_id": "1058335800338234",
+   "source_url": "https://www.facebook.com/marketplace/item/1058335800338234/",
+   "title": "Wednesday Soft Flannel Throw Blanket",
+   "description": null,
+   "price": {
+    "amount": 12,
+    "currency": null,
+    "formatted": "$12"
+   },
+   "location": {
+    "city": "Lewisville",
+    "state": "TX",
+    "display_name": "Lewisville, Texas",
+    "text": null
+   },
+   "seller": {
+    "id": null,
+    "exposed": false,
+    "fields": []
+   },
+   "photos": [],
+   "primary_photo": {
+    "id": "2099450087628730",
+    "url": "https://scontent.fsac1-2.fna.fbcdn.net/v/t39.84726-6/802811994_2099450090962063_3592766818361609561_n.jpg"
+   },
+   "category_id": "1569171756675761",
+   "condition": null,
+   "creation_time": "2026-09-10T22:25:16.000Z",
+   "status": {
+    "is_live": true,
+    "is_sold": false,
+    "is_pending": false,
+    "is_hidden": false
+   },
+   "delivery_types": [
+    "SHIPPING_ONSITE",
+    "IN_PERSON",
+    "DOOR_PICKUP"
+   ],
+   "provenance": [
+    {
+     "endpoint": "search",
+     "query": "throw blanket",
+     "filters": {
+      "lat": 32.7774,
+      "lng": -96.7977,
+      "radius_km": 50.0,
+      "condition": "new"
+     },
+     "request_no": 5
+    }
+   ],
+   "retrieved_at": "2026-10-10T10:48:05Z",
+   "manual_review": null,
+   "heuristic_textile_terms": [
+    "blanket",
+    "throw"
+   ]
+  },
+  {
+   "listing_id": "1553807676425885",
+   "source_url": "https://www.facebook.com/marketplace/item/1553807676425885/",
+   "title": "Throw blanket",
+   "description": null,
+   "price": {
+    "amount": 5,
+    "currency": null,
+    "formatted": "$5"
+   },
+   "location": {
+    "city": "Saginaw",
+    "state": "TX",
+    "display_name": "Saginaw, Texas",
+    "text": null
+   },
+   "seller": {
+    "id": null,
+    "exposed": false,
+    "fields": []
+   },
+   "photos": [],
+   "primary_photo": {
+    "id": "1782289646293410",
+    "url": "https://scontent.fsac1-1.fna.fbcdn.net/v/t39.84726-6/776077275_1782289656293409_5053854749472213417_n.jpg"
+   },
+   "category_id": "1569171756675761",
+   "condition": null,
+   "creation_time": "2026-08-16T01:28:12.000Z",
+   "status": {
+    "is_live": true,
+    "is_sold": false,
+    "is_pending": false,
+    "is_hidden": false
+   },
+   "delivery_types": [
+    "IN_PERSON"
+   ],
+   "provenance": [
+    {
+     "endpoint": "search",
+     "query": "throw blanket",
+     "filters": {
+      "lat": 32.7774,
+      "lng": -96.7977,
+      "radius_km": 50.0,
+      "condition": "new"
+     },
+     "request_no": 5
+    }
+   ],
+   "retrieved_at": "2026-10-10T10:48:05Z",
+   "manual_review": null,
+   "heuristic_textile_terms": [
+    "blanket",
+    "throw"
+   ]
+  },
+  {
+   "listing_id": "2149249412639922",
+   "source_url": "https://www.facebook.com/marketplace/item/2149249412639922/",
+   "title": "🩷 KPop Demon Hunters Throw Blanket | 50” x 60” | Brand New 🩷",
+   "description": null,
+   "price": {
+    "amount": 22,
+    "currency": null,
+    "formatted": "$22"
+   },
+   "location": {
+    "city": "Fort Worth",
+    "state": "TX",
+    "display_name": "Fort Worth, Texas",
+    "text": null
+   },
+   "seller": {
+    "id": null,
+    "exposed": false,
+    "fields": []
+   },
+   "photos": [],
+   "primary_photo": {
+    "id": "1387820929934351",
+    "url": "https://scontent.fsac1-2.fna.fbcdn.net/v/t39.84726-6/752569874_1387820936601017_3030406289038317855_n.jpg"
+   },
+   "category_id": "1569171756675761",
+   "condition": null,
+   "creation_time": "2026-07-24T02:45:14.000Z",
+   "status": {
+    "is_live": true,
+    "is_sold": false,
+    "is_pending": false,
+    "is_hidden": false
+   },
+   "delivery_types": [
+    "IN_PERSON",
+    "SHIPPING_ONSITE"
+   ],
+   "provenance": [
+    {
+     "endpoint": "search",
+     "query": "throw blanket",
+     "filters": {
+      "lat": 32.7774,
+      "lng": -96.7977,
+      "radius_km": 50.0,
+      "condition": "new"
+     },
+     "request_no": 5
+    }
+   ],
+   "retrieved_at": "2026-10-10T10:48:05Z",
+   "manual_review": null,
+   "heuristic_textile_terms": [
+    "blanket",
+    "throw"
+   ]
+  },
+  {
+   "listing_id": "2021171891896560",
+   "source_url": "https://www.facebook.com/marketplace/item/2021171891896560/",
+   "title": "Throw Blanket 50”x 60”",
+   "description": "Brand new. Gray color. 50” by 60”. \n\nNear 35E/Hampton Rd. Dallas",
+   "price": {
+    "amount": 30,
+    "currency": "USD",
+    "formatted": "$30"
+   },
+   "location": {
+    "city": "Dallas",
+    "state": "TX",
+    "display_name": "Dallas, Texas",
+    "text": "Dallas, TX",
+    "latitude": 32.780456542969,
+    "longitude": -96.882934570312
+   },
+   "seller": {
+    "id": "seller_11",
+    "exposed": true,
+    "fields": [
+     "__isActor",
+     "__isActorWithCustomizableCommerceProfile",
+     "__isProfile",
+     "__typename",
+     "commerce_profile_picture_with_fallback_112",
+     "commerce_profile_picture_with_fallback_160",
+     "commerce_profile_picture_with_fallback_50",
+     "commerce_profile_picture_with_fallback_60",
+     "commerce_profile_picture_with_fallback_64",
+     "id",
+     "join_time",
+     "marketplace_ratings_stats_by_role_v2",
+     "marketplace_should_display_verified_badge",
+     "marketplace_user_profile",
+     "name",
+     "profile_picture",
+     "profile_picture_112",
+     "profile_picture_160",
+     "profile_picture_50",
+     "profile_picture_60",
+     "profile_picture_64",
+     "user_id"
+    ]
+   },
+   "photos": [
+    {
+     "id": "2316551542516266",
+     "url": "https://scontent-lga3-2.xx.fbcdn.net/v/t39.84726-6/825329602_2316551549182932_4276831570641421770_n.jpg",
+     "width": 442,
+     "height": 960,
+     "caption": "No photo description available."
+    },
+    {
+     "id": "1043188565376359",
+     "url": "https://scontent-lga3-2.xx.fbcdn.net/v/t45.5328-4/825291797_1043188575376358_4345103948472609481_n.jpg",
+     "width": 442,
+     "height": 960,
+     "caption": "No photo description available."
+    },
+    {
+     "id": "2650651348722245",
+     "url": "https://scontent-lga3-2.xx.fbcdn.net/v/t45.5328-4/825291634_2650651352055578_1778166557380634900_n.jpg",
+     "width": 442,
+     "height": 960,
+     "caption": "No photo description available."
+    }
+   ],
+   "primary_photo": {
+    "id": "2316551542516266",
+    "url": "https://scontent.fsac1-2.fna.fbcdn.net/v/t39.84726-6/825329602_2316551549182932_4276831570641421770_n.jpg"
+   },
+   "category_id": "1569171756675761",
+   "condition": "new",
+   "creation_time": "2026-09-28T01:14:28.000Z",
+   "status": {
+    "is_live": true,
+    "is_sold": false,
+    "is_pending": false,
+    "is_hidden": false
+   },
+   "delivery_types": [
+    "IN_PERSON",
+    "DOOR_PICKUP"
+   ],
+   "provenance": [
+    {
+     "endpoint": "search",
+     "query": "throw blanket",
+     "filters": {
+      "lat": 32.7774,
+      "lng": -96.7977,
+      "radius_km": 50.0,
+      "condition": "new"
+     },
+     "request_no": 5
+    },
+    {
+     "endpoint": "item",
+     "request_no": 18
+    }
+   ],
+   "retrieved_at": "2026-10-10T10:49:51Z",
+   "attributes": [
+    {
+     "attribute_name": "Condition",
+     "value": "new",
+     "label": "New"
+    },
+    {
+     "attribute_name": "Brand",
+     "value": "demarcado",
+     "label": "demarcado"
+    },
+    {
+     "attribute_name": "Color",
+     "value": "Gray",
+     "label": "Gray"
+    }
+   ],
+   "manual_review": {
+    "verdict": "relevant",
+    "note": "Codex inspected listing title, description, Texas location and new-condition detail; home-textile comparison candidate. Only three photos visually sampled, not every listing.",
+    "by": "codex-manual",
+    "basis": "search_and_item_text"
+   },
+   "heuristic_textile_terms": [
+    "blanket",
+    "throw"
+   ]
+  },
+  {
+   "listing_id": "1376256827971792",
+   "source_url": "https://www.facebook.com/marketplace/item/1376256827971792/",
+   "title": "Plush Throw Blanket Green",
+   "description": null,
+   "price": {
+    "amount": 4,
+    "currency": null,
+    "formatted": "$4"
+   },
+   "location": {
+    "city": "Fort Worth",
+    "state": "TX",
+    "display_name": "Fort Worth, Texas",
+    "text": null
+   },
+   "seller": {
+    "id": null,
+    "exposed": false,
+    "fields": []
+   },
+   "photos": [],
+   "primary_photo": {
+    "id": "1505161148303599",
+    "url": "https://scontent.fsac1-1.fna.fbcdn.net/v/t39.84726-6/767329108_1505161154970265_1989341683969889201_n.jpg"
+   },
+   "category_id": "1569171756675761",
+   "condition": null,
+   "creation_time": "2026-08-09T15:42:23.000Z",
+   "status": {
+    "is_live": true,
+    "is_sold": false,
+    "is_pending": false,
+    "is_hidden": false
+   },
+   "delivery_types": [
+    "IN_PERSON",
+    "DOOR_PICKUP"
+   ],
+   "provenance": [
+    {
+     "endpoint": "search",
+     "query": "throw blanket",
+     "filters": {
+      "lat": 32.7774,
+      "lng": -96.7977,
+      "radius_km": 50.0,
+      "condition": "new"
+     },
+     "request_no": 5
+    }
+   ],
+   "retrieved_at": "2026-10-10T10:48:05Z",
+   "manual_review": null,
+   "heuristic_textile_terms": [
+    "blanket",
+    "throw"
+   ]
+  },
+  {
+   "listing_id": "957260673773946",
+   "source_url": "https://www.facebook.com/marketplace/item/957260673773946/",
+   "title": "Throw Blanket",
+   "description": null,
+   "price": {
+    "amount": 10,
+    "currency": null,
+    "formatted": "$10"
+   },
+   "location": {
+    "city": "Dallas",
+    "state": "TX",
+    "display_name": "Dallas, Texas",
+    "text": null
+   },
+   "seller": {
+    "id": null,
+    "exposed": false,
+    "fields": []
+   },
+   "photos": [],
+   "primary_photo": {
+    "id": "1272743884451765",
+    "url": "https://scontent.fsac1-2.fna.fbcdn.net/v/t39.84726-6/678020824_1272743894451764_8517618044067757065_n.jpg"
+   },
+   "category_id": "1569171756675761",
+   "condition": null,
+   "creation_time": "2026-04-21T21:50:45.000Z",
+   "status": {
+    "is_live": true,
+    "is_sold": false,
+    "is_pending": false,
+    "is_hidden": false
+   },
+   "delivery_types": [
+    "IN_PERSON",
+    "PUBLIC_MEETUP",
+    "DOOR_DROPOFF"
+   ],
+   "provenance": [
+    {
+     "endpoint": "search",
+     "query": "throw blanket",
+     "filters": {
+      "lat": 32.7774,
+      "lng": -96.7977,
+      "radius_km": 50.0,
+      "condition": "new"
+     },
+     "request_no": 5
+    }
+   ],
+   "retrieved_at": "2026-10-10T10:48:05Z",
+   "manual_review": null,
+   "heuristic_textile_terms": [
+    "blanket",
+    "throw"
+   ]
+  },
+  {
+   "listing_id": "1073083735614546",
+   "source_url": "https://www.facebook.com/marketplace/item/1073083735614546/",
+   "title": "50x60 throws velvet plush",
+   "description": null,
+   "price": {
+    "amount": 4,
+    "currency": null,
+    "formatted": "$4"
+   },
+   "location": {
+    "city": "Carrollton",
+    "state": "TX",
+    "display_name": "Carrollton, Texas",
+    "text": null
+   },
+   "seller": {
+    "id": null,
+    "exposed": false,
+    "fields": []
+   },
+   "photos": [],
+   "primary_photo": {
+    "id": "4637029836623546",
+    "url": "https://scontent.fsac1-1.fna.fbcdn.net/v/t39.84726-6/818384753_4637029839956879_6726670068926520376_n.jpg"
+   },
+   "category_id": "1569171756675761",
+   "condition": null,
+   "creation_time": "2026-09-23T02:28:15.000Z",
+   "status": {
+    "is_live": true,
+    "is_sold": false,
+    "is_pending": false,
+    "is_hidden": false
+   },
+   "delivery_types": [
+    "IN_PERSON",
+    "DOOR_PICKUP"
+   ],
+   "provenance": [
+    {
+     "endpoint": "search",
+     "query": "throw blanket",
+     "filters": {
+      "lat": 32.7774,
+      "lng": -96.7977,
+      "radius_km": 50.0,
+      "condition": "new"
+     },
+     "request_no": 5
+    }
+   ],
+   "retrieved_at": "2026-10-10T10:48:05Z",
+   "manual_review": null,
+   "heuristic_textile_terms": [
+    "throws"
+   ]
+  },
+  {
+   "listing_id": "1342337044759667",
+   "source_url": "https://www.facebook.com/marketplace/item/1342337044759667/",
+   "title": "Victoria Secret Throw Blanket",
+   "description": null,
+   "price": {
+    "amount": 20,
+    "currency": null,
+    "formatted": "$20"
+   },
+   "location": {
+    "city": "Dallas",
+    "state": "TX",
+    "display_name": "Dallas, Texas",
+    "text": null
+   },
+   "seller": {
+    "id": null,
+    "exposed": false,
+    "fields": []
+   },
+   "photos": [],
+   "primary_photo": {
+    "id": "1596419325520945",
+    "url": "https://scontent.fsac1-1.fna.fbcdn.net/v/t39.84726-6/753169719_1596419342187610_7186338298873611158_n.jpg"
+   },
+   "category_id": "1555452698044988",
+   "condition": null,
+   "creation_time": "2026-07-22T19:56:52.000Z",
+   "status": {
+    "is_live": true,
+    "is_sold": false,
+    "is_pending": false,
+    "is_hidden": false
+   },
+   "delivery_types": [
+    "IN_PERSON"
+   ],
+   "provenance": [
+    {
+     "endpoint": "search",
+     "query": "throw blanket",
+     "filters": {
+      "lat": 32.7774,
+      "lng": -96.7977,
+      "radius_km": 50.0,
+      "condition": "new"
+     },
+     "request_no": 5
+    }
+   ],
+   "retrieved_at": "2026-10-10T10:48:05Z",
+   "manual_review": null,
+   "heuristic_textile_terms": [
+    "blanket",
+    "throw"
+   ]
+  },
+  {
+   "listing_id": "1070870969086188",
+   "source_url": "https://www.facebook.com/marketplace/item/1070870969086188/",
+   "title": "Serta bedding set",
+   "description": null,
+   "price": {
+    "amount": 15,
+    "currency": null,
+    "formatted": "$15"
+   },
+   "location": {
+    "city": "McKinney",
+    "state": "TX",
+    "display_name": "McKinney, Texas",
+    "text": null
+   },
+   "seller": {
+    "id": null,
+    "exposed": false,
+    "fields": []
+   },
+   "photos": [],
+   "primary_photo": {
+    "id": "1398972785040809",
+    "url": "https://scontent-phl2-1.xx.fbcdn.net/v/t39.84726-6/813547054_1398972788374142_6835594564465096346_n.jpg"
+   },
+   "category_id": "613858625416355",
+   "condition": null,
+   "creation_time": "2026-09-16T22:58:28.000Z",
+   "status": {
+    "is_live": true,
+    "is_sold": false,
+    "is_pending": false,
+    "is_hidden": false
+   },
+   "delivery_types": [
+    "IN_PERSON",
+    "DOOR_PICKUP"
+   ],
+   "provenance": [
+    {
+     "endpoint": "search",
+     "query": "bedding set",
+     "filters": {
+      "lat": 32.7774,
+      "lng": -96.7977,
+      "radius_km": 50.0,
+      "condition": "new"
+     },
+     "request_no": 6
+    }
+   ],
+   "retrieved_at": "2026-10-10T10:48:09Z",
+   "manual_review": null,
+   "heuristic_textile_terms": [
+    "bedding"
+   ]
+  },
+  {
+   "listing_id": "953848167744739",
+   "source_url": "https://www.facebook.com/marketplace/item/953848167744739/",
+   "title": "Bedding Set",
+   "description": "Twin Bedding Set",
+   "price": {
+    "amount": 20,
+    "currency": "USD",
+    "formatted": "$20"
+   },
+   "location": {
+    "city": "Dallas",
+    "state": "TX",
+    "display_name": "Dallas, Texas",
+    "text": "Dallas, TX",
+    "latitude": 32.687072753906,
+    "longitude": -96.937866210938
+   },
+   "seller": {
+    "id": "seller_12",
+    "exposed": true,
+    "fields": [
+     "__isActor",
+     "__isActorWithCustomizableCommerceProfile",
+     "__isProfile",
+     "__typename",
+     "commerce_profile_picture_with_fallback_112",
+     "commerce_profile_picture_with_fallback_160",
+     "commerce_profile_picture_with_fallback_50",
+     "commerce_profile_picture_with_fallback_60",
+     "commerce_profile_picture_with_fallback_64",
+     "id",
+     "join_time",
+     "marketplace_ratings_stats_by_role_v2",
+     "marketplace_should_display_verified_badge",
+     "marketplace_user_profile",
+     "name",
+     "profile_picture",
+     "profile_picture_112",
+     "profile_picture_160",
+     "profile_picture_50",
+     "profile_picture_60",
+     "profile_picture_64",
+     "user_id"
+    ]
+   },
+   "photos": [
+    {
+     "id": "3540255036137820",
+     "url": "https://scontent-lga3-2.xx.fbcdn.net/v/t39.84726-6/778699193_3540255039471153_3340127624208624153_n.jpg",
+     "width": 960,
+     "height": 720,
+     "caption": "No photo description available."
+    },
+    {
+     "id": "2220021702118618",
+     "url": "https://scontent-lga3-1.xx.fbcdn.net/v/t45.5328-4/776658653_2220021705451951_1354608516690197380_n.jpg",
+     "width": 960,
+     "height": 720,
+     "caption": "No photo description available."
+    }
+   ],
+   "primary_photo": {
+    "id": "3540255036137820",
+    "url": "https://scontent-phl2-1.xx.fbcdn.net/v/t39.84726-6/778699193_3540255039471153_3340127624208624153_n.jpg"
+   },
+   "category_id": "1569171756675761",
+   "condition": "new",
+   "creation_time": "2026-08-18T16:55:15.000Z",
+   "status": {
+    "is_live": true,
+    "is_sold": false,
+    "is_pending": false,
+    "is_hidden": false
+   },
+   "delivery_types": [
+    "IN_PERSON"
+   ],
+   "provenance": [
+    {
+     "endpoint": "search",
+     "query": "bedding set",
+     "filters": {
+      "lat": 32.7774,
+      "lng": -96.7977,
+      "radius_km": 50.0,
+      "condition": "new"
+     },
+     "request_no": 6
+    },
+    {
+     "endpoint": "item",
+     "request_no": 19
+    }
+   ],
+   "retrieved_at": "2026-10-10T10:49:55Z",
+   "attributes": [
+    {
+     "attribute_name": "Condition",
+     "value": "new",
+     "label": "New"
+    }
+   ],
+   "manual_review": {
+    "verdict": "relevant",
+    "note": "Codex inspected listing title, description, Texas location and new-condition detail; home-textile comparison candidate. Only three photos visually sampled, not every listing.",
+    "by": "codex-manual",
+    "basis": "search_and_item_text"
+   },
+   "heuristic_textile_terms": [
+    "bedding"
+   ]
+  },
+  {
+   "listing_id": "28935985106091579",
+   "source_url": "https://www.facebook.com/marketplace/item/28935985106091579/",
+   "title": "Bedding Set (Queen)",
+   "description": null,
+   "price": {
+    "amount": 70,
+    "currency": null,
+    "formatted": "$70"
+   },
+   "location": {
+    "city": "Richardson",
+    "state": "TX",
+    "display_name": "Richardson, Texas",
+    "text": null
+   },
+   "seller": {
+    "id": null,
+    "exposed": false,
+    "fields": []
+   },
+   "photos": [],
+   "primary_photo": {
+    "id": "1625613535878181",
+    "url": "https://scontent-phl2-1.xx.fbcdn.net/v/t39.84726-6/839001625_1625613539211514_3210998130795104988_n.jpg"
+   },
+   "category_id": "1555452698044988",
+   "condition": null,
+   "creation_time": "2026-10-08T20:58:48.000Z",
+   "status": {
+    "is_live": true,
+    "is_sold": false,
+    "is_pending": false,
+    "is_hidden": false
+   },
+   "delivery_types": [
+    "IN_PERSON"
+   ],
+   "provenance": [
+    {
+     "endpoint": "search",
+     "query": "bedding set",
+     "filters": {
+      "lat": 32.7774,
+      "lng": -96.7977,
+      "radius_km": 50.0,
+      "condition": "new"
+     },
+     "request_no": 6
+    }
+   ],
+   "retrieved_at": "2026-10-10T10:48:09Z",
+   "manual_review": null,
+   "heuristic_textile_terms": [
+    "bedding"
+   ]
+  },
+  {
+   "listing_id": "2177305556470594",
+   "source_url": "https://www.facebook.com/marketplace/item/2177305556470594/",
+   "title": "Bedding set",
+   "description": null,
+   "price": {
+    "amount": 20,
+    "currency": null,
+    "formatted": "$20"
+   },
+   "location": {
+    "city": "Irving",
+    "state": "TX",
+    "display_name": "Irving, Texas",
+    "text": null
+   },
+   "seller": {
+    "id": null,
+    "exposed": false,
+    "fields": []
+   },
+   "photos": [],
+   "primary_photo": {
+    "id": "1102035899175634",
+    "url": "https://scontent-phl2-1.xx.fbcdn.net/v/t39.84726-6/787036794_1102035905842300_3067201410079096110_n.jpg"
+   },
+   "category_id": "1569171756675761",
+   "condition": null,
+   "creation_time": "2026-08-25T21:06:41.000Z",
+   "status": {
+    "is_live": true,
+    "is_sold": false,
+    "is_pending": false,
+    "is_hidden": false
+   },
+   "delivery_types": [
+    "IN_PERSON"
+   ],
+   "provenance": [
+    {
+     "endpoint": "search",
+     "query": "bedding set",
+     "filters": {
+      "lat": 32.7774,
+      "lng": -96.7977,
+      "radius_km": 50.0,
+      "condition": "new"
+     },
+     "request_no": 6
+    }
+   ],
+   "retrieved_at": "2026-10-10T10:48:09Z",
+   "manual_review": null,
+   "heuristic_textile_terms": [
+    "bedding"
+   ]
+  },
+  {
+   "listing_id": "1579673180012061",
+   "source_url": "https://www.facebook.com/marketplace/item/1579673180012061/",
+   "title": "Queen size bedding set",
+   "description": null,
+   "price": {
+    "amount": 25,
+    "currency": null,
+    "formatted": "$25"
+   },
+   "location": {
+    "city": "McKinney",
+    "state": "TX",
+    "display_name": "McKinney, Texas",
+    "text": null
+   },
+   "seller": {
+    "id": null,
+    "exposed": false,
+    "fields": []
+   },
+   "photos": [],
+   "primary_photo": {
+    "id": "1430733485869330",
+    "url": "https://scontent-phl2-1.xx.fbcdn.net/v/t39.84726-6/838629260_1430733489202663_5373525136430335157_n.jpg"
+   },
+   "category_id": "1792291877663080",
+   "condition": null,
+   "creation_time": "2026-10-10T10:38:16.000Z",
+   "status": {
+    "is_live": true,
+    "is_sold": false,
+    "is_pending": false,
+    "is_hidden": false
+   },
+   "delivery_types": [
+    "IN_PERSON"
+   ],
+   "provenance": [
+    {
+     "endpoint": "search",
+     "query": "bedding set",
+     "filters": {
+      "lat": 32.7774,
+      "lng": -96.7977,
+      "radius_km": 50.0,
+      "condition": "new"
+     },
+     "request_no": 6
+    }
+   ],
+   "retrieved_at": "2026-10-10T10:48:09Z",
+   "manual_review": null,
+   "heuristic_textile_terms": [
+    "bedding"
+   ]
+  },
+  {
+   "listing_id": "1365064992230417",
+   "source_url": "https://www.facebook.com/marketplace/item/1365064992230417/",
+   "title": "Real Living Vibe Boost 9 PC Reversible Bedding Set",
+   "description": null,
+   "price": {
+    "amount": 10,
+    "currency": null,
+    "formatted": "$10"
+   },
+   "location": {
+    "city": "Dallas",
+    "state": "TX",
+    "display_name": "Dallas, Texas",
+    "text": null
+   },
+   "seller": {
+    "id": null,
+    "exposed": false,
+    "fields": []
+   },
+   "photos": [],
+   "primary_photo": {
+    "id": "1345113750404956",
+    "url": "https://scontent-phl2-1.xx.fbcdn.net/v/t39.84726-6/739165552_1345113760404955_2195084705579567429_n.jpg"
+   },
+   "category_id": "1569171756675761",
+   "condition": null,
+   "creation_time": "2026-07-05T20:29:15.000Z",
+   "status": {
+    "is_live": true,
+    "is_sold": false,
+    "is_pending": false,
+    "is_hidden": false
+   },
+   "delivery_types": [
+    "IN_PERSON",
+    "DOOR_PICKUP"
+   ],
+   "provenance": [
+    {
+     "endpoint": "search",
+     "query": "bedding set",
+     "filters": {
+      "lat": 32.7774,
+      "lng": -96.7977,
+      "radius_km": 50.0,
+      "condition": "new"
+     },
+     "request_no": 6
+    }
+   ],
+   "retrieved_at": "2026-10-10T10:48:09Z",
+   "manual_review": null,
+   "heuristic_textile_terms": [
+    "bedding"
+   ]
+  },
+  {
+   "listing_id": "1051458461123153",
+   "source_url": "https://www.facebook.com/marketplace/item/1051458461123153/",
+   "title": "Custom Bedding Bundles & Pallets – Comforters, Sheets, Pillows & Quilts",
+   "description": null,
+   "price": {
+    "amount": 1,
+    "currency": null,
+    "formatted": "$1"
+   },
+   "location": {
+    "city": "Grand Prairie",
+    "state": "TX",
+    "display_name": "Grand Prairie, Texas",
+    "text": null
+   },
+   "seller": {
+    "id": null,
+    "exposed": false,
+    "fields": []
+   },
+   "photos": [],
+   "primary_photo": {
+    "id": "1658619209240688",
+    "url": "https://scontent-phl2-1.xx.fbcdn.net/v/t39.84726-6/786268064_1658619219240687_7056638598377278668_n.jpg"
+   },
+   "category_id": "1569171756675761",
+   "condition": null,
+   "creation_time": "2026-08-24T22:42:21.000Z",
+   "status": {
+    "is_live": true,
+    "is_sold": false,
+    "is_pending": false,
+    "is_hidden": false
+   },
+   "delivery_types": [
+    "IN_PERSON",
+    "PUBLIC_MEETUP"
+   ],
+   "provenance": [
+    {
+     "endpoint": "search",
+     "query": "bedding set",
+     "filters": {
+      "lat": 32.7774,
+      "lng": -96.7977,
+      "radius_km": 50.0,
+      "condition": "new"
+     },
+     "request_no": 6
+    }
+   ],
+   "retrieved_at": "2026-10-10T10:48:09Z",
+   "manual_review": {
+    "verdict": "unsure",
+    "note": "Custom wholesale bundles/pallets and advertised $1; actual product/price comparability unconfirmed.",
+    "by": "codex-manual"
+   },
+   "heuristic_textile_terms": [
+    "bedding",
+    "comforters",
+    "pillows",
+    "quilts",
+    "sheets"
+   ]
+  },
+  {
+   "listing_id": "1919094915405597",
+   "source_url": "https://www.facebook.com/marketplace/item/1919094915405597/",
+   "title": "Full Size Comforter Set - 6 Piece Jacquard & Embroidery Bed in a Bag, Blue Cashew",
+   "description": null,
+   "price": {
+    "amount": 35,
+    "currency": null,
+    "formatted": "$35"
+   },
+   "location": {
+    "city": "Garland",
+    "state": "TX",
+    "display_name": "Garland, Texas",
+    "text": null
+   },
+   "seller": {
+    "id": null,
+    "exposed": false,
+    "fields": []
+   },
+   "photos": [],
+   "primary_photo": {
+    "id": "1762690844858275",
+    "url": "https://scontent-phl2-1.xx.fbcdn.net/v/t39.84726-6/753707286_1762690858191607_9104998985425804877_n.jpg"
+   },
+   "category_id": "1569171756675761",
+   "condition": null,
+   "creation_time": "2026-07-24T20:21:32.000Z",
+   "status": {
+    "is_live": true,
+    "is_sold": false,
+    "is_pending": false,
+    "is_hidden": false
+   },
+   "delivery_types": [
+    "IN_PERSON",
+    "PUBLIC_MEETUP"
+   ],
+   "provenance": [
+    {
+     "endpoint": "search",
+     "query": "bedding set",
+     "filters": {
+      "lat": 32.7774,
+      "lng": -96.7977,
+      "radius_km": 50.0,
+      "condition": "new"
+     },
+     "request_no": 6
+    }
+   ],
+   "retrieved_at": "2026-10-10T10:48:09Z",
+   "manual_review": null,
+   "heuristic_textile_terms": [
+    "bed",
+    "comforter"
+   ]
+  },
+  {
+   "listing_id": "1637688401119212",
+   "source_url": "https://www.facebook.com/marketplace/item/1637688401119212/",
+   "title": "New 7 Piece King Comforter set Ultra Soft Microfiber Lightweight (Dusty Pink)",
+   "description": null,
+   "price": {
+    "amount": 60,
+    "currency": null,
+    "formatted": "$60"
+   },
+   "location": {
+    "city": "Dallas",
+    "state": "TX",
+    "display_name": "Dallas, Texas",
+    "text": null
+   },
+   "seller": {
+    "id": null,
+    "exposed": false,
+    "fields": []
+   },
+   "photos": [],
+   "primary_photo": {
+    "id": "1575210010943280",
+    "url": "https://scontent-phl2-1.xx.fbcdn.net/v/t39.84726-6/780505095_1575210017609946_3427655278183344943_n.jpg"
+   },
+   "category_id": "1569171756675761",
+   "condition": null,
+   "creation_time": "2026-08-21T17:06:09.000Z",
+   "status": {
+    "is_live": true,
+    "is_sold": false,
+    "is_pending": false,
+    "is_hidden": false
+   },
+   "delivery_types": [
+    "IN_PERSON",
+    "PUBLIC_MEETUP"
+   ],
+   "provenance": [
+    {
+     "endpoint": "search",
+     "query": "bedding set",
+     "filters": {
+      "lat": 32.7774,
+      "lng": -96.7977,
+      "radius_km": 50.0,
+      "condition": "new"
+     },
+     "request_no": 6
+    }
+   ],
+   "retrieved_at": "2026-10-10T10:48:09Z",
+   "manual_review": null,
+   "heuristic_textile_terms": [
+    "comforter"
+   ]
+  },
+  {
+   "listing_id": "2536258763464174",
+   "source_url": "https://www.facebook.com/marketplace/item/2536258763464174/",
+   "title": "New All Season Luxury 7 Pieces Bedding Set King Beige",
+   "description": null,
+   "price": {
+    "amount": 85,
+    "currency": null,
+    "formatted": "$85"
+   },
+   "location": {
+    "city": "Dallas",
+    "state": "TX",
+    "display_name": "Dallas, Texas",
+    "text": null
+   },
+   "seller": {
+    "id": null,
+    "exposed": false,
+    "fields": []
+   },
+   "photos": [],
+   "primary_photo": {
+    "id": "28296972249961028",
+    "url": "https://scontent-phl2-1.xx.fbcdn.net/v/t39.84726-6/782216093_28296972269961026_2834345109195500325_n.jpg"
+   },
+   "category_id": "1569171756675761",
+   "condition": null,
+   "creation_time": "2026-08-21T17:06:09.000Z",
+   "status": {
+    "is_live": true,
+    "is_sold": false,
+    "is_pending": false,
+    "is_hidden": false
+   },
+   "delivery_types": [
+    "IN_PERSON",
+    "PUBLIC_MEETUP"
+   ],
+   "provenance": [
+    {
+     "endpoint": "search",
+     "query": "bedding set",
+     "filters": {
+      "lat": 32.7774,
+      "lng": -96.7977,
+      "radius_km": 50.0,
+      "condition": "new"
+     },
+     "request_no": 6
+    }
+   ],
+   "retrieved_at": "2026-10-10T10:48:09Z",
+   "manual_review": null,
+   "heuristic_textile_terms": [
+    "bedding"
+   ]
+  },
+  {
+   "listing_id": "1365024258916897",
+   "source_url": "https://www.facebook.com/marketplace/item/1365024258916897/",
+   "title": "Full - 3 piece Comforter Set",
+   "description": null,
+   "price": {
+    "amount": 15,
+    "currency": null,
+    "formatted": "$15"
+   },
+   "location": {
+    "city": "Mesquite",
+    "state": "TX",
+    "display_name": "Mesquite, Texas",
+    "text": null
+   },
+   "seller": {
+    "id": null,
+    "exposed": false,
+    "fields": []
+   },
+   "photos": [],
+   "primary_photo": {
+    "id": "1641138133653117",
+    "url": "https://scontent-phl2-1.xx.fbcdn.net/v/t39.84726-6/752107485_1641138143653116_8783463128172967586_n.jpg"
+   },
+   "category_id": "1569171756675761",
+   "condition": null,
+   "creation_time": "2026-07-21T20:37:00.000Z",
+   "status": {
+    "is_live": true,
+    "is_sold": false,
+    "is_pending": false,
+    "is_hidden": false
+   },
+   "delivery_types": [
+    "IN_PERSON"
+   ],
+   "provenance": [
+    {
+     "endpoint": "search",
+     "query": "bedding set",
+     "filters": {
+      "lat": 32.7774,
+      "lng": -96.7977,
+      "radius_km": 50.0,
+      "condition": "new"
+     },
+     "request_no": 6
+    }
+   ],
+   "retrieved_at": "2026-10-10T10:48:09Z",
+   "manual_review": null,
+   "heuristic_textile_terms": [
+    "comforter"
+   ]
+  },
+  {
+   "listing_id": "1823845021943927",
+   "source_url": "https://www.facebook.com/marketplace/item/1823845021943927/",
+   "title": "Hello Kitty Satin Comforter Set",
+   "description": null,
+   "price": {
+    "amount": 25,
+    "currency": null,
+    "formatted": "$25"
+   },
+   "location": {
+    "city": "Little Elm",
+    "state": "TX",
+    "display_name": "Little Elm, Texas",
+    "text": null
+   },
+   "seller": {
+    "id": null,
+    "exposed": false,
+    "fields": []
+   },
+   "photos": [],
+   "primary_photo": {
+    "id": "2412486482895007",
+    "url": "https://scontent-phl2-1.xx.fbcdn.net/v/t39.84726-6/807830860_2412486486228340_657254337129796696_n.jpg"
+   },
+   "category_id": "1569171756675761",
+   "condition": null,
+   "creation_time": "2026-09-13T22:00:49.000Z",
+   "status": {
+    "is_live": true,
+    "is_sold": false,
+    "is_pending": false,
+    "is_hidden": false
+   },
+   "delivery_types": [
+    "IN_PERSON"
+   ],
+   "provenance": [
+    {
+     "endpoint": "search",
+     "query": "bedding set",
+     "filters": {
+      "lat": 32.7774,
+      "lng": -96.7977,
+      "radius_km": 50.0,
+      "condition": "new"
+     },
+     "request_no": 6
+    }
+   ],
+   "retrieved_at": "2026-10-10T10:48:09Z",
+   "manual_review": null,
+   "heuristic_textile_terms": [
+    "comforter"
+   ]
+  },
+  {
+   "listing_id": "1772435430464160",
+   "source_url": "https://www.facebook.com/marketplace/item/1772435430464160/",
+   "title": "Full Comforter Set Leaf Green, 3 Pieces Clipped Jacquard Comforter Set, All Season Lightweight Soft",
+   "description": null,
+   "price": {
+    "amount": 15,
+    "currency": null,
+    "formatted": "$15"
+   },
+   "location": {
+    "city": "Dallas",
+    "state": "TX",
+    "display_name": "Addison, Texas",
+    "text": null
+   },
+   "seller": {
+    "id": null,
+    "exposed": false,
+    "fields": []
+   },
+   "photos": [],
+   "primary_photo": {
+    "id": "1695404628182214",
+    "url": "https://scontent-phl2-1.xx.fbcdn.net/v/t39.84726-6/780917518_1695404638182213_6475518777118054281_n.jpg"
+   },
+   "category_id": "1569171756675761",
+   "condition": null,
+   "creation_time": "2026-08-20T22:07:56.000Z",
+   "status": {
+    "is_live": true,
+    "is_sold": false,
+    "is_pending": false,
+    "is_hidden": false
+   },
+   "delivery_types": [
+    "IN_PERSON"
+   ],
+   "provenance": [
+    {
+     "endpoint": "search",
+     "query": "bedding set",
+     "filters": {
+      "lat": 32.7774,
+      "lng": -96.7977,
+      "radius_km": 50.0,
+      "condition": "new"
+     },
+     "request_no": 6
+    }
+   ],
+   "retrieved_at": "2026-10-10T10:48:09Z",
+   "manual_review": null,
+   "heuristic_textile_terms": [
+    "comforter"
+   ]
+  }
+ ],
+ "image_checks": [
+  {
+   "listing_id": "1638806271151287",
+   "url_host": "scontent-lga3-2.xx.fbcdn.net",
+   "kind": "usable",
+   "http_status": 200,
+   "content_type": "image/jpeg",
+   "bytes": 97866,
+   "sha256": "76ccd17fb1cdbbfeb1a4a5d17b94e7fb0749faf397cb710af621ea757e16f7c9",
+   "width": 720,
+   "height": 960,
+   "decoded": true,
+   "error": null,
+   "format": "JPEG",
+   "manual_visual_review": {
+    "by": "codex",
+    "observations": "Actual photo of bedding in clear packaging; orange/red and beige fabric visible. Label contains a staged bed/product diagram. Physical material, quality, sales and authenticity not verified."
+   }
+  },
+  {
+   "listing_id": "918521891138262",
+   "url_host": "scontent-lga3-1.xx.fbcdn.net",
+   "kind": "usable",
+   "http_status": 200,
+   "content_type": "image/jpeg",
+   "bytes": 80099,
+   "sha256": "2c56f3e4bd820a24eace6ae0ca0ce90100b9b058b785d380c1019c1798c69bc1",
+   "width": 960,
+   "height": 934,
+   "decoded": true,
+   "error": null,
+   "format": "JPEG",
+   "manual_visual_review": {
+    "by": "codex",
+    "observations": "Promotional graphic of two dark gray curtain panels on a rod. Overlay reads52x84 and Charcoal Gray Blackout. Blackout performance is an advertising claim, not visually proven."
+   }
+  },
+  {
+   "listing_id": "1135008265871828",
+   "url_host": "scontent-sjc3-1.xx.fbcdn.net",
+   "kind": "usable",
+   "http_status": 200,
+   "content_type": "image/jpeg",
+   "bytes": 72460,
+   "sha256": "c44c3ff6761af1d81a7cc4eb6a4760bc9cdef44a81f01b8a9fdfb178dc3aa2e0",
+   "width": 444,
+   "height": 960,
+   "decoded": true,
+   "error": null,
+   "format": "JPEG",
+   "manual_visual_review": {
+    "by": "codex",
+    "observations": "Phone screenshot showing a folded pink/magenta plush-looking throw tied with ribbon on a pale carpet. Color differs from the burgundy title; lighting/screen rendering may contribute. Material not verified."
+   }
+  }
+ ]
+}

@@ -1,0 +1,202 @@
+{
+ "provider": "openai-codex",
+ "model": "gpt-5.6-terra",
+ "wall_s": 90.9,
+ "model_requests": 7,
+ "activity": [
+  [
+   "skill_view",
+   "ok"
+  ],
+  [
+   "skill_view",
+   "ok"
+  ],
+  [
+   "read_catalogue",
+   "ok"
+  ],
+  [
+   "read_company_context",
+   "ok"
+  ],
+  [
+   "read_recorded_evidence",
+   "ok"
+  ],
+  [
+   "read_recorded_evidence",
+   "ok"
+  ],
+  [
+   "read_recorded_evidence",
+   "ok"
+  ],
+  [
+   "inspect_image",
+   "ok"
+  ],
+  [
+   "read_recorded_evidence",
+   "ok"
+  ],
+  [
+   "read_recorded_evidence",
+   "ok"
+  ],
+  [
+   "read_recorded_evidence",
+   "ok"
+  ],
+  [
+   "read_recorded_evidence",
+   "ok"
+  ],
+  [
+   "read_recorded_evidence",
+   "ok"
+  ],
+  [
+   "inspect_image",
+   "ok"
+  ],
+  [
+   "save_listing_draft",
+   "ok"
+  ]
+ ],
+ "reply": "Saved a complete Marketplace listing draft.\n\n- **Draft ID:** `draft-e0f22d293e`\n- **Status:** Complete; nothing was published.\n- **Comparable recorded listings used:**  \n  - `1638806271151287` \u2014 King comforter set, including its cached product-package photo  \n  - `4578090289091943` \u2014 7-piece king comforter set  \n\n**Could not verify**\n- The recorded replay sample had no exact comparable for a **queen quilted coverlet**.\n- Only one closely related detailed bedding listing had an inspectable photo.\n- Comparable prices are asking prices only\u2014not completed-sale or demand evidence.\n- The supplied product visual is explicitly a synthetic illustration, not an actual product photograph. The draft therefore calls for original photos of the real coverlet, including a readable label/packaging detail.",
+ "draft": {
+  "draft_id": "draft-e0f22d293e",
+  "agent_id": "listing-draft-analyst",
+  "conversation_id": "conv-listing-draft-analyst",
+  "product_id": "acme-cloud-quilt-queen",
+  "status": "complete",
+  "title": "New Queen Oatmeal Quilted Coverlet \u2013 90 x 96 in",
+  "created_at": 1791634933.8713496,
+  "missing": [],
+  "description": "New Cloud Weave Quilted Coverlet in oatmeal for a queen bed. Measures 90 x 96 in and includes 1 coverlet. Made with a 100% cotton shell and polyester fill. Machine washable. Price: $89 USD.",
+  "visual_brief": "Use original photographs of the actual oatmeal coverlet rather than the supplied illustration. Lead with a full, well-lit view spread flat or styled on a queen bed so the overall quilted pattern and colour are easy to see. Add a close-up of the quilting and a separate photo of the product label or packaging where the queen size, 90 x 96 in dimensions, material information, care information, and one-coverlet count can be read. Keep the background uncluttered and avoid including unrelated bedding or accessories that could make the one-piece offer unclear.",
+  "rationale": [
+   {
+    "claim": "Use a product-focused lead photo and a second detail/label view; the inspected comparable shows its packaged bedding and a front product label in one clear frame.",
+    "listing_ids": [
+     "1638806271151287"
+    ],
+    "image_ids": [
+     "1638806271151287"
+    ]
+   },
+   {
+    "claim": "State the size and piece count plainly because comparable titles foreground bed size and set quantity, while this offer is one queen coverlet.",
+    "listing_ids": [
+     "1638806271151287",
+     "4578090289091943"
+    ],
+    "image_ids": []
+   },
+   {
+    "claim": "Use exact supplied specifications and price to distinguish this single coverlet from multi-piece comforter sets in the recorded sample.",
+    "listing_ids": [
+     "1638806271151287",
+     "4578090289091943"
+    ],
+    "image_ids": []
+   }
+  ],
+  "limitations": "Recorded Marketplace evidence is a replayed Dallas-area sample, not live research. No exact queen coverlet listing was found, and only one closely related detailed bedding listing had a cached image available to inspect. The comparable asking prices are not sales prices or demand evidence. The merchant-supplied product visual is explicitly a synthetic illustration rather than a photograph; an actual-product photo, label, and packaging appearance could not be verified.",
+  "merchant_snapshot": {
+   "merchant": {
+    "merchant_id": "demo-acme-linens",
+    "name": "Acme Linens (fictional demo merchant)"
+   },
+   "demo": true,
+   "notice": "FICTIONAL DEMO DATA: the merchant, product, specifications, price and illustration are invented for testing the listing-draft path. They are not real merchant facts and the image is not a photograph.",
+   "catalogue_file": "demo_catalogue.json",
+   "catalogue_sha256": "57becda034a3372560ec1687cd0d4d4391d2c8be0bd8b2c72a84db1febba773b"
+  },
+  "product_snapshot": {
+   "product_id": "acme-cloud-quilt-queen",
+   "name": "Cloud Weave Quilted Coverlet, Queen",
+   "category": "bedding",
+   "condition": "new",
+   "specifications": {
+    "size": "Queen, 90 x 96 in",
+    "colour": "Oatmeal",
+    "material": "100% cotton shell, polyester fill",
+    "care": "Machine washable",
+    "pieces": "1 coverlet"
+   },
+   "price": {
+    "amount": 89.0,
+    "currency": "USD"
+   },
+   "image": {
+    "image_id": "demo-quilt-front",
+    "kind": "synthetic illustration of the fictional product (not a photograph)"
+   }
+  },
+  "listing_evidence": [
+   {
+    "listing_id": "1638806271151287",
+    "title": "King comforter set new",
+    "price": {
+     "amount": 20,
+     "currency": "USD",
+     "formatted": "$20"
+    },
+    "condition": "new",
+    "location": "Dallas, Texas",
+    "detail_level": "detailed",
+    "image_cached": true,
+    "retrieved_at": "2026-10-10T10:48:23Z",
+    "source_url": "https://www.facebook.com/marketplace/item/1638806271151287/",
+    "seller_ref": "seller_1",
+    "evidence_file": "marketplace_sample.json",
+    "evidence_sha256": "5859e1926903ae7bb0b5b4051bccecfaebc44eca7fc55a66a856cb26bdb35b09"
+   },
+   {
+    "listing_id": "4578090289091943",
+    "title": "Bedsure King Comforter Set 7 Pieces",
+    "price": {
+     "amount": 60,
+     "currency": "USD",
+     "formatted": "$60"
+    },
+    "condition": "new",
+    "location": "Dallas, Texas",
+    "detail_level": "detailed",
+    "image_cached": false,
+    "retrieved_at": "2026-10-10T10:49:06Z",
+    "source_url": "https://www.facebook.com/marketplace/item/4578090289091943/",
+    "seller_ref": "seller_4",
+    "evidence_file": "marketplace_sample.json",
+    "evidence_sha256": "5859e1926903ae7bb0b5b4051bccecfaebc44eca7fc55a66a856cb26bdb35b09"
+   }
+  ],
+  "image_evidence": [
+   {
+    "image_id": "1638806271151287",
+    "kind": "recorded_listing_photo",
+    "listing_id": "1638806271151287",
+    "sha256": "76ccd17fb1cdbbfeb1a4a5d17b94e7fb0749faf397cb710af621ea757e16f7c9",
+    "width": 720,
+    "height": 960,
+    "inspected_at": 1791634899.2869914,
+    "model_observations": "A packaged bedding set is photographed upright indoors. The visible package has rust red, white, and beige sections, a central label with bedding images, and readable large text \"Vanguard Collection\" and \"7pc Comforter Set\". Smaller label text is present but not fully legible.",
+    "model_uncertainties": "The image is of a competitor comforter set, not the merchant product. Its materials, quality, and any attributes beyond visible packaging text are unverified."
+   },
+   {
+    "image_id": "demo-quilt-front",
+    "kind": "catalogue_image",
+    "listing_id": null,
+    "sha256": "92eb9713f4d1662c3740504eb4ee65b97f717001bb798cefe5adec3d081f1589",
+    "width": 640,
+    "height": 480,
+    "inspected_at": 1791634881.7647815,
+    "model_observations": "Synthetic illustration, not a photograph. It shows an oatmeal/beige rectangular coverlet-like panel with a diamond grid pattern. Readable text: \"FICTIONAL DEMO PRODUCT - illustration, not a photograph\" and \"Cloud Weave Quilted Coverlet (demo)\".",
+    "model_uncertainties": "This image does not verify the actual product's photographic appearance, fabric composition, quality, or other unprinted properties."
+   }
+  ]
+ }
+}

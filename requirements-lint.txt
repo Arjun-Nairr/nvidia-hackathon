@@ -1,0 +1,2 @@
+# Development-only lint tooling (installed into .venv-lint by lint.bat setup; never into the Hermes environment)
+ruff==0.17.0

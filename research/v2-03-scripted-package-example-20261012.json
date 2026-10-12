@@ -1,0 +1,769 @@
+{
+ "_label": "SCRIPTED FIXTURE OUTPUT (V2-03 plumbing test tests/ad_research_test.py, scenario B5-B9). Every ad, image and reach field comes from tests/mock_fb_ads.py, invented in the documented shape; the 'specialist' is the rule-based policy in tests/mock_llm.py. It is NOT live Facebook Ad Library data, NOT real reach and NOT model behaviour. Image pixels are flat-colour PNGs. Shown to make the persisted package structure inspectable.",
+ "package": {
+  "package_id": "adpkg-d492e2e241",
+  "status": "complete",
+  "created_at": 1791819083.4955266,
+  "identity": {
+   "agent_id": "acme-ad-researcher",
+   "company_id": "default",
+   "company_name": "Acme Linens (fictional demo merchant)",
+   "conversation_id": "conv-acme-ad-researcher",
+   "request_id": "b-req-1",
+   "run_id": "adrun-bd0826797e",
+   "message_id": 21,
+   "country": "US",
+   "media_type": "IMAGE_AND_MEME",
+   "source": "ScrapeCreators Facebook Ad Library (live research run)"
+  },
+  "summary": "Researched US Facebook image ads for the merchant's quilted bedding; selected 2 visual references from distinct campaigns.",
+  "selection_basis": "relevance_only",
+  "blocker": null,
+  "limitations": "Scripted mock agent; reach ranking depends on the gate.",
+  "reach_gate": {
+   "state": "disabled_reach_unavailable",
+   "ranking_enabled": false,
+   "metric": null,
+   "geography": null,
+   "ads_recorded": 6,
+   "ads_with_reported_reach": 0,
+   "ads_with_ambiguous_reach": 0,
+   "reason": "No ad carries a reach value. Reach is unknown (not zero): select by relevance and say that reach ranking was unavailable.",
+   "rule": "Never substitute impressions, spend, likes, ad duration, audience size or search order for reach; reach is not proof of sales."
+  },
+  "cited_ads": [
+   {
+    "ad_no": 3,
+    "source_ad_id": "1100000000000001",
+    "source_url": "https://www.facebook.com/ads/library?id=1100000000000001",
+    "advertiser": {
+     "name": "Harbor Home Linens",
+     "page_id": "1001"
+    },
+    "active": true,
+    "start_date": "2025-09-04",
+    "end_date": null,
+    "display_format": "IMAGE",
+    "text": "Soft layered comfort for every bedroom. Quilted coverlet in oatmeal.",
+    "headline": "Queen quilted coverlet",
+    "cta": "Shop now",
+    "landing_domain": "example.com",
+    "image_count": 1,
+    "images": [
+     {
+      "image_no": 1,
+      "from": "images[0]",
+      "image_id": "ad-1100000000000001-1"
+     }
+    ],
+    "card_count": 0,
+    "campaign": {
+     "campaign_id": "5000000000000001",
+     "campaign_ad_count": 2,
+     "recorded_ad_nos_in_campaign": [
+      3,
+      4
+     ],
+     "note": "grouping only: each source_ad_id is its own ad; a shared campaign does not prove an identical creative"
+    },
+    "reach": {
+     "state": "unavailable",
+     "metric": null,
+     "value": null,
+     "geography": null,
+     "period": null,
+     "source": "not_provided",
+     "meaning": "No reach value was provided for this ad. That is unknown, not zero."
+    },
+    "detail_level": "detailed",
+    "retrieved_at": "2026-10-12T15:31:21Z",
+    "cards": [],
+    "description": null,
+    "countries_listed": [
+     "US"
+    ],
+    "identity": "id_match"
+   },
+   {
+    "ad_no": 5,
+    "source_ad_id": "1100000000000003",
+    "source_url": "https://www.facebook.com/ads/library?id=1100000000000003",
+    "advertiser": {
+     "name": "Harbor Home Linens",
+     "page_id": "1001"
+    },
+    "active": true,
+    "start_date": "2025-09-04",
+    "end_date": null,
+    "display_format": "MULTI_IMAGES",
+    "text": "Bedding sets for every bedroom: sheets, quilts and pillow shams.",
+    "headline": "Bedding sets",
+    "cta": "Shop now",
+    "landing_domain": "example.com",
+    "image_count": 3,
+    "images": [
+     {
+      "image_no": 1,
+      "from": "cards[0]",
+      "image_id": "ad-1100000000000003-1"
+     },
+     {
+      "image_no": 2,
+      "from": "cards[1]",
+      "image_id": null
+     },
+     {
+      "image_no": 3,
+      "from": "cards[2]",
+      "image_id": null
+     }
+    ],
+    "card_count": 3,
+    "campaign": {
+     "campaign_id": "5000000000000002",
+     "campaign_ad_count": 1,
+     "recorded_ad_nos_in_campaign": [
+      5
+     ],
+     "note": "grouping only: each source_ad_id is its own ad; a shared campaign does not prove an identical creative"
+    },
+    "reach": {
+     "state": "unavailable",
+     "metric": null,
+     "value": null,
+     "geography": null,
+     "period": null,
+     "source": "not_provided",
+     "meaning": "No reach value was provided for this ad. That is unknown, not zero."
+    },
+    "detail_level": "detailed",
+    "retrieved_at": "2026-10-12T15:31:21Z",
+    "cards": [
+     {
+      "card_no": 1,
+      "title": "Quilt set",
+      "body": "Quilt set from the range",
+      "cta": "Shop now",
+      "image_no": 1
+     },
+     {
+      "card_no": 2,
+      "title": "Sheet set",
+      "body": "Sheet set from the range",
+      "cta": "Shop now",
+      "image_no": 2
+     },
+     {
+      "card_no": 3,
+      "title": "Pillow shams",
+      "body": "Pillow shams from the range",
+      "cta": "Shop now",
+      "image_no": 3
+     }
+    ],
+    "description": null,
+    "countries_listed": [
+     "US"
+    ],
+    "identity": "id_match"
+   }
+  ],
+  "references": [
+   {
+    "ad_no": 3,
+    "source_ad_id": "1100000000000001",
+    "source_url": "https://www.facebook.com/ads/library?id=1100000000000001",
+    "image_id": "ad-1100000000000001-1",
+    "image_no": 1,
+    "image_source": "images[0]",
+    "sha256": "f310255e7e9965d8fcbda32e1b2c3e87ec2f9fc729191b0afe170c7ab62f5e7c",
+    "bytes": 880,
+    "width": 240,
+    "height": 300,
+    "host": "127.0.0.1",
+    "retrieved_at": "2026-10-12T15:31:22Z",
+    "inspected_at": "2026-10-12T15:31:22Z",
+    "inspection_sha256": "f310255e7e9965d8fcbda32e1b2c3e87ec2f9fc729191b0afe170c7ab62f5e7c",
+    "delivery": "image_part_sent",
+    "counts_as_verified_evidence": true,
+    "why_relevant": "A comparable quilted bedding ad from Harbor Home Linens: its layout shows what shoppers meet for this product type.",
+    "visual_features": [
+     "product shown large against a plain backdrop",
+     "short headline above the product"
+    ],
+    "model_observations": "Inspected image ad-1100000000000001-1 (scripted mock observation of the downloaded ad image).",
+    "model_uncertainties": "Fine detail and brand colours not assessed."
+   },
+   {
+    "ad_no": 5,
+    "source_ad_id": "1100000000000003",
+    "source_url": "https://www.facebook.com/ads/library?id=1100000000000003",
+    "image_id": "ad-1100000000000003-1",
+    "image_no": 1,
+    "image_source": "cards[0]",
+    "sha256": "823f32cd1fd9d722cd7f97a3022ef96ac1faf04f46873eaf19812aa1504cae11",
+    "bytes": 879,
+    "width": 240,
+    "height": 300,
+    "host": "127.0.0.1",
+    "retrieved_at": "2026-10-12T15:31:22Z",
+    "inspected_at": "2026-10-12T15:31:23Z",
+    "inspection_sha256": "823f32cd1fd9d722cd7f97a3022ef96ac1faf04f46873eaf19812aa1504cae11",
+    "delivery": "image_part_sent",
+    "counts_as_verified_evidence": true,
+    "why_relevant": "A comparable quilted bedding ad from Harbor Home Linens: its layout shows what shoppers meet for this product type.",
+    "visual_features": [
+     "product shown large against a plain backdrop",
+     "short headline above the product"
+    ],
+    "model_observations": "Inspected image ad-1100000000000003-1 (scripted mock observation of the downloaded ad image).",
+    "model_uncertainties": "Fine detail and brand colours not assessed."
+   }
+  ],
+  "ads_considered": [
+   {
+    "ad_no": 1,
+    "source_ad_id": "1200000000000001",
+    "source_url": "https://www.facebook.com/ads/library?id=1200000000000001",
+    "advertiser": "Quick Auto Parts",
+    "text": "Brake pads for most cars. Fit in minutes.",
+    "image_count": 1,
+    "card_count": 0,
+    "campaign_id": null,
+    "reach_state": "unavailable",
+    "detail_level": "list_only"
+   },
+   {
+    "ad_no": 2,
+    "source_ad_id": "1200000000000002",
+    "source_url": "https://www.facebook.com/ads/library?id=1200000000000002",
+    "advertiser": "Slice Pizza Co",
+    "text": "Order tonight, any large pizza.",
+    "image_count": 1,
+    "card_count": 0,
+    "campaign_id": null,
+    "reach_state": "unavailable",
+    "detail_level": "list_only"
+   },
+   {
+    "ad_no": 3,
+    "source_ad_id": "1100000000000001",
+    "source_url": "https://www.facebook.com/ads/library?id=1100000000000001",
+    "advertiser": "Harbor Home Linens",
+    "text": "Soft layered comfort for every bedroom. Quilted coverlet in oatmeal.",
+    "image_count": 1,
+    "card_count": 0,
+    "campaign_id": "5000000000000001",
+    "reach_state": "unavailable",
+    "detail_level": "detailed"
+   },
+   {
+    "ad_no": 4,
+    "source_ad_id": "1100000000000002",
+    "source_url": "https://www.facebook.com/ads/library?id=1100000000000002",
+    "advertiser": "Harbor Home Linens",
+    "text": "The same coverlet range in sage green. Shop the quilted collection.",
+    "image_count": 1,
+    "card_count": 0,
+    "campaign_id": "5000000000000001",
+    "reach_state": "unavailable",
+    "detail_level": "list_only"
+   },
+   {
+    "ad_no": 5,
+    "source_ad_id": "1100000000000003",
+    "source_url": "https://www.facebook.com/ads/library?id=1100000000000003",
+    "advertiser": "Harbor Home Linens",
+    "text": "Bedding sets for every bedroom: sheets, quilts and pillow shams.",
+    "image_count": 3,
+    "card_count": 3,
+    "campaign_id": "5000000000000002",
+    "reach_state": "unavailable",
+    "detail_level": "detailed"
+   },
+   {
+    "ad_no": 6,
+    "source_ad_id": "1100000000000004",
+    "source_url": "https://www.facebook.com/ads/library?id=1100000000000004",
+    "advertiser": "Northwind Beds",
+    "text": "A queen comforter set with two shams. Simple, warm and easy to wash.",
+    "image_count": 1,
+    "card_count": 0,
+    "campaign_id": null,
+    "reach_state": "unavailable",
+    "detail_level": "list_only"
+   }
+  ],
+  "campaigns_cited": {
+   "5000000000000001": [
+    3
+   ],
+   "5000000000000002": [
+    5
+   ]
+  },
+  "counts": {
+   "ads_recorded": 6,
+   "independent_ads_cited": 2,
+   "references": 2,
+   "campaigns_cited": 2,
+   "cards_in_cited_ads": 3
+  },
+  "call_accounting": {
+   "scraper_attempts": 6,
+   "scraper_attempts_max": 8,
+   "image_download_attempts": 2,
+   "image_download_attempts_max": 4,
+   "by_kind": {
+    "search": {
+     "attempts": 3,
+     "ok": 3,
+     "failed": 0,
+     "unknown": 0
+    },
+    "advertiser": {
+     "attempts": 1,
+     "ok": 1,
+     "failed": 0,
+     "unknown": 0
+    },
+    "detail": {
+     "attempts": 2,
+     "ok": 2,
+     "failed": 0,
+     "unknown": 0
+    },
+    "image": {
+     "attempts": 2,
+     "ok": 2,
+     "failed": 0,
+     "unknown": 0
+    }
+   },
+   "credits_reported_charged": 6.0,
+   "credits_note": "sum of provider-reported credits_charged over calls that reported one; failed calls may be charged without a report",
+   "scope": "b-main",
+   "calls": [
+    {
+     "n": 1,
+     "kind": "search",
+     "endpoint": "keyword",
+     "outcome": "ok",
+     "http_status": 200,
+     "credits_charged": 1.0,
+     "ms": 99
+    },
+    {
+     "n": 2,
+     "kind": "search",
+     "endpoint": "keyword",
+     "outcome": "ok",
+     "http_status": 200,
+     "credits_charged": 1.0,
+     "ms": 100
+    },
+    {
+     "n": 3,
+     "kind": "advertiser",
+     "endpoint": "advertiser",
+     "outcome": "ok",
+     "http_status": 200,
+     "credits_charged": 1.0,
+     "ms": 91
+    },
+    {
+     "n": 4,
+     "kind": "search",
+     "endpoint": "company",
+     "outcome": "ok",
+     "http_status": 200,
+     "credits_charged": 1.0,
+     "ms": 84
+    },
+    {
+     "n": 5,
+     "kind": "detail",
+     "endpoint": "detail",
+     "outcome": "ok",
+     "http_status": 200,
+     "credits_charged": 1.0,
+     "ms": 67
+    },
+    {
+     "n": 6,
+     "kind": "detail",
+     "endpoint": "detail",
+     "outcome": "ok",
+     "http_status": 200,
+     "credits_charged": 1.0,
+     "ms": 72
+    },
+    {
+     "n": 7,
+     "kind": "image",
+     "endpoint": "image",
+     "outcome": "ok",
+     "http_status": 200,
+     "credits_charged": null,
+     "ms": 508
+    },
+    {
+     "n": 8,
+     "kind": "image",
+     "endpoint": "image",
+     "outcome": "ok",
+     "http_status": 200,
+     "credits_charged": null,
+     "ms": 75
+    }
+   ]
+  },
+  "retrieval_note": "Stored data only. Signed CDN URLs and credentials are never part of a package; images are managed IDs served by /api/ads/images/<run_id>/<image_id>."
+ },
+ "run_view": {
+  "run_id": "adrun-bd0826797e",
+  "agent_id": "acme-ad-researcher",
+  "company_id": "default",
+  "conversation_id": "conv-acme-ad-researcher",
+  "request_id": "b-req-1",
+  "scope": "b-main",
+  "country": "US",
+  "media_type": "IMAGE_AND_MEME",
+  "created_at": 1791819080.381964,
+  "calls": [
+   {
+    "n": 1,
+    "kind": "search",
+    "endpoint": "keyword",
+    "outcome": "ok",
+    "http_status": 200,
+    "credits_charged": 1.0,
+    "ms": 99
+   },
+   {
+    "n": 2,
+    "kind": "search",
+    "endpoint": "keyword",
+    "outcome": "ok",
+    "http_status": 200,
+    "credits_charged": 1.0,
+    "ms": 100
+   },
+   {
+    "n": 3,
+    "kind": "advertiser",
+    "endpoint": "advertiser",
+    "outcome": "ok",
+    "http_status": 200,
+    "credits_charged": 1.0,
+    "ms": 91
+   },
+   {
+    "n": 4,
+    "kind": "search",
+    "endpoint": "company",
+    "outcome": "ok",
+    "http_status": 200,
+    "credits_charged": 1.0,
+    "ms": 84
+   },
+   {
+    "n": 5,
+    "kind": "detail",
+    "endpoint": "detail",
+    "outcome": "ok",
+    "http_status": 200,
+    "credits_charged": 1.0,
+    "ms": 67
+   },
+   {
+    "n": 6,
+    "kind": "detail",
+    "endpoint": "detail",
+    "outcome": "ok",
+    "http_status": 200,
+    "credits_charged": 1.0,
+    "ms": 72
+   },
+   {
+    "n": 7,
+    "kind": "image",
+    "endpoint": "image",
+    "outcome": "ok",
+    "http_status": 200,
+    "credits_charged": null,
+    "ms": 508
+   },
+   {
+    "n": 8,
+    "kind": "image",
+    "endpoint": "image",
+    "outcome": "ok",
+    "http_status": 200,
+    "credits_charged": null,
+    "ms": 75
+   }
+  ],
+  "accounting": {
+   "scraper_attempts": 6,
+   "scraper_attempts_max": 8,
+   "image_download_attempts": 2,
+   "image_download_attempts_max": 4,
+   "by_kind": {
+    "search": {
+     "attempts": 3,
+     "ok": 3,
+     "failed": 0,
+     "unknown": 0
+    },
+    "advertiser": {
+     "attempts": 1,
+     "ok": 1,
+     "failed": 0,
+     "unknown": 0
+    },
+    "detail": {
+     "attempts": 2,
+     "ok": 2,
+     "failed": 0,
+     "unknown": 0
+    },
+    "image": {
+     "attempts": 2,
+     "ok": 2,
+     "failed": 0,
+     "unknown": 0
+    }
+   },
+   "credits_reported_charged": 6.0,
+   "credits_note": "sum of provider-reported credits_charged over calls that reported one; failed calls may be charged without a report",
+   "scope": "b-main",
+   "calls": [
+    {
+     "n": 1,
+     "kind": "search",
+     "endpoint": "keyword",
+     "outcome": "ok",
+     "http_status": 200,
+     "credits_charged": 1.0,
+     "ms": 99
+    },
+    {
+     "n": 2,
+     "kind": "search",
+     "endpoint": "keyword",
+     "outcome": "ok",
+     "http_status": 200,
+     "credits_charged": 1.0,
+     "ms": 100
+    },
+    {
+     "n": 3,
+     "kind": "advertiser",
+     "endpoint": "advertiser",
+     "outcome": "ok",
+     "http_status": 200,
+     "credits_charged": 1.0,
+     "ms": 91
+    },
+    {
+     "n": 4,
+     "kind": "search",
+     "endpoint": "company",
+     "outcome": "ok",
+     "http_status": 200,
+     "credits_charged": 1.0,
+     "ms": 84
+    },
+    {
+     "n": 5,
+     "kind": "detail",
+     "endpoint": "detail",
+     "outcome": "ok",
+     "http_status": 200,
+     "credits_charged": 1.0,
+     "ms": 67
+    },
+    {
+     "n": 6,
+     "kind": "detail",
+     "endpoint": "detail",
+     "outcome": "ok",
+     "http_status": 200,
+     "credits_charged": 1.0,
+     "ms": 72
+    },
+    {
+     "n": 7,
+     "kind": "image",
+     "endpoint": "image",
+     "outcome": "ok",
+     "http_status": 200,
+     "credits_charged": null,
+     "ms": 508
+    },
+    {
+     "n": 8,
+     "kind": "image",
+     "endpoint": "image",
+     "outcome": "ok",
+     "http_status": 200,
+     "credits_charged": null,
+     "ms": 75
+    }
+   ]
+  },
+  "ads_recorded": 6,
+  "images": [
+   {
+    "image_id": "ad-1100000000000001-1",
+    "ad_archive_id": "1100000000000001",
+    "ad_no": 3,
+    "image_no": 1,
+    "source_field": "images[0]",
+    "sha256": "f310255e7e9965d8fcbda32e1b2c3e87ec2f9fc729191b0afe170c7ab62f5e7c",
+    "bytes": 880,
+    "width": 240,
+    "height": 300,
+    "content_type": "image/png",
+    "host": "127.0.0.1",
+    "fetched_at": 1791819082.538027
+   },
+   {
+    "image_id": "ad-1100000000000003-1",
+    "ad_archive_id": "1100000000000003",
+    "ad_no": 5,
+    "image_no": 1,
+    "source_field": "cards[0]",
+    "sha256": "823f32cd1fd9d722cd7f97a3022ef96ac1faf04f46873eaf19812aa1504cae11",
+    "bytes": 879,
+    "width": 240,
+    "height": 300,
+    "content_type": "image/png",
+    "host": "127.0.0.1",
+    "fetched_at": 1791819082.7658873
+   }
+  ],
+  "package_ids": [
+   "adpkg-d492e2e241"
+  ],
+  "reach_gate": {
+   "state": "disabled_reach_unavailable",
+   "ranking_enabled": false,
+   "metric": null,
+   "geography": null,
+   "ads_recorded": 6,
+   "ads_with_reported_reach": 0,
+   "ads_with_ambiguous_reach": 0,
+   "reason": "No ad carries a reach value. Reach is unknown (not zero): select by relevance and say that reach ranking was unavailable.",
+   "rule": "Never substitute impressions, spend, likes, ad duration, audience size or search order for reach; reach is not proof of sales."
+  },
+  "allowance": {
+   "scope": "b-main",
+   "api_attempts_left": 2,
+   "image_downloads_left": 2,
+   "run_api_attempts": 6,
+   "run_image_downloads": 2,
+   "run_api_max": 8,
+   "run_image_max": 4,
+   "scope_api_used": 6,
+   "scope_api_max": 60,
+   "scope_images_used": 2,
+   "scope_images_max": 20
+  }
+ },
+ "provider_stand_in_received": {
+  "counts": {
+   "search": 2,
+   "advertiser": 1,
+   "company": 1,
+   "detail": 2,
+   "cdn": 2
+  },
+  "total": 8
+ },
+ "model_stand_in_received_images": [
+  {
+   "sha256": "e2b73bb9f48c5bd4d9809d7813f28072715a575860988bfa4843dc95dd8931e2",
+   "bytes": 1769,
+   "mime": "image/jpeg",
+   "size": [
+    240,
+    300
+   ],
+   "mean": [
+    221,
+    209,
+    185
+   ]
+  },
+  {
+   "sha256": "e2b73bb9f48c5bd4d9809d7813f28072715a575860988bfa4843dc95dd8931e2",
+   "bytes": 1769,
+   "mime": "image/jpeg",
+   "size": [
+    240,
+    300
+   ],
+   "mean": [
+    221,
+    209,
+    185
+   ]
+  },
+  {
+   "sha256": "dea5ee492a9c44c54e59ec9c03800a7255681a97ce40767b18d1d003be96eb81",
+   "bytes": 1768,
+   "mime": "image/jpeg",
+   "size": [
+    240,
+    300
+   ],
+   "mean": [
+    100,
+    120,
+    170
+   ]
+  },
+  {
+   "sha256": "e2b73bb9f48c5bd4d9809d7813f28072715a575860988bfa4843dc95dd8931e2",
+   "bytes": 1769,
+   "mime": "image/jpeg",
+   "size": [
+    240,
+    300
+   ],
+   "mean": [
+    221,
+    209,
+    185
+   ]
+  },
+  {
+   "sha256": "dea5ee492a9c44c54e59ec9c03800a7255681a97ce40767b18d1d003be96eb81",
+   "bytes": 1768,
+   "mime": "image/jpeg",
+   "size": [
+    240,
+    300
+   ],
+   "mean": [
+    100,
+    120,
+    170
+   ]
+  }
+ ],
+ "registered_image_colours": {
+  "ad-1100000000000001-1": [
+   222,
+   209,
+   186
+  ],
+  "ad-1100000000000003-1": [
+   100,
+   120,
+   170
+  ]
+ }
+}

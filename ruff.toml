@@ -1,0 +1,25 @@
+# Correctness-focused Python lint (Ruff). Not a formatter and not a style check; see HANDOUT.md "Linting".
+# Run through lint.bat. Only app/, scripts/ and tests/ are ever passed to it (runtime, secrets, scratch copies, demo archives and
+# third-party Hermes code are outside those folders).
+target-version = "py311"   # the Hermes environment's Python (3.11)
+extend-exclude = ["**/__pycache__", "tests/fixtures"]
+
+[lint]
+# Explicit list so a Ruff upgrade cannot silently widen it.
+select = [
+    "F",      # pyflakes: undefined names (F821), unused imports (F401) and variables (F841), redefinitions (F811), bad format strings, ...
+    "E9",     # syntax errors / unreadable files
+    "E711",   # comparison to None with ==
+    "E712",   # comparison to True/False with ==
+    "E713",   # not x in y
+    "E714",   # not x is y
+    "E721",   # type comparison with ==
+    "E722",   # bare except
+    "W605",   # invalid escape sequence in a normal string
+    "B006",   # mutable default argument
+    "B015",   # useless comparison
+    "B018",   # useless expression
+    "B023",   # closure that does not bind a loop variable
+    "B025",   # duplicate except clause
+    "PLE",    # pylint error-class checks
+]

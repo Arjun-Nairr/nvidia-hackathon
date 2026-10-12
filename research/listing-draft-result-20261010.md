@@ -1,0 +1,43 @@
+# Ticket 04 result: one saved, evidence-backed home-textile listing draft
+
+Date: 2026-10-10. Author: Claude Code. Ticket: .scratch/marketplace-listing/issues/04-one-evidence-backed-draft.md. Status: implemented, live-demonstrated once on the development provider, awaiting Codex review. Nebius/NVIDIA compatibility UNVERIFIED. Ticket 05 not started.
+
+> Historical record. This live run and its draft predate the four review corrections in `research/ticket04-corrections-result-20261010.md` (photo-hash rejection, price/currency validation, delivery status, durable supporting evidence); it is not a post-fix run.
+
+## What exists
+A manual request through the existing specialist chat produced one draft that the backend validated and stored in `runtime/app.db` (additive tables), retrievable after a restart through a small read API with no model or scraper call.
+
+- **Fictional demo merchant and product** (`tests/fixtures/demo_catalogue.json`, labelled `demo: true` with a notice): "Cloud Weave Quilted Coverlet, Queen", supplied specifications (Queen 90 x 96 in, Oatmeal, 100% cotton shell with polyester fill, machine washable, 1 coverlet), declared price 89.00 USD, image ID `demo-quilt-front`. The image (`tests/fixtures/demo_images/demo-quilt-front.png`) is a synthetic illustration that says so on its face; it is not a photograph and no competitor photo is presented as merchant-owned.
+- **Recorded evidence** = the redacted ticket-02 live sample (`tests/fixtures/marketplace_sample.json`, 59 listings: 12 detailed, 47 search-only), replayed. Cached private pixels: the 3 existing photos in `runtime/marketplace_check/images/` (no new download). The manual relevance verdicts and Codex's visual notes in that fixture are NOT exposed to the specialist.
+- **Eligible tools** (optional, granted by main through `requested_tools`; mandatory tools unchanged): `read_catalogue`, `read_recorded_evidence` (summaries with `detail_level`, `image_cached`; one listing's details), `save_listing_draft`, plus the ticket-03 `inspect_image`. The specialist chooses comparisons and which photos to inspect; there is no fixed ranking or script.
+- **Storage:** tables `listing_drafts` (draft ID, agent, conversation, product, status, title, description, visual brief, rationale, limitations, missing, merchant/product snapshots, listing evidence, image evidence) and `image_inspections` (trusted log written by the `inspect_image` tool: agent, image ID, kind, sha256, size, time).
+- **Read API:** `GET /api/drafts` (summaries, `?agent_id=` filter), `GET /api/drafts/<id>` (full draft with snapshots and evidence; 404 structured when unknown). SQLite only. Existing chat Activity rendering gets readable labels for the new tools; no new UI.
+
+## Trust and validation (`app/listing.py`)
+Derived by the backend: saving agent (worker env, must be a registered specialist holding the grant), product facts snapshot and file hash, listing facts (title, price/currency, condition, source URL, seller pseudonym, retrieval time, evidence file hash), image hashes/sizes/inspection times and kind, status. Model-supplied `agent_id`, `status`, source URLs or snapshots are ignored.
+Rejected with corrective errors (nothing stored): unknown product or missing product facts; unknown listing IDs; images cited that this specialist never inspected; observations for uninspected images; discount/promotion, shipping/delivery/pick-up, popularity/performance/certification claims in title/description/brief; materials or sizes outside the supplied specifications (title/description); a price other than the declared one; sales/demand claims in the rationale; missing evidence. A draft citing only search-only listings or no inspected competitor photo is saved as `partial` with the reasons, never `complete`. The claim guards are keyword heuristics, not semantic checks.
+
+## Live demonstration (isolated copy, existing subscription login, recorded evidence only)
+`openai-codex` / `gpt-5.6-terra`; one message through `POST /api/chat/<specialist>`; 7 model requests; 90.9 s wall. Recorded output: `research/listing-draft-live-result-20261010.json`.
+- The specialist loaded its skills, read the catalogue and company context, ran 8 evidence queries, inspected two images (the competitor photo `1638806271151287` and the merchant's synthetic product illustration), and saved one draft.
+- **Draft `draft-e0f22d293e`, status complete.**
+  - Title: New Queen Oatmeal Quilted Coverlet – 90 x 96 in
+  - Description: New Cloud Weave Quilted Coverlet in oatmeal for a queen bed. Measures 90 x 96 in and includes 1 coverlet. Made with a 100% cotton shell and polyester fill. Machine washable. Price: $89 USD.
+  - Visual brief: use original photographs of the actual coverlet rather than the supplied illustration; lead with a full well-lit view spread flat or styled on a queen bed; add a close-up of the quilting and a photo of the label/packaging where size, dimensions, material, care and one-coverlet count can be read; keep the background uncluttered and avoid unrelated bedding that could make the one-piece offer unclear.
+  - Rationale (3 entries): lead photo plus detail/label view because the inspected comparable shows its packaged bedding with a front label in one clear frame (listing and image `1638806271151287`); state size and piece count plainly because comparable titles foreground size and set quantity (listings `1638806271151287`, `4578090289091943`); use exact supplied specifications and price to distinguish a single coverlet from multi-piece sets.
+  - Image observations (model-reported after seeing the pixels): comparable = upright packaged bedding with rust red, white and beige sections, central label, readable "Vanguard Collection" and "7pc Comforter Set", smaller text not legible; demo product = synthetic illustration, oatmeal panel with diamond grid, readable demo captions. Uncertainties stated (competitor materials/quality unverified; illustration does not verify the real product's appearance).
+  - Limitations: replayed Dallas sample, no exact queen coverlet comparable, only one closely related detailed listing had an inspectable photo, asking prices are not sales or demand.
+  - Evidence stored: both listings with Facebook source URLs, retrieval times 2026-10-10T10:48:23Z and 10:49:06Z, asking prices $20 and $60, seller pseudonyms; the two image hashes (competitor photo sha256 76ccd17f... equals the hash recorded when it was downloaded in ticket 02; compared offline for this run, the live run predates the in-code comparison).
+- After a server restart the draft and its evidence were read back identically through `GET /api/drafts/<id>` with zero model requests (verified by the timing log in the live run and by the mock request counter in the scripted suite).
+
+## Tests
+- `tests/listing_draft_test.py` 34/34 (pure backend plus scripted model through the real server and Hermes workers; NOT a vision or reasoning test). New regression coverage includes the guard matrix, trust (ignored model-supplied identity/provenance), snapshot immutability, partial status, missing catalogue facts and evidence, specialist isolation, restart, read API without model calls.
+- Relevant regressions from fresh copies after the changes: image path 31/31, ticket01 28/28, onboarding 26/26, e2e 24/24, workers 22/22, chat API 18/18, routing with real Laya 21/21, marketplace diagnostic 84/84. The audit fixes below were added after the broad run; the listing and image-path suites were re-run after them.
+- Live harness: `tests/listing_live_check.py` 10/10, one run, no retries.
+
+## Audit of touched code
+- Added after the live run (with checks B0, B4b, B4c): saving requires a registered specialist that actually holds `save_listing_draft` (previously only tool exposure gated it); cited recorded photos are compared with the hash recorded in the evidence file (`matches_recorded_photo_hash`).
+- Not fixed, by design: guards are heuristics (a paraphrased unsupported claim can pass); the recorded evidence has only 3 cached photos, so image-based comparison is limited to those; the demo default paths point at test fixtures (override with `ECOM_CATALOGUE_FILE`, `ECOM_EVIDENCE_FILE`, `ECOM_IMAGE_DIRS`); observation text is the model's description, not a verified label.
+
+## Limitations
+One product, one run, development provider only. The live draft is a model output for Arjun to judge, not a quality benchmark. Replayed evidence is a small Dallas sample from earlier today, not live research (ticket 05). No posting, no image generation, no UI beyond existing chat Activity. NVIDIA/Nebius behaviour with images and tool use remains unverified.

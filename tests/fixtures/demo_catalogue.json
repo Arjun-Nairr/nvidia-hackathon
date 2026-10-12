@@ -1,0 +1,37 @@
+{
+ "schema": 1,
+ "demo": true,
+ "notice": "FICTIONAL DEMO DATA: the merchant, product, specifications, price and illustration are invented for testing the listing-draft path. They are not real merchant facts and the image is not a photograph.",
+ "merchant": {
+  "merchant_id": "demo-acme-linens",
+  "name": "Acme Linens (fictional demo merchant)",
+  "market": {
+   "location_query": "Dallas, TX",
+   "radius_km": 50,
+   "note": "Fictional demo merchant's local market; used by the research tools."
+  }
+ },
+ "products": [
+  {
+   "product_id": "acme-cloud-quilt-queen",
+   "name": "Cloud Weave Quilted Coverlet, Queen",
+   "category": "bedding",
+   "condition": "new",
+   "specifications": {
+    "size": "Queen, 90 x 96 in",
+    "colour": "Oatmeal",
+    "material": "100% cotton shell, polyester fill",
+    "care": "Machine washable",
+    "pieces": "1 coverlet"
+   },
+   "price": {
+    "amount": 89.0,
+    "currency": "USD"
+   },
+   "image": {
+    "image_id": "demo-quilt-front",
+    "kind": "synthetic illustration of the fictional product (not a photograph)"
+   }
+  }
+ ]
+}
