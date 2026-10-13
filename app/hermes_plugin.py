@@ -184,8 +184,9 @@ FB_SEARCH_SCHEMA = {
     "description": ("Search US Facebook IMAGE ads, either by keyword (query) or for an advertiser found in this request (advertiser_no) - give exactly one. You choose the "
                     "query. Returns one entry per distinct ad (ad_no, source_ad_id, public source_url, advertiser, text, image/card counts, campaign grouping, reach state) plus "
                     "the reach_gate. Results are often unrelated or empty: judge relevance yourself and change the query rather than repeating it. Campaign grouping is NOT proof "
-                    "of an identical creative; cards are variants of one ad. The provider's order is not a reach ranking. An identical successful search is answered from this "
-                    "request's stored result and not re-sent. " + _NOKEY),
+                    "of an identical creative; cards are variants of one ad. The provider's order is not a reach ranking. Ads whose listed platforms do not include Facebook are "
+                    "skipped and counted under `skipped` (an unlisted platform stays 'unknown'). A page without a continuation cursor is the last page: next_page then stops. "
+                    "An identical successful search is answered from this request's stored result and not re-sent. " + _NOKEY),
     "parameters": {"type": "object", "additionalProperties": False, "properties": {
         "query": {"type": "string", "description": "Keyword text (exclusive with advertiser_no)."},
         "advertiser_no": {"type": "integer", "description": "From this request's fb_ads_find_advertiser result (exclusive with query)."},
@@ -210,7 +211,7 @@ FB_SAVE_SCHEMA = {
     "name": "save_ad_research",
     "description": ("Save ONE research package for this request: your selected visual references, what you actually saw in each inspected image, and how you selected them. The backend "
                     "adds identity, source links, image hashes and lineage, call accounting and the reach gate. Every reference must be an image of an ad of this request that you "
-                    "downloaded with fb_ad_image AND inspected with inspect_image. selection_basis reach_ranked is refused unless reach_gate says ranking is enabled. Claims about "
+                    "downloaded with fb_ad_image AND inspected with inspect_image. selection_basis reach_ranked is refused unless reach_gate says ranking is enabled (same metric, geography and a stated measurement period). Claims about "
                     "sales, results or effectiveness are refused. With no relevant ads, save a blocked package (no references; state the blocker). One package per request; nothing "
                     "is published."),
     "parameters": {"type": "object", "additionalProperties": False, "required": ["summary", "selection_basis"], "properties": {

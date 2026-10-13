@@ -11,7 +11,10 @@ Control (POST /control, JSON; {"reset": true} first clears log + behaviour):
   "search_status": 500, "delay_ms": 0, "api_redirect": "<host>", "image_redirect": {"<image key>": "<absolute url>"},
   "detail_override": {"<ad id>": "wrong:<other id>" | "url_other:<other id>" | "page_other:<page id>" | "no_id"},
   "include_video": true (one VIDEO ad is added to keyword results), "dup_rows": true (the first row is repeated), "no_id_row": true (one row without ad_archive_id),
-  "never_relevant": true (even a textile query gets what "first" says: unrelated ads or nothing)
+  "never_relevant": true (even a textile query gets what "first" says: unrelated ads or nothing),
+  "pages": N (company/keyword results are served 2 ads per page; page n's cursor is returned only while n < N, so page N is TERMINAL: it carries ads and NO cursor),
+  "list_platforms" / "detail_platforms": {"<ad id>": [..platforms..] | "missing"} overrides publisher_platform (list rows default FACEBOOK+INSTAGRAM, detail FACEBOOK;
+           "missing" removes the field entirely = metadata not supplied)
 GET /stats -> {"requests": [{kind, path, params, has_key}], "counts": {...}, "total": n}; /leak/* requests are logged as 'leak' (has_key shows a forwarded credential)."""
 import io, json, sys, threading, time
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
@@ -20,7 +23,8 @@ from urllib.parse import parse_qs, urlparse
 LOCK = threading.Lock()
 LOG = []
 DEFAULT_CTL = {"first": "irrelevant", "reach": "absent", "detail_fail": [], "image_fail": [], "image_html": [], "drop": [], "search_status": None, "delay_ms": 0,
-               "api_redirect": None, "image_redirect": {}, "detail_override": {}, "include_video": False, "dup_rows": False, "no_id_row": False, "never_relevant": False}
+               "api_redirect": None, "image_redirect": {}, "detail_override": {}, "include_video": False, "dup_rows": False, "no_id_row": False, "never_relevant": False,
+               "pages": 0, "list_platforms": {}, "detail_platforms": {}}
 CTL = dict(DEFAULT_CTL)
 PORT = 8792
 TEXTILE = ("coverlet", "quilt", "comforter", "bedding", "duvet", "bedspread", "linen", "blanket")
@@ -60,15 +64,24 @@ def snapshot(aid, row, video=False):
             "extra_images": [], "videos": [{"video_hd_url": "https://video.example/x.mp4"}] if video else []}
 
 
+def _platforms(o, key, ctl_key, aid, default):
+    v = CTL[ctl_key].get(aid, default)
+    if v == "missing":
+        o.pop(key, None)
+    else:
+        o[key] = v
+    return o
+
+
 def list_row(aid, row, video=False):
     page = row[0]
-    return {"ad_archive_id": aid, "page_id": page, "page_name": PAGES[page][0], "is_active": True, "start_date": 1757000000, "end_date": None,
+    return _platforms({"ad_archive_id": aid, "page_id": page, "page_name": PAGES[page][0], "is_active": True, "start_date": 1757000000, "end_date": None,
             "publisher_platform": ["FACEBOOK", "INSTAGRAM"], "collation_id": row[5], "collation_count": row[6], "total_active_time": 1814400,
             "entity_type": "PERSON_PROFILE", "page_like_count": PAGES[page][2], "targeted_or_reached_countries": ["US"],
             "reach_estimate": (11000 + int(aid[-1]) * 500) if CTL["reach"] == "ambiguous" else None,
             "impressions_with_index": ({"impressions_text": "1K-5K", "impressions_index": 3} if CTL["reach"] == "impressions" else {"impressions_text": None, "impressions_index": -1}),
             "spend": ({"lower_bound": 100, "upper_bound": 199} if CTL["reach"] == "impressions" else None), "currency": "USD" if CTL["reach"] == "impressions" else None,
-            "snapshot": snapshot(aid, row, video)}
+            "snapshot": snapshot(aid, row, video)}, "publisher_platform", "list_platforms", aid, ["FACEBOOK", "INSTAGRAM"])
 
 
 def detail_obj(aid, row, video=False):
@@ -80,7 +93,7 @@ def detail_obj(aid, row, video=False):
          "spend": ({"lower_bound": 100, "upper_bound": 199} if CTL["reach"] == "impressions" else None),
          "aaa_info": ({"eu_total_reach": 20000 + int(aid[-1]) * 7000, "age_country_gender_reach_breakdown": []} if CTL["reach"] == "present" else {"eu_total_reach": None}),
          "snapshot": snapshot(aid, row, video)}
-    return o
+    return _platforms(o, "publisherPlatform", "detail_platforms", aid, ["FACEBOOK"])
 
 
 def find_row(aid):
@@ -165,6 +178,11 @@ class H(BaseHTTPRequestHandler):
                     rows = []
                 else:
                     rows = [(a, r) for a, r in ADS.items() if not r[7]]
+            nxt = None
+            if CTL["pages"]:   # paged mode: 2 ads per page; the last page carries ads and no cursor
+                n = int(q["cursor"].rsplit("~", 1)[1]) + 1 if q.get("cursor") else 1
+                rows = rows[(n - 1) * 2:n * 2]
+                nxt = f"PG-{q.get('query', q.get('pageId', ''))}~{n}" if n < CTL["pages"] else None
             out = [list_row(a, r) for a, r in rows]
             if CTL["include_video"] and kind == "search":
                 out.append(list_row(VIDEO[0], VIDEO[1], video=True))
@@ -174,7 +192,7 @@ class H(BaseHTTPRequestHandler):
                 bad = dict(out[0])
                 bad.pop("ad_archive_id")
                 out.append(bad)
-            body = {"success": True, "credits_charged": 1, "credits_remaining": 940, key: out, "cursor": ("CUR-" + q.get("query", q.get("pageId", ""))[:8]) if out else None}
+            body = {"success": True, "credits_charged": 1, "credits_remaining": 940, key: out, "cursor": nxt if CTL["pages"] else (("CUR-" + q.get("query", q.get("pageId", ""))[:8]) if out else None)}
             if kind == "search":
                 body["searchResultsCount"] = len(out)
             return self._send(200, body)

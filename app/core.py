@@ -380,11 +380,12 @@ def db():
             c.execute("ALTER TABLE research_runs ADD COLUMN selected_location_call INTEGER")
         except sqlite3.OperationalError:   # another process added it first
             pass
-    if "delivery" not in [r[1] for r in c.execute("PRAGMA table_info(image_inspections)")]:   # how the image was sent (additive; old rows stay NULL = unknown)
-        try:
-            c.execute("ALTER TABLE image_inspections ADD COLUMN delivery TEXT")
-        except sqlite3.OperationalError:   # another process added it first
-            pass
+    for col in ("delivery", "request_id", "run_id"):   # how the image was sent; the backend-supplied request and run that inspected it (additive; old rows stay NULL = unknown/unbound)
+        if col not in [r[1] for r in c.execute("PRAGMA table_info(image_inspections)")]:
+            try:
+                c.execute(f"ALTER TABLE image_inspections ADD COLUMN {col} TEXT")
+            except sqlite3.OperationalError:   # another process added it first
+                pass
     return c
 
 

@@ -15,8 +15,12 @@ Trust and budget rules (enforced HERE, never by the model):
 - Transport: API redirects are never followed (the credential cannot be forwarded); CDN image redirects are followed only to allow-listed hosts
   (<=3 hops, no HTTPS downgrade), no credential is attached to a download, TLS verification stays on. Signed CDN URLs never leave the backend.
 - Reach: reported only from provider fields whose meaning is documented (Meta's eu_total_reach, EU geography). Anything else that looks like reach is
-  ambiguous and stays unknown. Impressions, spend, likes and run duration are never reach. Ranking is a backend-computed gate; its absence disables
-  ranking only.
+  ambiguous and stays unknown. Impressions, spend, likes and run duration are never reach. Ranking is a backend-computed gate that needs the SAME
+  documented metric, the SAME geography and an ESTABLISHED, equal measurement period (REACH_PERIOD_FIELD); ad start/end dates are never a period. Its
+  absence disables ranking only.
+- Platform: only ads that can run on Facebook qualify. A known platform list that does not include Facebook excludes the ad (search and detail alike); a
+  missing list stays 'unknown' and is never filled in.
+- Inspections: an ad image counts as inspected only by an inspection bound to THIS request and run (image_inspections.request_id/run_id).
 """
 import json, os, re, time, urllib.parse, uuid
 from app import core, research, turn_state
@@ -30,6 +34,10 @@ API_KINDS = ("advertiser", "search", "detail")
 DEFAULTS = {"run_api": 8, "run_images": 4, "scope_api": 40, "scope_images": 20}   # per manual request / per scope (ECOM_ADS_*), see _env_int callers
 SCOPE_DEFAULT = "default"
 MEDIA_TYPES = ("IMAGE_AND_MEME", "IMAGE", "MEME")   # "meme" in the Ad Library means an ad with text and an image
+# The provider/Meta field that states WHEN eu_total_reach was measured. None = no documented field exists (checked 2026-10-12: Meta's archived-ad reference and the
+# ScrapeCreators ad/search examples name none), so no period is ever established and reach ranking stays off. If a documented field appears, name it here (read from
+# aaa_info) and the gate compares only values that state the same period. Never infer it from start_date/end_date.
+REACH_PERIOD_FIELD = None
 MAX_ROWS = 25
 ARGS = {"fb_ads_find_advertiser": {"query"},
         "fb_ads_search": {"query", "advertiser_no", "status", "order", "next_page"},
@@ -351,13 +359,15 @@ def norm_ad(raw, endpoint, call_id, now):
         reach["eu_total_reach"] = aaa["eu_total_reach"]
     if aaa.get("age_country_gender_reach_breakdown") or raw.get("age_country_gender_reach_breakdown"):
         reach["breakdown_present"] = True
+    if REACH_PERIOD_FIELD and aaa.get(REACH_PERIOD_FIELD) not in (None, ""):   # only a DOCUMENTED period field; ad start/end dates are never a measurement window
+        reach["period"] = str(aaa[REACH_PERIOD_FIELD])[:60]
     plats = _pick(raw, "publisher_platform", "publisherPlatform")
     link = snap.get("link_url") if isinstance(snap.get("link_url"), str) else None
     active = _pick(raw, "is_active", "isActive")
     return {"ad_archive_id": aid, "source_url": f"https://www.facebook.com/ads/library?id={aid}" if aid else None,
             "advertiser": {"page_id": _id(_pick(raw, "page_id", "pageID", "pageId")), "name": _txt(_pick(raw, "page_name", "pageName") or snap.get("page_name"), 120)},
             "active": active if isinstance(active, bool) else None, "start_date": _date(_pick(raw, "start_date", "startDate")), "end_date": _date(_pick(raw, "end_date", "endDate")),
-            "display_format": fmt, "platforms": [str(x)[:30] for x in plats][:6] if isinstance(plats, list) else None,
+            "display_format": fmt, "platforms": [str(x)[:30] for x in plats][:12] if isinstance(plats, list) else None,
             "text": _txt(snap.get("body"), 1500), "title": _txt(snap.get("title"), 200), "caption": _txt(snap.get("caption"), 200),
             "link_description": _txt(snap.get("link_description"), 300), "cta_text": _txt(snap.get("cta_text"), 60), "cta_type": _txt(snap.get("cta_type"), 40),
             "landing_url": link[:400] if link else None, "images": images, "cards": cards,
@@ -397,10 +407,40 @@ def _merge(old, new):
     return out
 
 
+def exclusion(rec):
+    """Why a recorded ad is NOT an eligible Facebook image-ad reference, or None: 'video' | 'not_on_facebook'. Derived from the record's CURRENT fields, so a later search
+    or detail response that names the ad's platforms applies to an ad recorded earlier. A missing/empty platform list is unknown and does not exclude."""
+    if rec.get("excluded") == "video":
+        return "video"
+    plats = rec.get("platforms")
+    if isinstance(plats, list) and plats and not any("FACEBOOK" in str(p).upper() for p in plats):
+        return "not_on_facebook"
+    return None
+
+
+def platform_status(rec):
+    if exclusion(rec) == "not_on_facebook":
+        return "excluded_not_on_facebook"
+    plats = rec.get("platforms")
+    return "facebook" if isinstance(plats, list) and plats else "unknown"
+
+
+def _ineligible(no, rec, field="ad_no"):
+    """The refusal for an ad that cannot be fetched or selected, or None."""
+    ex = exclusion(rec)
+    if ex == "not_on_facebook":
+        return research._fail("ad_not_on_facebook", f"Ad {no} is not delivered on Facebook (its listed platforms: {', '.join(rec.get('platforms') or [])}). Only Facebook image ads are "
+                              "researched; it was excluded and nothing was substituted.", field, hint="Work with other ads, or report that none qualified.")
+    if ex == "video":
+        return research._fail("not_an_image_ad", f"Ad {no} turned out to be a video ad. Only image ads are researched.", field)
+    return None
+
+
 def reach_view(rec):
     """What the backend can honestly say about ONE ad's reach. Reported only for a provider field with a documented meaning and geography."""
     raw = rec.get("reach_raw") or {}
     eu, est = raw.get("eu_total_reach"), raw.get("reach_estimate")
+    period = raw.get("period") or None
 
     def num(v):
         if isinstance(v, bool):
@@ -409,9 +449,11 @@ def reach_view(rec):
             return v
         return float(v) if isinstance(v, str) and re.fullmatch(r"\d+(\.\d+)?", v.strip()) else None
     if num(eu) is not None:
-        return {"state": "reported", "metric": "eu_total_reach", "value": num(eu), "geography": "EU", "period": None, "source": "provider field aaa_info.eu_total_reach",
-                "meaning": "Meta's estimated combined reach across EU locations, available only for ads delivered in the EU. It is NOT US reach. Period not stated.",
-                "comparable_with": "other ads' eu_total_reach only"}
+        return {"state": "reported", "metric": "eu_total_reach", "value": num(eu), "geography": "EU", "period": period, "source": "provider field aaa_info.eu_total_reach",
+                "meaning": "Meta's estimated combined reach across EU locations, available only for ads delivered in the EU. It is NOT US reach. "
+                           + (f"Measurement period: {period}." if period else "Measurement period not stated."),
+                "comparable_with": ("other ads' eu_total_reach that state the same measurement period" if period else
+                                    "nothing: the measurement period is unknown, so it cannot be shown to cover the same period as another ad's value")}
     if eu is not None or est is not None:
         f, v = ("eu_total_reach", eu) if eu is not None else ("reach_estimate", est)
         return {"state": "ambiguous", "metric": f, "value": None, "provider_value": v, "geography": None, "period": None, "source": f"provider field {f}",
@@ -422,23 +464,32 @@ def reach_view(rec):
 
 
 def reach_gate(recs):
+    recs = [r for r in recs if not exclusion(r)]   # an ad that is not an eligible Facebook ad contributes nothing, not even a reach value
     views = [reach_view(r) for r in recs]
     rep = [v for v in views if v["state"] == "reported"]
     amb = sum(1 for v in views if v["state"] == "ambiguous")
     metrics = {(v["metric"], v["geography"]) for v in rep}
-    if len(rep) >= 2 and len(metrics) == 1:
-        state, why = "enabled", ("Ranking may use the reported value among the ads that carry it, only: same metric (eu_total_reach) and geography (EU). It is exposure in the EU, not "
-                                 "US reach and not evidence of sales or effectiveness; relevance to the merchant's product and audience still comes first.")
+    periods = {v["period"] for v in rep}
+    period = None
+    if len(rep) >= 2 and len(metrics) > 1:
+        state, why = "disabled_incompatible_metrics", "Reported reach values have different metrics or geographies and are not comparable."
+    elif len(rep) >= 2 and None in periods:
+        state, why = "disabled_period_unknown", ("Reported reach values share a metric and geography, but the measurement period of at least one is not stated, so they cannot be shown to "
+                                                 "cover comparable periods. Ad start and end dates are not a measurement period. The values are kept; ranking stays off.")
+    elif len(rep) >= 2 and len(periods) > 1:
+        state, why = "disabled_incompatible_metrics", "Reported reach values state different measurement periods and are not comparable."
+    elif len(rep) >= 2:
+        period = next(iter(periods))
+        state, why = "enabled", ("Ranking may use the reported value among the ads that carry it, only: same metric (eu_total_reach), geography (EU) and stated measurement period. It is "
+                                 "exposure in the EU, not US reach and not evidence of sales or effectiveness; relevance to the merchant's product and audience still comes first.")
     elif len(rep) == 1:
         state, why = "disabled_single_value", "Only one ad carries a reported reach value, so there is nothing to compare it with."
-    elif len(rep) > 1:
-        state, why = "disabled_incompatible_metrics", "Reported reach values have different metrics or geographies and are not comparable."
     elif amb:
         state, why = "disabled_reach_ambiguous", "Some ads carry a value that looks like reach but whose meaning, period and geography are undefined; it stays unknown."
     else:
         state, why = "disabled_reach_unavailable", "No ad carries a reach value. Reach is unknown (not zero): select by relevance and say that reach ranking was unavailable."
     return {"state": state, "ranking_enabled": state == "enabled", "metric": next(iter(metrics))[0] if state == "enabled" else None,
-            "geography": next(iter(metrics))[1] if state == "enabled" else None, "ads_recorded": len(recs), "ads_with_reported_reach": len(rep),
+            "geography": next(iter(metrics))[1] if state == "enabled" else None, "period": period, "ads_recorded": len(recs), "ads_with_reported_reach": len(rep),
             "ads_with_ambiguous_reach": amb, "reason": why,
             "rule": "Never substitute impressions, spend, likes, ad duration, audience size or search order for reach; reach is not proof of sales."}
 
@@ -526,7 +577,8 @@ def public_ad(no, rec, regs=None, groups=None, full=True):
     imgs = [{"image_no": i["image_no"], "from": i["source"], "image_id": (regs.get((rec["ad_archive_id"], i["image_no"])) or {}).get("image_id")} for i in rec.get("images") or []]
     land = urllib.parse.urlparse(rec.get("landing_url") or "").hostname
     om = rec.get("other_metrics") or {}
-    out = {"ad_no": no, "source_ad_id": rec["ad_archive_id"], "source_url": rec.get("source_url"),
+    ex = exclusion(rec)
+    out = {"ad_no": no, "source_ad_id": rec["ad_archive_id"], "source_url": rec.get("source_url"), "platform_status": platform_status(rec),
            "advertiser": {"name": (rec.get("advertiser") or {}).get("name"), "page_id": (rec.get("advertiser") or {}).get("page_id")},
            "active": rec.get("active"), "start_date": rec.get("start_date"), "end_date": rec.get("end_date"), "display_format": rec.get("display_format"),
            "text": (rec.get("text") or "")[:300 if full else 160] or None, "headline": rec.get("title"), "cta": rec.get("cta_text") or rec.get("cta_type"),
@@ -535,8 +587,11 @@ def public_ad(no, rec, regs=None, groups=None, full=True):
                         "recorded_ad_nos_in_campaign": sorted((groups or {}).get(cid, [])) if cid else None,
                         "note": "grouping only: each source_ad_id is its own ad; a shared campaign does not prove an identical creative" if cid else None},
            "reach": reach_view(rec), "detail_level": rec.get("detail_level"), "retrieved_at": rec.get("retrieved_at")}
-    if rec.get("excluded"):
-        out["excluded"] = f"{rec['excluded']} ad: not an image ad, no image can be downloaded"
+    if ex == "video":
+        out["excluded"] = "video ad: not an image ad, no image can be downloaded"
+    elif ex:
+        out["excluded"] = ("not delivered on Facebook (listed platforms: " + ", ".join(rec.get("platforms") or []) + "): excluded; its image cannot be downloaded or selected "
+                           "and no other platform's ad is substituted")
     if not full:   # list view: compact (the meaning/notes appear once per result and in fb_ad_detail), so a 25-ad page stays small
         out["reach"] = {k: v for k, v in out["reach"].items() if k in ("state", "metric", "value", "geography", "provider_value")}
         out["campaign"] = {k: v for k, v in out["campaign"].items() if k != "note"}
@@ -546,6 +601,7 @@ def public_ad(no, rec, regs=None, groups=None, full=True):
         out["cards"] = [{"card_no": c["card_no"], "title": c.get("title"), "body": c.get("body"), "cta": c.get("cta_text"),
                          "image_no": next((i["image_no"] for i in rec.get("images") or [] if i["key"] == c.get("image_key")), None)} for c in (rec.get("cards") or [])[:8]]
         out["description"] = rec.get("link_description")
+        out["platforms"] = rec.get("platforms")
         out["countries_listed"] = rec.get("countries")
         out["identity"] = rec.get("identity")
         if om:
@@ -623,6 +679,12 @@ def find_advertiser(agent_id, args):
     return _with_allowance(out, run)
 
 
+def _skipped(info, nonfb):
+    """What a search page did not offer, and why (disclosed, never silently dropped)."""
+    return {k: n for k, n in (("dropped_without_id", info.get("dropped_without_id")), ("duplicates_in_response", info.get("duplicates_in_response")),
+                              ("excluded_video_ads", info.get("excluded_video")), ("excluded_non_facebook_ads", nonfb)) if n}
+
+
 def search(agent_id, args):
     run, e = _prepare(agent_id, "fb_ads_search", args)
     if e:
@@ -654,13 +716,15 @@ def search(agent_id, args):
             return e
         endpoint, label = "keyword", {"query": q}
         params.update(query=q, search_type="keyword_unordered")
-    if args.get("next_page"):   # the cursor comes from this run's own earlier page of the SAME search, never from the model
+    if args.get("next_page"):   # the cursor comes from this run's own LATEST successful page of the SAME search, never from the model
         with core.db() as c:
             prev = c.execute("SELECT params, result FROM ad_calls WHERE run_id=? AND kind='search' AND outcome='ok' ORDER BY id DESC", (run["run_id"],)).fetchall()
-        cur = next((json.loads(r["result"]).get("cursor") for r in prev
-                    if {k: v for k, v in json.loads(r["params"]).items() if k != "cursor"} == params and (json.loads(r["result"] or "{}").get("cursor"))), None)
-        if not cur:
-            return research._fail("no_next_page", "There is no further page recorded for this exact search in this request.", "next_page")
+        last = next((r for r in prev if {k: v for k, v in json.loads(r["params"]).items() if k != "cursor"} == params), None)
+        cur = json.loads(last["result"] or "{}").get("cursor") if last else None
+        if not cur:   # the latest page of this search carried no cursor: it was the last page. Older pages' cursors are never reused.
+            return research._fail("no_next_page", ("That was the last page: the provider returned no continuation cursor for the latest page of this exact search in this request."
+                                                   if last else "There is no further page recorded for this exact search in this request."), "next_page",
+                                  hint="Work with the ads you already have, change the query or advertiser, or report what was and was not found.")
         params["cursor"] = cur
     st, v, cid = _api(run, endpoint, params)
     if st == "error":
@@ -670,9 +734,14 @@ def search(agent_id, args):
     regs = _registered(run["run_id"])
     if st == "cached":
         info = json.loads(v["result"])
-        rows = [public_ad(n, ads[n], regs, groups, False) for n in info["ad_nos"] if n in ads]
-        return _with_allowance({"ok": True, "cached": True, **label, "ads": rows[:MAX_ROWS], "ads_returned": len(rows), "has_more_pages": bool(info.get("cursor")),
-                                "reach_gate": reach_gate(list(ads.values()))}, run)
+        shown = [n for n in info["ad_nos"] if n in ads and not exclusion(ads[n])]   # eligibility is re-read from the CURRENT records (a later detail may have excluded an ad)
+        rows = [public_ad(n, ads[n], regs, groups, False) for n in shown]
+        out = {"ok": True, "cached": True, **label, "ads": rows[:MAX_ROWS], "ads_returned": len(rows), "has_more_pages": bool(info.get("cursor")),
+               "reach_gate": reach_gate(list(ads.values()))}
+        skipped = _skipped(info, sum(1 for n in info["ad_nos"] if n in ads and exclusion(ads[n]) == "not_on_facebook"))
+        if skipped:
+            out["skipped"] = skipped
+        return _with_allowance(out, run)
     data, status_code, credits, remaining, ms = v
     now = _now()
     new, dup, noid, video = [], 0, 0, 0
@@ -686,10 +755,10 @@ def search(agent_id, args):
             dup += 1
             continue
         seen.add(r["ad_archive_id"])
-        if r["excluded"]:
+        if exclusion(r) == "video":
             video += 1
             continue
-        new.append(r)
+        new.append(r)   # an ad whose platforms exclude Facebook is STORED too: a later page/detail then updates the same record and the package can disclose it
     try:
         nos = _store_ads(run["run_id"], cid, new)
     except Exception as ex:   # sent and counted, result not kept: say exactly that, never re-send
@@ -701,12 +770,14 @@ def search(agent_id, args):
                                                        "excluded_video": video}, credits=credits, remaining=remaining, ms=ms)
     ads = _load_ads(run["run_id"])
     groups = _campaigns(ads)
-    rows = [public_ad(n, ads[n], regs, groups, False) for n in nos]
+    shown = [n for n in nos if not exclusion(ads[n])]
+    nonfb = sum(1 for n in nos if exclusion(ads[n]) == "not_on_facebook")
+    rows = [public_ad(n, ads[n], regs, groups, False) for n in shown]
     out = {"ok": True, **label, "ads": rows[:MAX_ROWS], "ads_returned": len(rows), "has_more_pages": bool(cursor), "reach_gate": reach_gate(list(ads.values())),
            "ordering": "provider's own order; it is NOT a reach ranking",
            "note": "Relevance is YOUR judgement: results can be unrelated. Campaign grouping is not proof of identical creatives; each source_ad_id is one ad. "
                    "An ad's reach state is explained by fb_ad_detail and the reach_gate; 'unavailable' means unknown, not zero. images lists the image_no values for fb_ad_image."}
-    skipped = {k: n for k, n in (("dropped_without_id", noid), ("duplicates_in_response", dup), ("excluded_video_ads", video)) if n}
+    skipped = _skipped({"dropped_without_id": noid, "duplicates_in_response": dup, "excluded_video": video}, nonfb)
     if skipped:
         out["skipped"] = skipped
     if not rows:
@@ -727,6 +798,8 @@ def detail(agent_id, args):
                                               hint="Use an ad_no from an fb_ads_search result of this request."), run)
     rec = ads[no]
     aid = rec["ad_archive_id"]
+    if exclusion(rec) == "not_on_facebook":
+        return _with_allowance(_ineligible(no, rec), run)
     st, v, cid = _api(run, "detail", {"id": aid})
     regs, groups = _registered(run["run_id"]), _campaigns(ads)
     if st == "error":
@@ -783,8 +856,9 @@ def image(agent_id, args):
                                               hint="Use an ad_no from an fb_ads_search result of this request."), run)
     rec = ads[no]
     aid = rec["ad_archive_id"]
-    if rec.get("excluded"):
-        return _with_allowance(research._fail("not_an_image_ad", f"Ad {no} turned out to be a {rec['excluded']} ad. Only image ads are researched.", "ad_no"), run)
+    bad = _ineligible(no, rec)   # before the store lookup: an already downloaded file of an ineligible ad is not served as a candidate either
+    if bad:
+        return _with_allowance(bad, run)
     img = next((i for i in rec.get("images") or [] if i["image_no"] == ino), None)
     if img is None:
         return _with_allowance(research._fail("unknown_image", f"Ad {no} has no image number {ino} (it has {len(rec.get('images') or [])}).", "image_no",
@@ -909,9 +983,10 @@ def save_package(agent_id, a):
         return research._fail("reach_ranking_unavailable", f"selection_basis reach_ranked is not allowed: reach ranking is {gate['state']}. {gate['reason']}", "selection_basis",
                               hint="Select by relevance (relevance_only) and say that reach ranking was unavailable.", reach_gate=gate)
     with core.db() as d:
-        insp = {}
-        for r in d.execute("SELECT * FROM image_inspections WHERE agent_id=? AND kind='live_ad_image' ORDER BY id", (agent_id,)):
-            insp[(r["image_id"], r["sha256"])] = dict(r)   # the latest inspection of exactly these bytes wins
+        insp = {}   # ONLY inspections bound to this request and this run count; another request's (or a legacy unbound) inspection of identical bytes does not
+        for r in d.execute("SELECT * FROM image_inspections WHERE agent_id=? AND kind='live_ad_image' AND request_id=? AND run_id=? ORDER BY id",
+                           (agent_id, run["request_id"], rid)):
+            insp[(r["image_id"], r["sha256"])] = dict(r)   # the latest inspection of exactly these bytes within this request wins
     groups = _campaigns(ads)
     out_refs, missing, seen_img = [], [], set()
     for i, r in enumerate(refs):
@@ -921,6 +996,9 @@ def save_package(agent_id, a):
         no, iid = r.get("ad_no"), r.get("image_id")
         if isinstance(no, bool) or not isinstance(no, int) or no not in ads:
             return research._fail("unknown_ad", f"{w}.ad_no {no!r} is not an ad returned by a search in this request.", f"{w}.ad_no")
+        bad = _ineligible(no, ads[no], f"{w}.ad_no")
+        if bad:   # e.g. a detail response identified it as Instagram-only AFTER its image was downloaded and inspected
+            return bad
         reg = next((x for x in regs.values() if x["image_id"] == iid and x["ad_no"] == no), None) if isinstance(iid, str) else None
         if reg is None:
             return research._fail("image_not_registered", f"{w}.image_id {iid!r} is not an image of ad {no} downloaded in this request with fb_ad_image.", f"{w}.image_id",
@@ -930,8 +1008,9 @@ def save_package(agent_id, a):
         seen_img.add(iid)
         row = insp.get((iid, reg["sha256"]))
         if row is None or row["ts"] < run["created_at"]:
-            return research._fail("image_not_inspected", f"{w}.image_id {iid!r} was not inspected by you in this request (no inspect_image result for these bytes is recorded). "
-                                  "Call inspect_image first.", f"{w}.image_id")
+            return research._fail("image_not_inspected", f"{w}.image_id {iid!r} was not inspected by you in this request (no inspect_image result for these bytes is recorded "
+                                  "for THIS request; an inspection made in another request, or one recorded before requests were tracked, does not count). Call inspect_image first.",
+                                  f"{w}.image_id")
         why, obs = r.get("why_relevant"), r.get("observations")
         feats = r.get("visual_features")
         if not isinstance(why, str) or not 20 <= len(why.strip()) <= 400:
@@ -949,7 +1028,8 @@ def save_package(agent_id, a):
                            "its observations are model text only, not verified visual evidence")
         out_refs.append({"ad_no": no, "source_ad_id": ads[no]["ad_archive_id"], "source_url": ads[no].get("source_url"), "image_id": iid, "image_no": reg["image_no"],
                          "image_source": reg["source_field"], "sha256": reg["sha256"], "bytes": reg["bytes"], "width": reg["width"], "height": reg["height"], "host": reg["host"],
-                         "retrieved_at": _iso(reg["fetched_at"]), "inspected_at": _iso(row["ts"]), "inspection_sha256": row["sha256"], "delivery": delivery,
+                         "retrieved_at": _iso(reg["fetched_at"]), "inspected_at": _iso(row["ts"]), "inspection_sha256": row["sha256"], "inspection_request_id": row["request_id"],
+                         "inspection_run_id": row["run_id"], "delivery": delivery,
                          "counts_as_verified_evidence": delivery == "image_part_sent", "why_relevant": why.strip(), "visual_features": [f.strip() for f in feats],
                          "model_observations": obs.strip(), "model_uncertainties": str(r.get("uncertainties") or "").strip()[:600]})
     status = "blocked" if not refs else ("complete" if not missing else "partial")
@@ -961,8 +1041,10 @@ def save_package(agent_id, a):
              "run_id": rid, "message_id": run["message_id"], "country": run["country"], "media_type": run["media_type"], "source": SOURCE}
     considered = [{"ad_no": n, "source_ad_id": r["ad_archive_id"], "source_url": r.get("source_url"), "advertiser": (r.get("advertiser") or {}).get("name"),
                    "text": (r.get("text") or "")[:160] or None, "image_count": len(r.get("images") or []), "card_count": len(r.get("cards") or []),
-                   "campaign_id": (r.get("campaign") or {}).get("campaign_id"), "reach_state": reach_view(r)["state"], "detail_level": r.get("detail_level")}
+                   "campaign_id": (r.get("campaign") or {}).get("campaign_id"), "reach_state": reach_view(r)["state"], "detail_level": r.get("detail_level"),
+                   "platforms": r.get("platforms"), "excluded": exclusion(r)}
                   for n, r in ads.items()]
+    excluded_ads = [{"ad_no": n, "source_ad_id": r["ad_archive_id"], "reason": exclusion(r), "platforms": r.get("platforms")} for n, r in ads.items() if exclusion(r)]
     cited_view = [public_ad(n, ads[n], regs, groups, True) for n in cited]
     body = {"cited_ads": cited_view, "references": out_refs}
     try:
@@ -978,7 +1060,7 @@ def save_package(agent_id, a):
             return research._fail("package_already_saved", f"This request already saved its research package ({again['package_id']}).", package_id=again["package_id"])
         return research._fail("storage_error", f"The package could not be saved ({type(ex).__name__}). Nothing was published.", hint="Report this as a blocker.")
     return _with_allowance({"ok": True, "package_id": pid, "status": status, "missing": missing, "references_saved": len(out_refs), "independent_ads_cited": len(cited),
-                            "ads_recorded": len(ads), "campaigns_cited": len({(ads[n].get("campaign") or {}).get("campaign_id") or f"ad-{n}" for n in cited}),
+                            "ads_recorded": len(ads), "excluded_ads": excluded_ads, "campaigns_cited": len({(ads[n].get("campaign") or {}).get("campaign_id") or f"ad-{n}" for n in cited}),
                             "reach_gate": gate, "retrieve": f"/api/ads/packages/{pid}",
                             "note": "Saved. Nothing was published. Tell the user the package id, the reach-gate state and, if status is partial or blocked, what is missing."}, run)
 
@@ -1012,7 +1094,7 @@ def _package(r):
     return {"package_id": r["package_id"], "status": r["status"], "created_at": r["created_at"], "identity": json.loads(r["identity"]), "summary": r["summary"],
             "selection_basis": r["selection_basis"], "blocker": r["blocker"], "limitations": r["limitations"], "reach_gate": json.loads(r["reach_gate"]),
             "cited_ads": cited, "references": body["references"], "ads_considered": ads, "campaigns_cited": camp,
-            "counts": {"ads_recorded": len(ads), "independent_ads_cited": len(cited), "references": len(body["references"]),
+            "counts": {"ads_recorded": len(ads), "ads_excluded": sum(1 for a in ads if a.get("excluded")), "independent_ads_cited": len(cited), "references": len(body["references"]),
                        "campaigns_cited": len({x["campaign"]["campaign_id"] or f"ad-{x['ad_no']}" for x in cited}),
                        "cards_in_cited_ads": sum(x["card_count"] for x in cited)},
             "call_accounting": json.loads(r["call_accounting"]),

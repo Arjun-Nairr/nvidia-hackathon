@@ -84,8 +84,8 @@ conventions and not on observed ads.
   visual observations. Report what is visible, readable text and what you are unsure of, per image_id.
 - **Distinct ads, campaigns and cards.** Each source_ad_id is one ad. A shared campaign_id only groups ads; it does not prove the creatives are identical.
   Cards are variants of one ad, not extra ads. Never count variants as independent evidence.
-- **Reach.** Use reach only when the reach gate says ranking is enabled, and then only the stated metric and geography. When it is unavailable or
-  ambiguous it is unknown, not zero: choose references by relevance and say that reach ranking was unavailable. Never use impressions, spend, likes, how long
+- **Reach.** Use reach only when the reach gate says ranking is enabled, and then only the stated metric, geography and measurement period. When it is
+  unavailable, ambiguous or its period is not stated it is unknown, not zero: choose references by relevance and say that reach ranking was unavailable. Never use impressions, spend, likes, how long
   an ad ran or its order in the results as a stand-in, and never say that exposure shows an ad sold or worked.
 - **Save once.** Finish with `save_ad_research`: the references you selected, why each is relevant, the visual features worth taking as a principle and what
   you actually saw. Say what could not be verified.

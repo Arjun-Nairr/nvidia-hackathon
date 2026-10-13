@@ -1,0 +1,554 @@
+{
+ "package": {
+  "package_id": "adpkg-5b58e07549",
+  "status": "complete",
+  "created_at": 1791826209.8617978,
+  "identity": {
+   "agent_id": "acme-ad-researcher",
+   "company_id": "default",
+   "company_name": "Acme Linens (fictional demo merchant)",
+   "conversation_id": "conv-acme-ad-researcher",
+   "request_id": "b-req-2",
+   "run_id": "adrun-7513e03d77",
+   "message_id": 23,
+   "country": "US",
+   "media_type": "IMAGE_AND_MEME",
+   "source": "ScrapeCreators Facebook Ad Library (live research run)"
+  },
+  "summary": "Researched US Facebook image ads for the merchant's quilted bedding; selected 2 visual references from distinct campaigns.",
+  "selection_basis": "relevance_only",
+  "blocker": null,
+  "limitations": "Scripted mock agent; reach ranking depends on the gate.",
+  "reach_gate": {
+   "state": "disabled_period_unknown",
+   "ranking_enabled": false,
+   "metric": null,
+   "geography": null,
+   "period": null,
+   "ads_recorded": 3,
+   "ads_with_reported_reach": 2,
+   "ads_with_ambiguous_reach": 0,
+   "reason": "Reported reach values share a metric and geography, but the measurement period of at least one is not stated, so they cannot be shown to cover comparable periods. Ad start and end dates are not a measurement period. The values are kept; ranking stays off.",
+   "rule": "Never substitute impressions, spend, likes, ad duration, audience size or search order for reach; reach is not proof of sales."
+  },
+  "cited_ads": [
+   {
+    "ad_no": 1,
+    "source_ad_id": "1100000000000001",
+    "source_url": "https://www.facebook.com/ads/library?id=1100000000000001",
+    "platform_status": "facebook",
+    "advertiser": {
+     "name": "Harbor Home Linens",
+     "page_id": "1001"
+    },
+    "active": true,
+    "start_date": "2025-09-04",
+    "end_date": null,
+    "display_format": "IMAGE",
+    "text": "Soft layered comfort for every bedroom. Quilted coverlet in oatmeal.",
+    "headline": "Queen quilted coverlet",
+    "cta": "Shop now",
+    "landing_domain": "example.com",
+    "image_count": 1,
+    "images": [
+     {
+      "image_no": 1,
+      "from": "images[0]",
+      "image_id": "ad-1100000000000001-1"
+     }
+    ],
+    "card_count": 0,
+    "campaign": {
+     "campaign_id": "5000000000000001",
+     "campaign_ad_count": 2,
+     "recorded_ad_nos_in_campaign": [
+      1,
+      2
+     ],
+     "note": "grouping only: each source_ad_id is its own ad; a shared campaign does not prove an identical creative"
+    },
+    "reach": {
+     "state": "reported",
+     "metric": "eu_total_reach",
+     "value": 27000,
+     "geography": "EU",
+     "period": null,
+     "source": "provider field aaa_info.eu_total_reach",
+     "meaning": "Meta's estimated combined reach across EU locations, available only for ads delivered in the EU. It is NOT US reach. Measurement period not stated.",
+     "comparable_with": "nothing: the measurement period is unknown, so it cannot be shown to cover the same period as another ad's value"
+    },
+    "detail_level": "detailed",
+    "retrieved_at": "2026-10-12T17:30:08Z",
+    "cards": [],
+    "description": null,
+    "platforms": [
+     "FACEBOOK"
+    ],
+    "countries_listed": [
+     "US"
+    ],
+    "identity": "id_match"
+   },
+   {
+    "ad_no": 4,
+    "source_ad_id": "1100000000000004",
+    "source_url": "https://www.facebook.com/ads/library?id=1100000000000004",
+    "platform_status": "facebook",
+    "advertiser": {
+     "name": "Northwind Beds",
+     "page_id": "1003"
+    },
+    "active": true,
+    "start_date": "2025-09-04",
+    "end_date": null,
+    "display_format": "IMAGE",
+    "text": "A queen comforter set with two shams. Simple, warm and easy to wash.",
+    "headline": "Comforter set",
+    "cta": "Shop now",
+    "landing_domain": "example.com",
+    "image_count": 1,
+    "images": [
+     {
+      "image_no": 1,
+      "from": "images[0]",
+      "image_id": "ad-1100000000000004-1"
+     }
+    ],
+    "card_count": 0,
+    "campaign": {
+     "campaign_id": null,
+     "campaign_ad_count": null,
+     "recorded_ad_nos_in_campaign": null,
+     "note": null
+    },
+    "reach": {
+     "state": "reported",
+     "metric": "eu_total_reach",
+     "value": 48000,
+     "geography": "EU",
+     "period": null,
+     "source": "provider field aaa_info.eu_total_reach",
+     "meaning": "Meta's estimated combined reach across EU locations, available only for ads delivered in the EU. It is NOT US reach. Measurement period not stated.",
+     "comparable_with": "nothing: the measurement period is unknown, so it cannot be shown to cover the same period as another ad's value"
+    },
+    "detail_level": "detailed",
+    "retrieved_at": "2026-10-12T17:30:09Z",
+    "cards": [],
+    "description": null,
+    "platforms": [
+     "FACEBOOK"
+    ],
+    "countries_listed": [
+     "US"
+    ],
+    "identity": "id_match"
+   }
+  ],
+  "references": [
+   {
+    "ad_no": 1,
+    "source_ad_id": "1100000000000001",
+    "source_url": "https://www.facebook.com/ads/library?id=1100000000000001",
+    "image_id": "ad-1100000000000001-1",
+    "image_no": 1,
+    "image_source": "images[0]",
+    "sha256": "f310255e7e9965d8fcbda32e1b2c3e87ec2f9fc729191b0afe170c7ab62f5e7c",
+    "bytes": 880,
+    "width": 240,
+    "height": 300,
+    "host": "127.0.0.1",
+    "retrieved_at": "2026-10-12T17:30:09Z",
+    "inspected_at": "2026-10-12T17:30:09Z",
+    "inspection_sha256": "f310255e7e9965d8fcbda32e1b2c3e87ec2f9fc729191b0afe170c7ab62f5e7c",
+    "inspection_request_id": "b-req-2",
+    "inspection_run_id": "adrun-7513e03d77",
+    "delivery": "image_part_sent",
+    "counts_as_verified_evidence": true,
+    "why_relevant": "A comparable quilted bedding ad from Harbor Home Linens: its layout shows what shoppers meet for this product type.",
+    "visual_features": [
+     "product shown large against a plain backdrop",
+     "short headline above the product"
+    ],
+    "model_observations": "Inspected image ad-1100000000000001-1 (scripted mock observation of the downloaded ad image).",
+    "model_uncertainties": "Fine detail and brand colours not assessed."
+   },
+   {
+    "ad_no": 4,
+    "source_ad_id": "1100000000000004",
+    "source_url": "https://www.facebook.com/ads/library?id=1100000000000004",
+    "image_id": "ad-1100000000000004-1",
+    "image_no": 1,
+    "image_source": "images[0]",
+    "sha256": "de08875a296b036e74d3dd4191eeef1b2bea30b0458a59848bc9064ccd891b10",
+    "bytes": 879,
+    "width": 240,
+    "height": 300,
+    "host": "127.0.0.1",
+    "retrieved_at": "2026-10-12T17:30:09Z",
+    "inspected_at": "2026-10-12T17:30:09Z",
+    "inspection_sha256": "de08875a296b036e74d3dd4191eeef1b2bea30b0458a59848bc9064ccd891b10",
+    "inspection_request_id": "b-req-2",
+    "inspection_run_id": "adrun-7513e03d77",
+    "delivery": "image_part_sent",
+    "counts_as_verified_evidence": true,
+    "why_relevant": "A comparable quilted bedding ad from Northwind Beds: its layout shows what shoppers meet for this product type.",
+    "visual_features": [
+     "product shown large against a plain backdrop",
+     "short headline above the product"
+    ],
+    "model_observations": "Inspected image ad-1100000000000004-1 (scripted mock observation of the downloaded ad image).",
+    "model_uncertainties": "Fine detail and brand colours not assessed."
+   }
+  ],
+  "ads_considered": [
+   {
+    "ad_no": 1,
+    "source_ad_id": "1100000000000001",
+    "source_url": "https://www.facebook.com/ads/library?id=1100000000000001",
+    "advertiser": "Harbor Home Linens",
+    "text": "Soft layered comfort for every bedroom. Quilted coverlet in oatmeal.",
+    "image_count": 1,
+    "card_count": 0,
+    "campaign_id": "5000000000000001",
+    "reach_state": "reported",
+    "detail_level": "detailed",
+    "platforms": [
+     "FACEBOOK"
+    ],
+    "excluded": null
+   },
+   {
+    "ad_no": 2,
+    "source_ad_id": "1100000000000002",
+    "source_url": "https://www.facebook.com/ads/library?id=1100000000000002",
+    "advertiser": "Harbor Home Linens",
+    "text": "The same coverlet range in sage green. Shop the quilted collection.",
+    "image_count": 1,
+    "card_count": 0,
+    "campaign_id": "5000000000000001",
+    "reach_state": "unavailable",
+    "detail_level": "list_only",
+    "platforms": [
+     "FACEBOOK",
+     "INSTAGRAM"
+    ],
+    "excluded": null
+   },
+   {
+    "ad_no": 3,
+    "source_ad_id": "1100000000000003",
+    "source_url": "https://www.facebook.com/ads/library?id=1100000000000003",
+    "advertiser": "Harbor Home Linens",
+    "text": "Bedding sets for every bedroom: sheets, quilts and pillow shams.",
+    "image_count": 3,
+    "card_count": 3,
+    "campaign_id": "5000000000000002",
+    "reach_state": "unavailable",
+    "detail_level": "list_only",
+    "platforms": [
+     "INSTAGRAM"
+    ],
+    "excluded": "not_on_facebook"
+   },
+   {
+    "ad_no": 4,
+    "source_ad_id": "1100000000000004",
+    "source_url": "https://www.facebook.com/ads/library?id=1100000000000004",
+    "advertiser": "Northwind Beds",
+    "text": "A queen comforter set with two shams. Simple, warm and easy to wash.",
+    "image_count": 1,
+    "card_count": 0,
+    "campaign_id": null,
+    "reach_state": "reported",
+    "detail_level": "detailed",
+    "platforms": [
+     "FACEBOOK"
+    ],
+    "excluded": null
+   }
+  ],
+  "campaigns_cited": {
+   "5000000000000001": [
+    1
+   ]
+  },
+  "counts": {
+   "ads_recorded": 4,
+   "ads_excluded": 1,
+   "independent_ads_cited": 2,
+   "references": 2,
+   "campaigns_cited": 2,
+   "cards_in_cited_ads": 0
+  },
+  "call_accounting": {
+   "scraper_attempts": 3,
+   "scraper_attempts_max": 8,
+   "image_download_attempts": 2,
+   "image_download_attempts_max": 4,
+   "by_kind": {
+    "search": {
+     "attempts": 1,
+     "ok": 1,
+     "failed": 0,
+     "unknown": 0
+    },
+    "detail": {
+     "attempts": 2,
+     "ok": 2,
+     "failed": 0,
+     "unknown": 0
+    },
+    "image": {
+     "attempts": 2,
+     "ok": 2,
+     "failed": 0,
+     "unknown": 0
+    }
+   },
+   "credits_reported_charged": 3.0,
+   "credits_note": "sum of provider-reported credits_charged over calls that reported one; failed calls may be charged without a report",
+   "scope": "b-main",
+   "calls": [
+    {
+     "n": 9,
+     "kind": "search",
+     "endpoint": "keyword",
+     "outcome": "ok",
+     "http_status": 200,
+     "credits_charged": 1.0,
+     "ms": 90
+    },
+    {
+     "n": 10,
+     "kind": "detail",
+     "endpoint": "detail",
+     "outcome": "ok",
+     "http_status": 200,
+     "credits_charged": 1.0,
+     "ms": 78
+    },
+    {
+     "n": 11,
+     "kind": "detail",
+     "endpoint": "detail",
+     "outcome": "ok",
+     "http_status": 200,
+     "credits_charged": 1.0,
+     "ms": 78
+    },
+    {
+     "n": 12,
+     "kind": "image",
+     "endpoint": "image",
+     "outcome": "ok",
+     "http_status": 200,
+     "credits_charged": null,
+     "ms": 78
+    },
+    {
+     "n": 13,
+     "kind": "image",
+     "endpoint": "image",
+     "outcome": "ok",
+     "http_status": 200,
+     "credits_charged": null,
+     "ms": 71
+    }
+   ]
+  },
+  "retrieval_note": "Stored data only. Signed CDN URLs and credentials are never part of a package; images are managed IDs served by /api/ads/images/<run_id>/<image_id>."
+ },
+ "run": {
+  "run_id": "adrun-7513e03d77",
+  "agent_id": "acme-ad-researcher",
+  "company_id": "default",
+  "conversation_id": "conv-acme-ad-researcher",
+  "request_id": "b-req-2",
+  "scope": "b-main",
+  "country": "US",
+  "media_type": "IMAGE_AND_MEME",
+  "created_at": 1791826208.444594,
+  "calls": [
+   {
+    "n": 9,
+    "kind": "search",
+    "endpoint": "keyword",
+    "outcome": "ok",
+    "http_status": 200,
+    "credits_charged": 1.0,
+    "ms": 90
+   },
+   {
+    "n": 10,
+    "kind": "detail",
+    "endpoint": "detail",
+    "outcome": "ok",
+    "http_status": 200,
+    "credits_charged": 1.0,
+    "ms": 78
+   },
+   {
+    "n": 11,
+    "kind": "detail",
+    "endpoint": "detail",
+    "outcome": "ok",
+    "http_status": 200,
+    "credits_charged": 1.0,
+    "ms": 78
+   },
+   {
+    "n": 12,
+    "kind": "image",
+    "endpoint": "image",
+    "outcome": "ok",
+    "http_status": 200,
+    "credits_charged": null,
+    "ms": 78
+   },
+   {
+    "n": 13,
+    "kind": "image",
+    "endpoint": "image",
+    "outcome": "ok",
+    "http_status": 200,
+    "credits_charged": null,
+    "ms": 71
+   }
+  ],
+  "accounting": {
+   "scraper_attempts": 3,
+   "scraper_attempts_max": 8,
+   "image_download_attempts": 2,
+   "image_download_attempts_max": 4,
+   "by_kind": {
+    "search": {
+     "attempts": 1,
+     "ok": 1,
+     "failed": 0,
+     "unknown": 0
+    },
+    "detail": {
+     "attempts": 2,
+     "ok": 2,
+     "failed": 0,
+     "unknown": 0
+    },
+    "image": {
+     "attempts": 2,
+     "ok": 2,
+     "failed": 0,
+     "unknown": 0
+    }
+   },
+   "credits_reported_charged": 3.0,
+   "credits_note": "sum of provider-reported credits_charged over calls that reported one; failed calls may be charged without a report",
+   "scope": "b-main",
+   "calls": [
+    {
+     "n": 9,
+     "kind": "search",
+     "endpoint": "keyword",
+     "outcome": "ok",
+     "http_status": 200,
+     "credits_charged": 1.0,
+     "ms": 90
+    },
+    {
+     "n": 10,
+     "kind": "detail",
+     "endpoint": "detail",
+     "outcome": "ok",
+     "http_status": 200,
+     "credits_charged": 1.0,
+     "ms": 78
+    },
+    {
+     "n": 11,
+     "kind": "detail",
+     "endpoint": "detail",
+     "outcome": "ok",
+     "http_status": 200,
+     "credits_charged": 1.0,
+     "ms": 78
+    },
+    {
+     "n": 12,
+     "kind": "image",
+     "endpoint": "image",
+     "outcome": "ok",
+     "http_status": 200,
+     "credits_charged": null,
+     "ms": 78
+    },
+    {
+     "n": 13,
+     "kind": "image",
+     "endpoint": "image",
+     "outcome": "ok",
+     "http_status": 200,
+     "credits_charged": null,
+     "ms": 71
+    }
+   ]
+  },
+  "ads_recorded": 4,
+  "images": [
+   {
+    "image_id": "ad-1100000000000001-1",
+    "ad_archive_id": "1100000000000001",
+    "ad_no": 1,
+    "image_no": 1,
+    "source_field": "images[0]",
+    "sha256": "f310255e7e9965d8fcbda32e1b2c3e87ec2f9fc729191b0afe170c7ab62f5e7c",
+    "bytes": 880,
+    "width": 240,
+    "height": 300,
+    "content_type": "image/png",
+    "host": "127.0.0.1",
+    "fetched_at": 1791826209.2647953
+   },
+   {
+    "image_id": "ad-1100000000000004-1",
+    "ad_archive_id": "1100000000000004",
+    "ad_no": 4,
+    "image_no": 1,
+    "source_field": "images[0]",
+    "sha256": "de08875a296b036e74d3dd4191eeef1b2bea30b0458a59848bc9064ccd891b10",
+    "bytes": 879,
+    "width": 240,
+    "height": 300,
+    "content_type": "image/png",
+    "host": "127.0.0.1",
+    "fetched_at": 1791826209.4806204
+   }
+  ],
+  "package_ids": [
+   "adpkg-5b58e07549"
+  ],
+  "reach_gate": {
+   "state": "disabled_period_unknown",
+   "ranking_enabled": false,
+   "metric": null,
+   "geography": null,
+   "period": null,
+   "ads_recorded": 3,
+   "ads_with_reported_reach": 2,
+   "ads_with_ambiguous_reach": 0,
+   "reason": "Reported reach values share a metric and geography, but the measurement period of at least one is not stated, so they cannot be shown to cover comparable periods. Ad start and end dates are not a measurement period. The values are kept; ranking stays off.",
+   "rule": "Never substitute impressions, spend, likes, ad duration, audience size or search order for reach; reach is not proof of sales."
+  },
+  "allowance": {
+   "scope": "b-main",
+   "api_attempts_left": 5,
+   "image_downloads_left": 2,
+   "run_api_attempts": 3,
+   "run_image_downloads": 2,
+   "run_api_max": 8,
+   "run_image_max": 4,
+   "scope_api_used": 9,
+   "scope_api_max": 60,
+   "scope_images_used": 4,
+   "scope_images_max": 20
+  }
+ }
+}

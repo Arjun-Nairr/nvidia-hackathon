@@ -1,6 +1,6 @@
 # V2-03 — Social specialist retrieves and inspects Facebook image ads
 
-Status: IMPLEMENTATION COMPLETE 2026-10-12 by Claude; CORRECTIONS REQUIRED after Codex two-axis review (four P2 issues; research/v2-ticket03-review-20261012.md; independent isolated checks63/63 passed, not accepted). Scripted provider and scripted model only; no live ScrapeCreators, reasoning-model, Gemini or Nebius call. Note: research/v2-03-facebook-ad-research-result-20261012.md.
+Status: ACCEPTED2026-10-13 after direct Codex correction verification (ad80/80, analyst57/57, lint). Scripted implementation only; live US coverage/model quality unverified. Report research/v2-ticket03-corrections-verification-20261013.md.
 Blocked by: nothing for scripted wiring (V2-01 accepted; V2-02 documentation accepted). Live US coverage/reach/card schema need a separately authorized bounded probe.
 Parent: `research/social-media-flyer-v2-spec.md`, decisions3–4 and acceptance3–4.
 
@@ -33,3 +33,11 @@ Note `research/v2-03-facebook-ad-research-result-20261012.md`; one saved scripte
 - Checks: `tests/ad_research_test.py` 63/63 (scripted); regressions social 38, ticket01 28, onboarding 26, workers 22, e2e 24, chat API 18, research 79, listing 57, image path 31, archive 15, marketplace diagnostic 85, routing_e2e (real Laya) 23, route_table (real Laya) 54/55 (the one known miss, identical to baseline). Existing social specialists keep their grants and SOUL; new tools come only from creating a new specialist with them.
 - Not covered: live US coverage, real card schema, real reach fields, failed-call charging, real model/vision behaviour, Nebius/NVIDIA, Gemini, flyer flow (tickets 04-06).
 
+## Corrections (Claude, 2026-10-12) - accepted by Codex 2026-10-13
+Note `research/v2-03-corrections-result-20261012.md`; corrected scripted package `research/v2-03-corrected-package-example-20261012.json`. Scripted only; no live call, no runtime reset, no commit/push.
+1. **Inspection ownership:** inspections are persisted with the backend-supplied request id and the run that downloaded the image; `save_ad_research` accepts only an inspection bound to its own request and run. Legacy unbound rows never establish current-request evidence; analyst behaviour unchanged. Regression: request A downloads, request B inspects identical bytes, resumed A is refused (`image_not_inspected`); A's own inspection saves (C1-C3b, B8b, D3d).
+2. **Terminal pagination:** `next_page` uses the latest successful page of the exact search; no continuation cursor there returns `no_next_page` (last page) without a provider call; separate queries/advertisers page independently (C4-C6).
+3. **Platform eligibility:** a known platform list without Facebook excludes the ad in search results and later detail/search updates (not fetchable, detail-able or citable; disclosed with platforms); Facebook-only and mixed ads qualify; missing metadata stays `unknown` (C7-C10, B11).
+4. **Reach comparability:** ranking needs the same metric, geography and an established measurement period. No documented field states the period, so `REACH_PERIOD_FIELD` is `None` and the gate is `disabled_period_unknown`; `reach_ranked` is rejected, relevance-only research and reported values/provenance are preserved; ad dates are never a period (A21, C11-C15, B11).
+- Checks: ad research 80/80 (Part A 44/61 failing before the fix, 61/61 after); social 38, ticket01 28, onboarding 26, workers 22, e2e 24, chat API 18, research 79, listing 57 (D3d extended), image path 31, archive 15, marketplace diagnostic 85, reset 12, routing_e2e (real Laya) 23, route_table 54/55 (the known 'yes please' miss, identical to before) - all on isolated copies, scripted; `.\lint.bat` exit 0.
+- Limits: scripted only; real ranking stays off until a documented period field exists; real platform spellings and live coverage unverified.

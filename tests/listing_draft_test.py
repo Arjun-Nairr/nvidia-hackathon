@@ -263,10 +263,11 @@ try:
     cols = [x[1] for x in dd.execute("PRAGMA table_info(image_inspections)")]
     row = dd.execute("SELECT * FROM image_inspections").fetchone()
     dd.close()
-    mig = "delivery" in cols and row["image_id"] == "1638806271151287" and row["sha256"] == "abc" and row["delivery"] is None
+    mig = ("delivery" in cols and row["image_id"] == "1638806271151287" and row["sha256"] == "abc" and row["delivery"] is None
+           and "request_id" in cols and "run_id" in cols and row["request_id"] is None and row["run_id"] is None)
 finally:
     core.DB_PATH = real_db
-check("D3d the schema change is additive: an existing database keeps its inspection rows and gains a NULL delivery column (read as unknown)", mig)
+check("D3d the schema change is additive: an existing database keeps its inspection rows and gains NULL delivery, request_id and run_id columns (read as unknown / unbound)", mig)
 
 # --- D4: price and currency
 def cp(text, p=prod, where="description"):

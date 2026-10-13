@@ -178,9 +178,13 @@ def record_inspection(agent_id, prepared, delivery="unknown"):
     ad = ads.image_registered(getattr(turn_state, "ad_run_id", None), iid)         # downloaded by this request's Facebook ad-research run
     kind = ("live_ad_image" if ad else "live_listing_photo" if live else "recorded_listing_photo" if ev and iid in ev["by_id"] else
             "catalogue_image" if cat and any((p.get("image") or {}).get("image_id") == iid for p in cat["products"] if isinstance(p, dict)) else "other")
+    # Trusted ownership: the request id and the run that downloaded the image come from the backend's turn state, never from the model. Ad evidence (ads.save_package)
+    # accepts only an inspection bound to ITS request and run; rows written before this column existed stay unbound (NULL) and never count there.
+    run_id = getattr(turn_state, "ad_run_id", None) if ad else getattr(turn_state, "run_id", None) if live else None
     with core.db() as d:
-        d.execute("INSERT INTO image_inspections(agent_id, image_id, kind, sha256, width, height, ts, delivery) VALUES(?,?,?,?,?,?,?,?)",
-                  (agent_id, iid, kind, prepared["sha256"], prepared["width"], prepared["height"], time.time(), delivery if delivery in DELIVERY else "unknown"))
+        d.execute("INSERT INTO image_inspections(agent_id, image_id, kind, sha256, width, height, ts, delivery, request_id, run_id) VALUES(?,?,?,?,?,?,?,?,?,?)",
+                  (agent_id, iid, kind, prepared["sha256"], prepared["width"], prepared["height"], time.time(), delivery if delivery in DELIVERY else "unknown",
+                   getattr(turn_state, "request_id", None), run_id))
 
 
 # ---------------- claim guards (heuristic; documented limits) ----------------

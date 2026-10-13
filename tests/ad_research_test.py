@@ -350,11 +350,13 @@ dp1 = ads.detail("soc", {"ad_no": no["1100000000000001"]})
 g1 = dp1["reach_gate"]["state"]
 dp2 = ads.detail("soc", {"ad_no": no["1100000000000004"]})
 pr = dp1["ad"]["reach"]
-check("A21 PRESENT reach (Meta's documented eu_total_reach on detail): kept with metric, value and EU geography, period unstated; the gate needs two comparable values "
-      "(list-only ads carry none) and then enables ranking only for that metric/geography",
+check("A21 PRESENT reach (Meta's documented eu_total_reach on detail): kept with metric, value, EU geography and provenance, measurement period NOT stated; two same-metric, "
+      "same-geography values are still NOT comparable while the period is unknown, so the gate stays disabled (review correction 4)",
       pr["state"] == "reported" and pr["metric"] == "eu_total_reach" and pr["value"] == 27000 and pr["geography"] == "EU" and pr["period"] is None and "NOT US reach" in pr["meaning"]
-      and g0 == "disabled_reach_unavailable" and g1 == "disabled_single_value" and dp2["reach_gate"]["state"] == "enabled" and dp2["reach_gate"]["ranking_enabled"]
-      and dp2["reach_gate"]["metric"] == "eu_total_reach" and dp2["reach_gate"]["geography"] == "EU" and dp2["reach_gate"]["ads_recorded"] == 4, (pr, g0, g1, dp2["reach_gate"]))
+      and pr["source"] == "provider field aaa_info.eu_total_reach"
+      and g0 == "disabled_reach_unavailable" and g1 == "disabled_single_value" and dp2["reach_gate"]["state"] == "disabled_period_unknown"
+      and dp2["reach_gate"]["ranking_enabled"] is False and dp2["reach_gate"]["metric"] is None and dp2["reach_gate"]["ads_with_reported_reach"] == 2
+      and dp2["reach_gate"]["ads_recorded"] == 4, (pr, g0, g1, dp2["reach_gate"]))
 req("req-re3")
 fb_ctl(first="relevant", reach="absent")
 S = ads.search("soc", {"query": "bedding"})
@@ -555,6 +557,217 @@ kinds = {r["image_id"]: r["kind"] for r in core.db().execute("SELECT image_id, k
 check("A37 the trusted inspection log records an inspected ad image as kind live_ad_image (never as a Marketplace photo)",
       kinds.get(ia["image_id"]) == "live_ad_image" and kinds.get(ib["image_id"]) == "live_ad_image", kinds)
 
+# ================= review corrections (Codex review 2026-10-12, research/v2-ticket03-review-20261012.md) =================
+print("review corrections", flush=True)
+spawn(["tests/mock_fb_ads.py", str(FB)])           # A31 stopped the stand-in to prove stored retrieval; these checks need a provider again
+wait_up(FB)
+# --- 1. inspections are bound to the trusted request and run
+scope("c-bind", api=80, img=20)
+fb_ctl(first="relevant")
+req("req-bind-A")
+sa = ads.search("soc", {"query": "comforter set"})
+nA = {a["source_ad_id"]: a["ad_no"] for a in sa["ads"]}["1100000000000004"]
+imA = ads.image("soc", {"ad_no": nA, "image_no": 1})                 # request A downloads the ad image and does NOT inspect it
+run_bindA = ads.run_for("soc", "req-bind-A")["run_id"]
+req("req-bind-B")
+sb = ads.search("soc", {"query": "comforter set"})
+nB = {a["source_ad_id"]: a["ad_no"] for a in sb["ads"]}["1100000000000004"]
+imB = ads.image("soc", {"ad_no": nB, "image_no": 1})                 # request B downloads and inspects the IDENTICAL ad image bytes
+hp._inspect_image({"image_id": imB["image_id"]})
+req("req-bind-A")                                                    # request A resumes with a fresh turn state (as after a restart)
+n0 = n_req()
+ads.image("soc", {"ad_no": nA, "image_no": 1})                       # the first ad tool call re-binds the run (answered from the store)
+save_a1 = ads.save_package("soc", {**base, "references": [ref(nA, imA["image_id"])]})
+check("C1 request B's inspection of identical ad bytes does NOT satisfy resumed request A: image_not_inspected, no package saved, nothing sent",
+      imA["image_id"] == imB["image_id"] and imA["sha256"] == imB["sha256"] and code(save_a1) == "image_not_inspected" and n_req() == n0
+      and not [p for p in ads.list_packages("soc") if p["request_id"] == "req-bind-A"], (code(save_a1), imA["sha256"] == imB["sha256"]))
+hp._inspect_image({"image_id": imA["image_id"]})                     # now A inspects its own download
+save_a2 = ads.save_package("soc", {**base, "references": [ref(nA, imA["image_id"])]})
+pa = ads.get_package(save_a2["package_id"]) if save_a2.get("ok") else {}
+try:
+    with core.db() as d:
+        rows_ins = [dict(r) for r in d.execute("SELECT request_id, run_id, kind FROM image_inspections WHERE agent_id='soc' AND image_id=? ORDER BY id", (imA["image_id"],))]
+except Exception as ex:   # before the correction the columns do not exist: report it as a failed check, not a crash
+    rows_ins = repr(ex)
+check("C2 an inspection performed inside request A (its own run) satisfies A; the stored inspection rows carry the backend-supplied request id and ad run id, and the package shows them",
+      save_a2.get("ok") and save_a2["status"] == "complete"
+      and rows_ins == [{"request_id": "req-bind-B", "run_id": ads.run_for("soc", "req-bind-B")["run_id"], "kind": "live_ad_image"},
+                       {"request_id": "req-bind-A", "run_id": run_bindA, "kind": "live_ad_image"}]
+      and pa["references"][0]["inspection_request_id"] == "req-bind-A" and pa["references"][0]["inspection_run_id"] == run_bindA, (save_a2.get("code"), rows_ins))
+req("req-bind-L")
+sl = ads.search("soc", {"query": "comforter set"})
+nL = {a["source_ad_id"]: a["ad_no"] for a in sl["ads"]}["1100000000000004"]
+imL = ads.image("soc", {"ad_no": nL, "image_no": 1})
+with core.db() as d:   # a row written before request/run identity existed: same agent, image id, hash and a recent timestamp, but NO request or run
+    d.execute("INSERT INTO image_inspections(agent_id, image_id, kind, sha256, width, height, ts, delivery) VALUES(?,?,?,?,?,?,?,?)",
+              ("soc", imL["image_id"], "live_ad_image", imL["sha256"], imL["width"], imL["height"], time.time() + 1, "image_part_sent"))
+save_l = ads.save_package("soc", {**base, "references": [ref(nL, imL["image_id"])]})
+check("C3 a legacy/unbound inspection row cannot establish verified current-request evidence", code(save_l) == "image_not_inspected", code(save_l))
+from app import listing as _listing
+req("req-bind-ana")
+_listing.record_inspection("soc", {"image_id": "ana-cat-x", "sha256": "0" * 64, "width": 1, "height": 1}, "unknown")
+try:
+    with core.db() as d:
+        ana_row = dict(d.execute("SELECT request_id, run_id, kind FROM image_inspections WHERE image_id='ana-cat-x'").fetchone())
+except Exception as ex:
+    ana_row = repr(ex)
+check("C3b the log stays additive for non-ad inspections (analyst/catalogue): the same table and kinds, the request id is recorded, no ad run is invented",
+      ana_row == {"request_id": "req-bind-ana", "run_id": None, "kind": "other"}, ana_row)
+
+# --- 2. pagination stops at the terminal page
+scope("c-page", api=60, img=4)
+fb_ctl(first="relevant", pages=2)
+req("req-pg1")
+pg1 = ads.search("soc", {"query": "bedding"})
+pg2 = ads.search("soc", {"query": "bedding", "next_page": True})
+n0, u0 = n_req(), used("c-page")["api_used"]
+pg3 = ads.search("soc", {"query": "bedding", "next_page": True})
+pg4 = ads.search("soc", {"query": "bedding", "next_page": True})
+check("C4 keyword search: page 1 has a cursor, page 2 is terminal (ads, no cursor); every further next_page is an explicit no_next_page stop with NO provider call and no allowance used",
+      pg1["ok"] and pg1["has_more_pages"] and len(pg1["ads"]) == 2 and pg2["ok"] and pg2["has_more_pages"] is False and len(pg2["ads"]) == 2
+      and code(pg3) == "no_next_page" and code(pg4) == "no_next_page" and "last page" in pg3["error"] and n_req() == n0 and used("c-page")["api_used"] == u0,
+      (code(pg3), pg3.get("error"), n_req() - n0))
+qa = ads.search("soc", {"query": "quilted coverlet"})
+qb = ads.search("soc", {"query": "quilted coverlet", "next_page": True})
+cached1 = ads.search("soc", {"query": "bedding"})
+n1 = n_req()
+stop_again = ads.search("soc", {"query": "bedding", "next_page": True})
+check("C5 a different query pages independently (its own page 1 and its own cursor), re-reading page 1 from the store does not revive a consumed cursor, and the stop holds",
+      qa["has_more_pages"] and qb["ok"] and qb["has_more_pages"] is False and cached1.get("cached") and code(stop_again) == "no_next_page" and n_req() == n1,
+      (qa["has_more_pages"], code(qb), code(stop_again)))
+ads.find_advertiser("soc", {"query": "Harbor Home Linens"})
+ca1 = ads.search("soc", {"advertiser_no": 1})
+ca2 = ads.search("soc", {"advertiser_no": 1, "next_page": True})
+n2 = n_req()
+ca3 = ads.search("soc", {"advertiser_no": 1, "next_page": True})
+check("C6 an advertiser's ads page the same way: page 1 cursor, page 2 terminal, the third attempt stops without a request; a next_page with no earlier page is also explicit",
+      ca1["ok"] and ca1["has_more_pages"] and ca2["ok"] and ca2["has_more_pages"] is False and code(ca3) == "no_next_page" and n_req() == n2
+      and code(ads.search("soc", {"query": "never searched", "next_page": True})) == "no_next_page", (code(ca3), ca2.get("has_more_pages")))
+
+# --- 3. explicitly incompatible platforms
+scope("c-plat", api=60, img=20)
+PL = {"1100000000000001": ["FACEBOOK"], "1100000000000002": ["FACEBOOK", "INSTAGRAM"], "1100000000000003": ["INSTAGRAM"], "1100000000000004": "missing"}
+fb_ctl(first="relevant", list_platforms=PL, detail_platforms={"1100000000000004": ["INSTAGRAM"]})
+req("req-plat")
+sp = ads.search("soc", {"query": "bedding"})
+pp = {a["source_ad_id"]: a for a in sp["ads"]}
+run_pl = ads.run_for("soc", "req-plat")["run_id"]
+rec_pl = ads._load_ads(run_pl)
+n03 = next(n for n, r in rec_pl.items() if r["ad_archive_id"] == "1100000000000003")
+c0, d0 = n_req(["cdn"]), n_req(["detail"])
+im03, de03 = ads.image("soc", {"ad_no": n03, "image_no": 1}), ads.detail("soc", {"ad_no": n03})
+check("C7 search results: Facebook-only and Facebook+Instagram ads qualify, a missing platform list stays 'unknown' (not invented), an Instagram-only ad is excluded and disclosed; "
+      "its image and detail cannot be requested (nothing sent)",
+      sorted(pp) == ["1100000000000001", "1100000000000002", "1100000000000004"] and pp["1100000000000001"]["platform_status"] == "facebook"
+      and pp["1100000000000002"]["platform_status"] == "facebook" and pp["1100000000000004"]["platform_status"] == "unknown"
+      and sp["skipped"] == {"excluded_non_facebook_ads": 1} and code(im03) == "ad_not_on_facebook" and code(de03) == "ad_not_on_facebook"
+      and n_req(["cdn"]) == c0 and n_req(["detail"]) == d0, (sorted(pp), sp.get("skipped"), code(im03), code(de03)))
+n01, n02, n04 = pp["1100000000000001"]["ad_no"], pp["1100000000000002"]["ad_no"], pp["1100000000000004"]["ad_no"]
+i01, i02, i04 = (ads.image("soc", {"ad_no": n, "image_no": 1}) for n in (n01, n02, n04))   # the unknown-platform ad is still downloadable
+for i in (i01, i02, i04):
+    hp._inspect_image({"image_id": i["image_id"]})
+d04 = ads.detail("soc", {"ad_no": n04})                                # its detail now says Instagram-only
+n_c = n_req(["cdn"])
+im04 = ads.image("soc", {"ad_no": n04, "image_no": 1})
+sp2 = ads.search("soc", {"query": "bedding"})                           # the cached page no longer offers it
+check("C8 an ad whose platform was unknown and is identified as Instagram-only by its detail response becomes ineligible: marked excluded, no longer downloadable "
+      "(even though the file exists), not offered by the cached search page",
+      i04["ok"] and d04["ok"] and d04["ad"].get("platform_status") == "excluded_not_on_facebook" and d04["ad"].get("platforms") == ["INSTAGRAM"]
+      and "Facebook" in (d04["ad"].get("excluded") or "")
+      and code(im04) == "ad_not_on_facebook" and n_req(["cdn"]) == n_c
+      and sorted(a["source_ad_id"] for a in sp2["ads"]) == ["1100000000000001", "1100000000000002"] and sp2["skipped"] == {"excluded_non_facebook_ads": 2},
+      (d04.get("ad", {}).get("excluded"), code(im04), sp2.get("skipped")))
+sv04 = ads.save_package("soc", {**base, "references": [ref(n04, i04["image_id"])]})
+sv_ok = ads.save_package("soc", {**base, "references": [ref(n01, i01["image_id"]), ref(n02, i02["image_id"])]})
+pkg_pl = ads.get_package(sv_ok["package_id"]) if sv_ok.get("ok") else {}
+cons = {c["source_ad_id"]: c for c in pkg_pl.get("ads_considered", [])}
+check("C9 an ineligible ad cannot be selected even with a registered, inspected image; Facebook-only and mixed ads are accepted; the package discloses the exclusions (platforms listed)",
+      code(sv04) == "ad_not_on_facebook" and sv_ok.get("ok") and sv_ok["status"] == "complete"
+      and sorted(sv_ok.get("excluded_ads", []), key=lambda x: x["source_ad_id"])
+      == [{"ad_no": n03, "source_ad_id": "1100000000000003", "reason": "not_on_facebook", "platforms": ["INSTAGRAM"]},
+          {"ad_no": n04, "source_ad_id": "1100000000000004", "reason": "not_on_facebook", "platforms": ["INSTAGRAM"]}]
+      and cons["1100000000000003"].get("excluded") == "not_on_facebook" and cons["1100000000000004"].get("platforms") == ["INSTAGRAM"]
+      and cons["1100000000000002"].get("excluded") is None and cons["1100000000000002"].get("platforms") == ["FACEBOOK", "INSTAGRAM"] and {r["source_ad_id"] for r in pkg_pl["references"]} == {"1100000000000001", "1100000000000002"},
+      (code(sv04), sv_ok.get("code"), sv_ok.get("excluded_ads")))
+# the same ad identified by a LATER SEARCH (not a detail): the existing record is updated, not left eligible
+scope("c-plat2", api=30, img=6)
+fb_ctl(first="relevant", list_platforms={}, detail_platforms={})
+req("req-plat2")
+s_a = ads.search("soc", {"query": "bedding"})
+na = {a["source_ad_id"]: a["ad_no"] for a in s_a["ads"]}["1100000000000001"]
+fb_ctl(reset=False, first="relevant", list_platforms={"1100000000000001": ["INSTAGRAM"]})
+s_b = ads.search("soc", {"query": "bedding", "status": "ALL"})
+im_x = ads.image("soc", {"ad_no": na, "image_no": 1})
+check("C10 a later search that reports an already-recorded ad as Instagram-only makes the stored ad ineligible too",
+      "1100000000000001" in [a["source_ad_id"] for a in s_a["ads"]] and "1100000000000001" not in [a["source_ad_id"] for a in s_b["ads"]] and code(im_x) == "ad_not_on_facebook",
+      (code(im_x),))
+fb_ctl(first="relevant")
+
+
+# --- 4. reach comparability needs an established period
+def _mk(aid, eu, start=None, end=None, period=None):
+    aaa = {"eu_total_reach": eu}
+    if period is not None:
+        aaa["reach_period"] = period
+    return ads.norm_ad({"ad_archive_id": aid, "page_id": "1001", "start_date": start, "end_date": end, "aaa_info": aaa}, "detail", 1, "t")
+
+
+r_a, r_b = _mk("1100000000000001", 20000, 1757000000, 1759000000), _mk("1100000000000002", 41000, 1700000000, 1710000000)
+r_c, r_d = _mk("1100000000000003", 1000, 1757000000, None), _mk("1100000000000004", 2000, 1757000000, None)
+g_diff, g_same = ads.reach_gate([r_a, r_b]), ads.reach_gate([r_c, r_d])
+va = ads.reach_view(r_a)
+check("C11 two same-metric/same-geography values with DIFFERENT ad dates, and two with IDENTICAL ad dates, are both gated: ad start/end dates are never a measurement period; "
+      "values and provenance are preserved",
+      g_diff["state"] == "disabled_period_unknown" and not g_diff["ranking_enabled"] and g_same["state"] == "disabled_period_unknown" and not g_same["ranking_enabled"]
+      and va["state"] == "reported" and va["value"] == 20000 and va["geography"] == "EU" and va["period"] is None and va["source"] == "provider field aaa_info.eu_total_reach"
+      and "period" in g_diff["reason"].lower(), (g_diff, va))
+r_p = ads.norm_ad({"ad_archive_id": "1100000000000001", "page_id": "1001", "aaa_info": {"eu_total_reach": 5, "reach_period": "lifetime"}}, "detail", 1, "t")
+check("C12 no documented field names the measurement window, so a lookalike field (reach_period) is NOT read as one: the period stays unknown",
+      getattr(ads, "REACH_PERIOD_FIELD", "MISSING") is None and ads.reach_view(r_p)["period"] is None and "reach_period" not in json.dumps(r_p["reach_raw"]))
+ads.REACH_PERIOD_FIELD = "reach_period"          # HYPOTHETICAL documented contract, injected by this test only; no such field exists in the documented schema
+try:
+    p1, p2 = _mk("1100000000000001", 20000, period="lifetime"), _mk("1100000000000002", 41000, period="lifetime")
+    p3, nop = _mk("1100000000000003", 3000, period="last_7_days"), _mk("1100000000000004", 4000)
+    g_ok, g_inc, g_mix = ads.reach_gate([p1, p2]), ads.reach_gate([p1, p3]), ads.reach_gate([p1, nop])
+    g_amb = ads.reach_gate([p1, p2, nop])
+finally:
+    ads.REACH_PERIOD_FIELD = None
+check("C13 the gate logic itself (hypothetical documented period): the same stated period enables ranking; different periods are incompatible; a missing period on any ranked "
+      "value keeps it disabled",
+      g_ok["state"] == "enabled" and g_ok["ranking_enabled"] and g_ok["metric"] == "eu_total_reach" and g_ok["geography"] == "EU" and g_ok.get("period") == "lifetime"
+      and g_inc["state"] == "disabled_incompatible_metrics" and not g_inc["ranking_enabled"] and g_mix["state"] == "disabled_period_unknown"
+      and g_amb["state"] == "disabled_period_unknown", (g_ok["state"], g_inc["state"], g_mix["state"], g_amb["state"]))
+# end to end: present reach on detail -> reach_ranked refused, relevance_only package keeps the values and the unknown period
+scope("c-reach", api=30, img=6)
+fb_ctl(first="relevant", reach="present", list_platforms={}, detail_platforms={})
+req("req-reach-c")
+s_r = ads.search("soc", {"query": "bedding"})
+nr = {a["source_ad_id"]: a["ad_no"] for a in s_r["ads"]}
+d_r1, d_r2 = ads.detail("soc", {"ad_no": nr["1100000000000001"]}), ads.detail("soc", {"ad_no": nr["1100000000000004"]})
+i_r = ads.image("soc", {"ad_no": nr["1100000000000001"], "image_no": 1})
+hp._inspect_image({"image_id": i_r["image_id"]})
+rk = ads.save_package("soc", {**base, "selection_basis": "reach_ranked", "references": [ref(nr["1100000000000001"], i_r["image_id"])]})
+ro = ads.save_package("soc", {**base, "selection_basis": "relevance_only", "references": [ref(nr["1100000000000001"], i_r["image_id"])]})
+pr_ = ads.get_package(ro["package_id"]) if ro.get("ok") else {}
+check("C14 end to end: two ads carry reported EU reach (period unknown) -> reach_ranked is rejected with the gate state; the same research saves as relevance_only with the reported "
+      "values, geography and unknown period preserved and the gate disclosed",
+      d_r2["reach_gate"]["state"] == "disabled_period_unknown" and code(rk) == "reach_ranking_unavailable" and rk.get("reach_gate", {}).get("state") == "disabled_period_unknown"
+      and ro.get("ok") and pr_["selection_basis"] == "relevance_only" and pr_["reach_gate"]["ranking_enabled"] is False and pr_["reach_gate"]["state"] == "disabled_period_unknown"
+      and pr_["cited_ads"][0]["reach"]["state"] == "reported" and pr_["cited_ads"][0]["reach"]["value"] == 27000 and pr_["cited_ads"][0]["reach"]["geography"] == "EU"
+      and pr_["cited_ads"][0]["reach"]["period"] is None and pr_["cited_ads"][0]["reach"]["source"] == "provider field aaa_info.eu_total_reach", (code(rk), ro.get("code")))
+fb_ctl(first="relevant")
+# the pure gate must ignore ineligible ads
+r_ig = _mk("1100000000000003", 9000)
+r_ig["platforms"] = ["INSTAGRAM"]
+r_ok1 = _mk("1100000000000001", 100)
+g_pl = ads.reach_gate([r_ig, r_ok1])
+check("C15 an ad excluded for platform does not contribute a reach value to the gate (one eligible value is a single value)",
+      g_pl["state"] == "disabled_single_value" and g_pl["ads_with_reported_reach"] == 1 and g_pl["ads_recorded"] == 1, g_pl)
+
+if os.environ.get("ADS_PART_A_ONLY") == "1":    # quick iteration while editing; the default full run still executes part B
+    print(f"\nPART A only: {sum(results)}/{len(results)}", flush=True)
+    sys.exit(0 if results and all(results) else 1)
+
 shutil.rmtree(TMP, ignore_errors=True)
 print(f"\nPART A done: {sum(results)}/{len(results)}", flush=True)
 # ================= B. real server + workers + scripted model =================
@@ -717,6 +930,13 @@ try:
           set(refs) == set(want_colors) and all(any(mean_close(g.get("mean"), c) for g in got) for c in want_colors.values())
           and got and all(g.get("size") == [240, 300] for g in got) and all(x["delivery"] == "image_part_sent" and x["counts_as_verified_evidence"] for x in refs.values())
           and all(file_ok.values()), (set(refs), [g.get("mean") for g in got], file_ok))
+    import sqlite3
+    con = sqlite3.connect(ROOT / "runtime" / "app.db")
+    insp_rows = con.execute("SELECT image_id, request_id, run_id, kind FROM image_inspections WHERE agent_id=? ORDER BY id", (A_ID,)).fetchall()
+    con.close()
+    check("B8b the REAL worker's inspect_image wrote the backend-supplied request id and ad run id on every inspection row, and the package's references show them",
+          {r_[0] for r_ in insp_rows} == set(refs) and all(r_[1] == "b-req-1" and r_[2] == PKG["identity"]["run_id"] and r_[3] == "live_ad_image" for r_ in insp_rows)
+          and all(x["inspection_request_id"] == "b-req-1" and x["inspection_run_id"] == PKG["identity"]["run_id"] for x in refs.values()), insp_rows)
     if os.environ.get("ADS_DUMP"):   # evidence for the result note: the saved package as the API returns it, the run view, and what the provider stand-in and model stand-in saw
         Path(os.environ["ADS_DUMP"]).write_text(json.dumps({"package": PKG, "run": RUN, "provider_requests": {"counts": S["counts"], "total": S["total"]},
                                                             "model_images_in_requests": got, "registered_colours": {k: list(v) for k, v in want_colors.items()}}, indent=1), encoding="utf-8")
@@ -732,15 +952,21 @@ try:
     check("B10 retrying the same completed request returns the stored result (replayed) with no new provider request and no new package",
           st == 200 and rep.get("replayed") is True and fb_stats()["total"] == n0 and len(http(APP, "/api/ads/packages?agent_id=" + A_ID)[1]) == 1)
 
-    # ---- scenario 2: reach present on detail responses -> ranking enabled (same metric/geography only)
-    fb_ctl(first="relevant", reach="present")
+    # ---- scenario 2: reach present on detail responses (documented EU field, measurement period NOT stated) + one Instagram-only ad
+    fb_ctl(first="relevant", reach="present", list_platforms={"1100000000000003": ["INSTAGRAM"]})
     st, r = chat(A_ID, "AD_AGENT Research US Facebook image ads for our quilted coverlet. FIRST_QUERY:queen quilted coverlet", rid="b-req-2")
     P2, _ = package_of(r)
-    check("B11 reach PRESENT (documented EU field on detail): the package keeps metric/value/geography, the gate is enabled for that metric only, and the scripted specialist's "
-          "reach_ranked selection is accepted because every cited ad carries it",
-          P2.get("reach_gate", {}).get("state") == "enabled" and P2["reach_gate"]["metric"] == "eu_total_reach" and P2["reach_gate"]["geography"] == "EU"
-          and P2["selection_basis"] == "reach_ranked" and all(a["reach"]["state"] == "reported" and a["reach"]["geography"] == "EU" and a["reach"]["value"] for a in P2["cited_ads"])
-          and "NOT US reach" in P2["cited_ads"][0]["reach"]["meaning"], (r["text"][:200], P2.get("reach_gate")))
+    excl2 = [c for c in P2.get("ads_considered", []) if c.get("excluded")]
+    check("B11 reach PRESENT but its measurement period is unknown: the package keeps metric/value/EU geography/provenance, the gate is disabled_period_unknown (ranking is never "
+          "accepted on values whose periods are not established), the scripted specialist selects by relevance and still completes; the Instagram-only ad is excluded and disclosed",
+          P2.get("status") == "complete" and P2["reach_gate"]["state"] == "disabled_period_unknown" and P2["reach_gate"]["ranking_enabled"] is False
+          and P2["selection_basis"] == "relevance_only"
+          and all(a["reach"]["state"] == "reported" and a["reach"]["geography"] == "EU" and a["reach"]["value"] and a["reach"]["period"] is None for a in P2["cited_ads"])
+          and "NOT US reach" in P2["cited_ads"][0]["reach"]["meaning"]
+          and [(c["source_ad_id"], c["excluded"], c["platforms"]) for c in excl2] == [("1100000000000003", "not_on_facebook", ["INSTAGRAM"])]
+          and "1100000000000003" not in {a["source_ad_id"] for a in P2["cited_ads"]} and P2["counts"]["ads_excluded"] == 1, (r["text"][:200], P2.get("reach_gate"), excl2))
+    if os.environ.get("ADS_DUMP_CORRECTED"):   # the corrected, inspectable package: reach reported but gated, Instagram-only ad disclosed, inspection identity on each reference
+        Path(os.environ["ADS_DUMP_CORRECTED"]).write_text(json.dumps({"package": P2, "run": http(APP, f"/api/ads/runs/{P2['identity']['run_id']}")[1]}, indent=1), encoding="utf-8")
 
     # ---- scenario 3: ambiguous reach -> ranking stays off, raw value preserved
     fb_ctl(first="relevant", reach="ambiguous")
