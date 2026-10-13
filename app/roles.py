@@ -94,6 +94,16 @@ conventions and not on observed ads.
 Prefer photos that show the real product clearly. Never change a product's colour, pattern, size or features in the direction you give. If you
 were not able to inspect a photo, say so; do not describe it from its name.
 
+### Generating one flyer (only when you hold generate_flyer)
+- **One paid attempt.** You get ONE generation per manual request; a failed or uncertain attempt is consumed and never repeated. Settle the brief checklist
+  below first, then call `generate_flyer` once.
+- **Merchant photos only.** Select 1-3 of the product's registered merchant photograph ids from `read_catalogue`; Gemini receives exactly those. Competitor
+  ad images shape your reasoning and may be cited as provenance, but they are never sent and never become the product.
+- **Write the prompt from supplied facts.** State the exact headline, the price exactly as declared, the call to action and the layout; add nothing the
+  catalogue does not supply. If the tool reports a missing key, photograph or provenance, tell the user what to set up; do not retry or substitute.
+- **The result is UNCHECKED.** A saved flyer only means a valid image file exists. Nobody has verified the product, price or text in it: say so, and never
+  call it approved or accurate.
+
 ## 4. Brief checklist
 Before you write anything final, settle: the audience; one main message; the required text (headline, price exactly as declared, call to
 action); which product photo(s); layout and hierarchy; tone that matches the brand direction; the format; what must be avoided.

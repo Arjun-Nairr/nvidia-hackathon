@@ -47,7 +47,7 @@ async function init(){
   try{
     const s=await j('/api/status');TIMING=!!s.timing;
     $('status').innerHTML=(s.problem?`<div class="banner">${esc(s.problem)} Chat returns this error until fixed. Config: <code>${s.secrets_file}</code></div>`:'')+
-     `<div class="mut">Provider: <b>${esc(s.provider||'not set')}</b><br>Model: <b>${esc(s.model||'not set')}</b><br>Auth: ${s.problem?'<b>not ready</b>':'ready'}<br>Research tools: <b>granted per specialist</b> (flyer generation and posting: not connected yet)</div>`;
+     `<div class="mut">Provider: <b>${esc(s.provider||'not set')}</b><br>Model: <b>${esc(s.model||'not set')}</b><br>Auth: ${s.problem?'<b>not ready</b>':'ready'}<br>Research tools: <b>granted per specialist</b> (flyer generation: only for a specialist granted generate_flyer; posting: not connected)</div>`;
     await loadCompany();
   }catch(e){$('status').innerHTML=`<div class="banner">Cannot reach the app backend (${esc(e.message)}). Is run.bat still running?</div>`}
   await select('main');
@@ -103,10 +103,20 @@ async function select(id){
     <h2>Granted tools</h2><div class="card">${a.granted_tools.map(t=>`<span class="pill">${esc(t)}</span>`).join(' ')}<div class="mut">Company sections: ${a.context_refs.join(', ')}</div></div>
     <h2>Approval requirements</h2><div class="card">${a.approval_requirements.map(r=>`<div><b>${esc(r.action)}</b><br><span class="mut">${esc(r.requirement)}</span></div>`).join('<hr>')}</div>
     <h2>Skills</h2>${a.skills.map(s=>`<div class="card"><b>${esc(s.name)}</b><pre>${esc(s.content)}</pre></div>`).join('')}
-    <h2>Conversation</h2><div class="card mut">${esc(a.conversation_id)} (Hermes session, profile ${esc(a.agent_id)})</div>`}
+    <h2>Conversation</h2><div class="card mut">${esc(a.conversation_id)} (Hermes session, profile ${esc(a.agent_id)})</div><div id="flyers"></div>`;
+    await loadFlyers(id,my)}
     catch(e){$('inspect').innerHTML=`<h2>Inspector</h2><div class="notice">Could not load this agent: ${esc(e.message)}</div>`}}
   if(!S(id).sending)await loadRows(id);   // while a request of ours is in flight the local view is authoritative
   if(my===selSeq)$('log').scrollTop=1e9;
+}
+async function loadFlyers(id,my){   // saved flyers of this specialist, exactly as the backend stored them (status and errors are never reinterpreted)
+  let f;try{f=await j('/api/flyers?agent_id='+encodeURIComponent(id))}catch{return}
+  const el=$('flyers');if(!el||my!==selSeq||!f.length)return;
+  const LAB={unchecked:'UNCHECKED',storage_failure:'STORAGE / INTEGRITY FAILURE',failed:'GENERATION FAILED',in_progress_or_unknown:'OUTCOME UNKNOWN'};
+  el.innerHTML='<h2>Saved flyers</h2>'+f.map(x=>`<div class="card"><b class="${x.status==='unchecked'?'':'st-error'}">${esc(LAB[x.status]||x.status)}</b> <span class="mut">${esc(x.flyer_id)} · ${esc(x.product_id)}</span>`+
+    (x.image?`<br><img src="${esc(x.image.url)}" alt="Saved flyer ${esc(x.flyer_id)}" style="max-width:100%;border:1px solid var(--line);border-radius:6px;margin-top:6px"><div class="mut">${x.image.width}x${x.image.height} · sha256 ${esc(x.image.sha256.slice(0,12))}…</div>`:'')+
+    (x.note?`<div class="mut">${esc(x.note)}</div>`:'')+(x.error?`<div class="st-error">${esc(x.error_kind||x.outcome||'error')}: ${esc(x.error)}</div>`:'')+
+    (x.inputs_synthetic?'<div class="mut">Inputs were synthetic test stand-ins.</div>':'')+'</div>').join('');
 }
 async function loadRows(id){
   try{S(id).rows=await j('/api/chat/'+id);if(S(id).err&&S(id).err.kind==='load')S(id).err=null}
@@ -166,7 +176,7 @@ async function send(){
   else if(data&&data.code){keep('Not sent: '+data.error+' The backend did not save or run it. Your message is back in the box.')}
   else{keep('The app answered HTTP '+status+' without details; the message may not have been recorded. Your message is back in the box; check the transcript before retrying.')}
   if(cur!==id)st.unread=true;
-  await loadRows(id);await refresh();loadCompany().catch(()=>{});if(cur===id)render()
+  await loadRows(id);await refresh();loadCompany().catch(()=>{});if(cur===id){render();loadFlyers(id,selSeq)}
   if(TIMING){fetch('/api/timing',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({chat_roundtrip_ms:t1})}).catch(()=>{})}
 }
 $('send').addEventListener('click',send);

@@ -543,8 +543,8 @@ check("A34 the SOUL describes capabilities as granted: with the ad tools it expl
       and "fb_ads_search" not in soul_no and "Facebook ad research and image or flyer generation are NOT connected" in soul_no
       and "fb_ads" not in soul_ma and "Facebook ad" not in soul_ma, soul_ad[:200])
 desc = hp.CREATE_SCHEMA["description"]
-check("A35 the create_agent description tells main exactly which tools make ad research available to a social specialist and that generation is not connected",
-      "fb_ads_find_advertiser" in desc and "fb_ad_image" in desc and "save_ad_research" in desc and "image_generation" in desc and "facebook_ad_research" not in desc.split("ROLE social_media")[1].split("Capabilities that are NOT connected yet:")[1])
+check("A35 the create_agent description tells main exactly which tools make ad research available to a social specialist; flyer generation is described only as the separate generate_flyer tool",
+      "fb_ads_find_advertiser" in desc and "fb_ad_image" in desc and "save_ad_research" in desc and "generate_flyer" in desc and "facebook_ad_research" not in desc.split("ROLE social_media")[1].split("Capabilities that are NOT connected yet:")[1])
 turn_state.ad_run_id = ads.run_for("soc", "req-p1")["run_id"]
 visible_in = core.prepare_image(ia["image_id"])["ok"]
 rt = core.image_roots()

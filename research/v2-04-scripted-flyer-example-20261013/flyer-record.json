@@ -1,0 +1,136 @@
+{
+ "flyer_id": "fly-feb80319f5",
+ "status": "unchecked",
+ "agent_id": "harbor-flyer-specialist",
+ "request_id": "f-req-1",
+ "product_id": "harbor-wool-throw",
+ "created_at": "2026-10-13T16:37:52Z",
+ "candidate_id": "cand-92d0037b79",
+ "outcome": "ok",
+ "error": null,
+ "error_kind": null,
+ "integrity": {
+  "state": "valid"
+ },
+ "image": {
+  "url": "/api/flyers/images/fly-feb80319f5",
+  "width": 800,
+  "height": 1000,
+  "mime_type": "image/jpeg",
+  "sha256": "a70386ac179e5c6f9895e6968b1520ac39ca99f577fedc85612db957b36149f1",
+  "bytes": 22926
+ },
+ "content_status": "unchecked",
+ "inputs_synthetic": true,
+ "note": "UNCHECKED: the file decoded as one valid image and nothing more. No agent has reviewed it against the product, price or requested text, and it is not approved. Do not describe it as verified, accurate or final.",
+ "identity": {
+  "agent_id": "harbor-flyer-specialist",
+  "company_id": "default",
+  "company_name": "Harbor Textiles",
+  "conversation_id": "conv-harbor-flyer-specialist",
+  "request_id": "f-req-1",
+  "message_id": 15,
+  "product_id": "harbor-wool-throw",
+  "run_id": "fly-feb80319f5",
+  "scope": "b-main"
+ },
+ "attempts": {
+  "used": 1,
+  "enabled": 1,
+  "final_max": 2,
+  "note": "This slice runs the initial generation only; the reviewed correction path is a later ticket. The final bound is two."
+ },
+ "attempt": {
+  "candidate_id": "cand-92d0037b79",
+  "attempt_no": 1,
+  "status": "done",
+  "outcome": "ok",
+  "error": null,
+  "provider": "gemini-interactions",
+  "model": "gemini-nano-banana-2.1",
+  "http_status": 200,
+  "usage": {
+   "total_input_tokens": 2800,
+   "total_output_tokens": 1120,
+   "total_thought_tokens": 64,
+   "total_tokens": 3984
+  },
+  "interaction_id": "interaction-541a488f30bd",
+  "ms": 372,
+  "created_at": "2026-10-13T16:37:52Z",
+  "dispatched_at": "2026-10-13T16:37:52Z",
+  "finished_at": "2026-10-13T16:37:52Z",
+  "prompt": "Create a clean promotional flyer for Heritage Wool Throw. Headline: Heritage Wool Throw. Show the price exactly as declared: 64.5 EUR. Keep the supplied product photo prominent on a plain backdrop with a short call to action.",
+  "context_text": "Create a clean promotional flyer for Heritage Wool Throw. Headline: Heritage Wool Throw. Show the price exactly as declared: 64.5 EUR. Keep the supplied product photo prominent on a plain backdrop with a short call to action.\n\n--- Supplied merchant facts (authoritative: reproduce exactly, add nothing) ---\nMerchant: Harbor Textiles\nProduct: Heritage Wool Throw\nDeclared price: 64.5 EUR\nSpecifications: size: 130 x 180 cm; material: 100% wool; care: Dry clean\nBrand direction (merchant supplied): Calm, natural, plain-spoken\n--- Attached images ---\n2 real photograph(s) of this exact product (hw-front, hw-detail). The product in the flyer must be this product; do not alter its design, colour or proportions.\n",
+  "product": {
+   "product_id": "harbor-wool-throw",
+   "name": "Heritage Wool Throw",
+   "price": {
+    "amount": 64.5,
+    "currency": "EUR"
+   },
+   "specifications": {
+    "size": "130 x 180 cm",
+    "material": "100% wool",
+    "care": "Dry clean"
+   },
+   "category": "throws",
+   "merchant": "Harbor Textiles",
+   "catalogue_file": "catalogue.json",
+   "catalogue_sha256": "80c3a8b67d571d33670babc94421cb6f190b326c2083a5d02609672a891492d1",
+   "demo": false
+  },
+  "inputs": [
+   {
+    "image_id": "hw-front",
+    "mime_type": "image/png",
+    "format": "PNG",
+    "bytes": 4235,
+    "sha256": "3b5ed4aa671d9eb53344be46ee7ddf10bb51415181f3c6ac375052620872dca5",
+    "width": 600,
+    "height": 800,
+    "kind": "test placeholder image (synthetic)",
+    "provenance": null,
+    "synthetic": true
+   },
+   {
+    "image_id": "hw-detail",
+    "mime_type": "image/jpeg",
+    "format": "JPEG",
+    "bytes": 12746,
+    "sha256": "b3ac33add8bb69dbde07243912c6fb653ed938707d221505560325eacd46169b",
+    "width": 600,
+    "height": 800,
+    "kind": "test placeholder image (synthetic)",
+    "provenance": null,
+    "synthetic": true
+   }
+  ],
+  "references": [],
+  "request": {
+   "endpoint": "/v1beta/interactions",
+   "model": "gemini-nano-banana-2.1",
+   "aspect_ratio": "4:5",
+   "image_size": "2K",
+   "mime_type": "image/jpeg",
+   "delivery": "inline",
+   "store": false,
+   "input_images": 2,
+   "timeout_s": 180,
+   "retries": 0
+  },
+  "output": {
+   "image_id": "fly-feb80319f5",
+   "sha256": "a70386ac179e5c6f9895e6968b1520ac39ca99f577fedc85612db957b36149f1",
+   "bytes": 22926,
+   "width": 800,
+   "height": 1000,
+   "mime_type": "image/jpeg"
+  }
+ },
+ "allowance": {
+  "scope": "b-main",
+  "attempts_used": 1,
+  "attempts_max": 20
+ }
+}

@@ -29,6 +29,19 @@ def _load(path, what):
 
 
 # ---------------- catalogue ----------------
+def product_images(p):
+    """The product's registered images, in order: `images` (a list of {image_id, kind, provenance...} or bare ids) when present, else the V1 single `image`."""
+    out, seen = [], set()
+    items = p.get("images") if isinstance(p.get("images"), list) and p["images"] else [p.get("image")]
+    for it in items:
+        d = {"image_id": it} if isinstance(it, str) else it if isinstance(it, dict) else {}
+        iid = str(d.get("image_id") or "").strip()
+        if iid and iid not in seen:
+            seen.add(iid)
+            out.append({**d, "image_id": iid})
+    return out
+
+
 def product_missing(p):
     """Required supplied facts that are absent from a catalogue product."""
     miss = []
@@ -41,7 +54,7 @@ def product_missing(p):
         miss.append("price.amount")
     if not str(pr.get("currency") or "").strip():
         miss.append("price.currency")
-    if not str((p.get("image") or {}).get("image_id") or "").strip():
+    if not product_images(p):
         miss.append("image.image_id")
     return miss
 
@@ -75,9 +88,9 @@ def read_catalogue(product_id=None):
     prods = [p for p in cat["products"] if isinstance(p, dict)]
     out = []
     for p in prods:
-        img = (p.get("image") or {}).get("image_id")
-        out.append({**p, "missing_facts": product_missing(p), "image_inspectable": bool(img) and any(
-            (r / f"{img}{x}").is_file() for r in core.image_roots() for x in core.IMAGE_EXTS)})
+        imgs = product_images(p)
+        out.append({**p, "missing_facts": product_missing(p), "image_inspectable": bool(imgs) and _cached(imgs[0]["image_id"]),
+                    "images": [{**i, "inspectable": _cached(i["image_id"])} for i in imgs]})
     if product_id is not None:
         out = [p for p in out if p.get("product_id") == product_id]
         if not out:
@@ -177,7 +190,7 @@ def record_inspection(agent_id, prepared, delivery="unknown"):
     live = research.photo_registered(getattr(turn_state, "run_id", None), iid)   # downloaded by this request's research run
     ad = ads.image_registered(getattr(turn_state, "ad_run_id", None), iid)         # downloaded by this request's Facebook ad-research run
     kind = ("live_ad_image" if ad else "live_listing_photo" if live else "recorded_listing_photo" if ev and iid in ev["by_id"] else
-            "catalogue_image" if cat and any((p.get("image") or {}).get("image_id") == iid for p in cat["products"] if isinstance(p, dict)) else "other")
+            "catalogue_image" if cat and any(iid in [i["image_id"] for i in product_images(p)] for p in cat["products"] if isinstance(p, dict)) else "other")
     # Trusted ownership: the request id and the run that downloaded the image come from the backend's turn state, never from the model. Ad evidence (ads.save_package)
     # accepts only an inspection bound to ITS request and run; rows written before this column existed stay unbound (NULL) and never count there.
     run_id = getattr(turn_state, "ad_run_id", None) if ad else getattr(turn_state, "run_id", None) if live else None

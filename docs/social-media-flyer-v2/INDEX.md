@@ -7,7 +7,7 @@ Created 2026-10-11 using to-tickets. Parent: `research/social-media-flyer-v2-spe
 | 01 | Independent social-media specialist created through main/Laya | None | Accepted 2026-10-11: two-axis review found no introduced defects; independent isolated checks 38/38 (scripted model). Report research/v2-ticket01-review-20261011.md |
 | 02 | Verified integration plan and persistent usable product sample | None | Documentation accepted after direct Codex correction verification2026-10-11. Actual sample/local Gemini key missing, billing/live capabilities unverified. Report research/v2-ticket02-corrections-verification-20261011.md |
 | 03 | Specialist researches Facebook image ads with honest reach gating | 01, 02 Facebook findings | Accepted2026-10-13 after direct verification: ad80/80, analyst57/57, lint. Scripted only; research/v2-ticket03-corrections-verification-20261013.md |
-| 04 | Specialist selects product photos and generates one stored/displayed flyer | 01, 02 Gemini/sample findings | Blocked |
+| 04 | Specialist selects product photos and generates one stored/displayed flyer | 01, 02 Gemini/sample findings | Accepted2026-10-13 after direct verification: flyer44/44 and lint. Scripted only; research/v2-ticket04-corrections-verification-20261013.md |
 | 05 | Actual-image review and at most one correction complete the agent flow | 03, 04 | Blocked |
 | 06 | One preserved live demonstration and user visual evaluation | 05; separately authorized live budget/credentials | Blocked |
 

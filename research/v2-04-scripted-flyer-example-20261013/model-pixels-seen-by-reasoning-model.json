@@ -1,0 +1,87 @@
+[
+ {
+  "request": 17,
+  "images": [
+   {
+    "sha256": "bace997f4ee5737810de407bfd1bbbbe2ccca59ab6d928913c8a123f7420abb7",
+    "bytes": 14763,
+    "mime": "image/jpeg",
+    "size": [
+     600,
+     800
+    ],
+    "mean": [
+     211,
+     147,
+     99
+    ]
+   }
+  ]
+ },
+ {
+  "request": 18,
+  "images": [
+   {
+    "sha256": "bace997f4ee5737810de407bfd1bbbbe2ccca59ab6d928913c8a123f7420abb7",
+    "bytes": 14763,
+    "mime": "image/jpeg",
+    "size": [
+     600,
+     800
+    ],
+    "mean": [
+     211,
+     147,
+     99
+    ]
+   },
+   {
+    "sha256": "2e430a72a34f1df86060e088c6773317741bac5aa2678b2e817d5557eeda72d3",
+    "bytes": 14529,
+    "mime": "image/jpeg",
+    "size": [
+     600,
+     800
+    ],
+    "mean": [
+     98,
+     155,
+     203
+    ]
+   }
+  ]
+ },
+ {
+  "request": 19,
+  "images": [
+   {
+    "sha256": "bace997f4ee5737810de407bfd1bbbbe2ccca59ab6d928913c8a123f7420abb7",
+    "bytes": 14763,
+    "mime": "image/jpeg",
+    "size": [
+     600,
+     800
+    ],
+    "mean": [
+     211,
+     147,
+     99
+    ]
+   },
+   {
+    "sha256": "2e430a72a34f1df86060e088c6773317741bac5aa2678b2e817d5557eeda72d3",
+    "bytes": 14529,
+    "mime": "image/jpeg",
+    "size": [
+     600,
+     800
+    ],
+    "mean": [
+     98,
+     155,
+     203
+    ]
+   }
+  ]
+ }
+]

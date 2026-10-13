@@ -1,6 +1,6 @@
 """Hermes plugin body: registers read_company_context (everyone) and create_agent (main profile only)."""
 import json, os
-from app import ads, core, listing, research, turn_state
+from app import ads, core, flyer, listing, research, turn_state
 
 
 def _desc():
@@ -231,6 +231,27 @@ FB_READ_SCHEMA = {
     "parameters": {"type": "object", "additionalProperties": False, "properties": {"package_id": {"type": "string"}}}}
 
 
+FLYER_GEN_SCHEMA = {
+    "name": "generate_flyer",
+    "description": ("Generate ONE flyer image with Gemini for this manual request from a catalogue product's registered MERCHANT photographs and your prompt. You get one paid "
+                    "attempt per request: any outcome after it is sent (refusal, corrupt or multiple outputs, lost connection) consumes it and it is never repeated; a stored result "
+                    "is returned instead. Give product_id (read_catalogue), 1-3 of THAT product's image ids and a prompt with the exact headline, price and layout (the backend adds "
+                    "the supplied facts). reference_ad_image_ids may cite ad images you downloaded in this request: they are provenance only and are NEVER sent to Gemini. "
+                    "No URL, path, credential, model, size, run or attempt argument exists. The saved flyer is UNCHECKED: nobody has reviewed it; never call it approved. "
+                    "Returns flyer_id, candidate_id, status and the image's hash/size, or a structured error (missing_credentials, image_not_registered_for_product, "
+                    "synthetic_asset_not_allowed, asset_provenance_missing, attempt_already_consumed, generation_failed ...)."),
+    "parameters": {"type": "object", "additionalProperties": False, "required": ["product_id", "selected_product_image_ids", "prompt"], "properties": {
+        "product_id": {"type": "string", "description": "A product_id from read_catalogue."},
+        "selected_product_image_ids": {"type": "array", "items": {"type": "string"}, "description": "1-3 of this product's registered merchant image ids (read_catalogue images)."},
+        "prompt": {"type": "string", "description": "40-3000 characters: the design brief with the exact required text, price as declared and layout."},
+        "reference_ad_image_ids": {"type": "array", "items": {"type": "string"}, "description": "Optional (max 3): ad image ids from this request's ad research, cited as provenance only."}}}}
+
+FLYER_READ_SCHEMA = {
+    "name": "read_flyer",
+    "description": "Read this specialist's saved flyers from storage (no generation, no provider request). Without flyer_id: summaries with status; with flyer_id: the full record.",
+    "parameters": {"type": "object", "additionalProperties": False, "properties": {"flyer_id": {"type": "string"}}}}
+
+
 def _read_catalogue(p, **kw):
     return json.dumps(listing.read_catalogue(p.get("product_id") if isinstance(p, dict) else None))
 
@@ -308,7 +329,8 @@ def register(ctx):
             ctx.register_tool(name=schema["name"], toolset=ts, schema=schema, handler=_mp(fn))
         for schema, ts, fn in ((FB_ADV_SCHEMA, "ecom_fb_advertiser", ads.find_advertiser), (FB_SEARCH_SCHEMA, "ecom_fb_search", ads.search),
                                (FB_DETAIL_SCHEMA, "ecom_fb_detail", ads.detail), (FB_IMAGE_SCHEMA, "ecom_fb_image", ads.image),
-                               (FB_SAVE_SCHEMA, "ecom_fb_save", ads.save_package), (FB_READ_SCHEMA, "ecom_fb_read", ads.read_package)):
+                               (FB_SAVE_SCHEMA, "ecom_fb_save", ads.save_package), (FB_READ_SCHEMA, "ecom_fb_read", ads.read_package),
+                               (FLYER_GEN_SCHEMA, "ecom_flyer_generate", flyer.generate), (FLYER_READ_SCHEMA, "ecom_flyer_read", flyer.read_flyer)):
             ctx.register_tool(name=schema["name"], toolset=ts, schema=schema, handler=_mp(fn))
     if me == "main":
         ctx.register_tool(name="create_agent", toolset="ecom_agents", schema=CREATE_SCHEMA,

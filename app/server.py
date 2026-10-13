@@ -2,7 +2,7 @@
 import json, sys, threading, time, urllib.parse
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
-from app import ads, core, listing, research, routing, timing, workers
+from app import ads, core, flyer, listing, research, routing, timing, workers
 
 STATIC = Path(__file__).parent / "static"
 locks = {}  # one turn at a time per agent
@@ -16,7 +16,7 @@ ACTIVITY_LABELS = {"create_agent": "Creating specialist", "read_company_context"
                    "marketplace_search": "Searching Facebook Marketplace", "marketplace_item": "Reading a Marketplace listing",
                    "marketplace_photo": "Fetching a listing photo", "fb_ads_find_advertiser": "Finding Facebook advertisers", "fb_ads_search": "Searching Facebook image ads",
                    "fb_ad_detail": "Reading a Facebook ad", "fb_ad_image": "Fetching an ad image", "save_ad_research": "Saving ad research",
-                   "read_ad_research": "Reading saved ad research"}
+                   "read_ad_research": "Reading saved ad research", "generate_flyer": "Generating a flyer", "read_flyer": "Reading saved flyers"}
 
 
 def fail(code, message, status, retryable=False, **extra):
@@ -164,7 +164,7 @@ class H(BaseHTTPRequestHandler):
         if p == "/api/status":
             c = core.llm_config()
             return self.send(200, {"provider": c["provider"], "model": c["model"], "problem": core.llm_problem(), "classifier": routing.status(), "company": core.company_status(),
-                                   "secrets_file": "secrets/local.env", "live_research_connected": bool(research.diag().get_key()),
+                                   "secrets_file": "secrets/local.env", "live_research_connected": bool(research.diag().get_key()), "image_generation_configured": flyer.connected(),
                                    "timing": timing.ENABLED})
         if p == "/api/state":   # who is working right now (main included); the UI polls this for status pills
             return self.send(200, {a: {"busy": True, "since": v["since"]} for a, v in list(inflight.items())})
@@ -192,6 +192,11 @@ class H(BaseHTTPRequestHandler):
             return self.send(200, ads.list_packages((q.get("agent_id") or [None])[0]))
         if p == "/api/ads/allowance":
             return self.send(200, ads.allowances())
+        if p == "/api/flyers":              # saved flyers per manual request (status, error, image url); ?agent_id= filters. SQLite only: no provider, no credentials.
+            q = urllib.parse.parse_qs(self.path.split("?", 1)[1]) if "?" in self.path else {}
+            return self.send(200, flyer.list_flyers((q.get("agent_id") or [None])[0]))
+        if p == "/api/flyers/allowance":
+            return self.send(200, flyer.allowances())
         if p == "/api/agents":
             with core.db() as d:
                 return self.send(200, [agent_row(r) for r in d.execute("SELECT * FROM agents ORDER BY created_at")])
@@ -203,6 +208,16 @@ class H(BaseHTTPRequestHandler):
         if len(parts) == 3 and parts[:2] == ["api", "drafts"]:   # one draft with its product/listing/image evidence snapshots
             dr = listing.get_draft(parts[2])
             return self.send(200, dr) if dr else self.send(404, {"ok": False, "code": "unknown_draft", "error": f"No saved draft {parts[2]!r}."})
+        if len(parts) == 4 and parts[:3] == ["api", "flyers", "images"]:   # the managed output image; the id is validated and resolved through the database
+            s, a, b = flyer.image_state(parts[3])
+            if s == "ok":
+                return self.send(200, a, b)
+            if s == "integrity":   # the flyer exists but its stored file failed validation: an explicit failure, never a file
+                return self.send(409, {"ok": False, "code": "artifact_integrity_failed", "error": f"The saved flyer image failed its integrity check: {a}."})
+            return self.send(404, {"ok": False, "code": "unknown_image", "error": "No such managed flyer image."})
+        if len(parts) == 3 and parts[:2] == ["api", "flyers"]:
+            f = flyer.get_flyer(parts[2])
+            return self.send(200, f) if f else self.send(404, {"ok": False, "code": "unknown_flyer", "error": "No such saved flyer."})
         if len(parts) == 4 and parts[:3] == ["api", "ads", "packages"]:
             pk = ads.get_package(parts[3])
             return self.send(200, pk) if pk else self.send(404, {"ok": False, "code": "unknown_package", "error": f"No saved ad-research package {parts[3]!r}."})

@@ -242,6 +242,41 @@ def ad_policy(msgs, names, user):
     return say(f"Saved package {r.get('package_id')} status {r.get('status')}" if r.get("ok") else f"Package NOT saved: {r.get('code')} - {r.get('error')}")
 
 
+# ---- scripted FLYER POLICY (V2-04 plumbing tests). A user message containing FLYER_AGENT makes the mock behave like a small rule-based social specialist: read the
+# catalogue, look at the selected merchant photos (unless NO_INSPECT), call generate_flyer ONCE and report exactly what the tool said. Options: PRODUCT:<id>,
+# IMAGES:<id>,<id>, TWICE (a second generate_flyer call with the same arguments in the same request). A scripted stand-in, NOT a model.
+def flyer_policy(msgs, names, user):
+    tr = trace_since_last_user(msgs)
+    def call(n, a):
+        return {"call": (n, a)}
+    cat = next((r for n, a, r in tr if n == "read_catalogue"), None)
+    if cat is None:
+        return call("read_catalogue", {})
+    prods = cat.get("products") or []
+    if not prods:
+        return {"text": "[MOCK FLYER AGENT] The catalogue has no products: " + str(cat.get("error"))[:200]}
+    m = re.search(r"PRODUCT:([\w-]+)", user)
+    p = next((x for x in prods if m and x.get("product_id") == m.group(1)), prods[0])
+    m = re.search(r"IMAGES:([\w,-]+)", user)
+    ids = m.group(1).split(",") if m else [i["image_id"] for i in (p.get("images") or [])][:2]
+    inspected = {a.get("image_id") for n, a, r in tr if n == "inspect_image"}
+    if "NO_INSPECT" not in user:
+        for iid in ids:
+            if iid not in inspected:
+                return call("inspect_image", {"image_id": iid})
+    gens = [t for t in tr if t[0] == "generate_flyer"]
+    if not gens:
+        pr = p.get("price") or {}
+        return call("generate_flyer", {"product_id": p["product_id"], "selected_product_image_ids": ids,
+                                       "prompt": f"Create a clean promotional flyer for {p.get('name')}. Headline: {p.get('name')}. Show the price exactly as declared: "
+                                                 f"{pr.get('amount')} {pr.get('currency')}. Keep the supplied product photo prominent on a plain backdrop with a short call to action."})
+    if "TWICE" in user and len(gens) < 2:
+        return call("generate_flyer", gens[0][1])
+    r = gens[-1][2]
+    return {"text": (f"[MOCK FLYER AGENT] Flyer {r.get('flyer_id')} status {r.get('status')} candidate {r.get('candidate_id')}" if r.get("ok")
+                     else f"[MOCK FLYER AGENT] Flyer NOT generated: {r.get('code')} - {str(r.get('error'))[:160]}")}
+
+
 def decide(body):
     STATS["requests"] += 1; STATS["last_model"] = body.get("model", "")
     if body["messages"][-1]["role"] == "user" and "SLOW" in json.dumps(body["messages"][-1]["content"]):
@@ -257,6 +292,9 @@ def decide(body):
     _users = [m for m in msgs if m["role"] == "user"]
     if _users and "RESEARCH_AGENT" in json.dumps(_users[-1]["content"]):
         return research_policy(msgs, names)
+    if _users and "FLYER_AGENT" in json.dumps(_users[-1]["content"]):
+        u = _users[-1]["content"]
+        return flyer_policy(msgs, names, u if isinstance(u, str) else json.dumps(u))
     if _users and "AD_AGENT" in json.dumps(_users[-1]["content"]):
         u = _users[-1]["content"]
         return ad_policy(msgs, names, u if isinstance(u, str) else json.dumps(u))

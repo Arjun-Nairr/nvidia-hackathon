@@ -1,0 +1,38 @@
+{
+ "note": "Scripted provider: a 200 response with steps:1 (malformed) and a text-only completion that echoes the fake sentinel key. Both are terminal, consumed failures; the sentinel is redacted.",
+ "malformed_steps_int": {
+  "flyer_id": "fly-7450221983",
+  "status": "failed",
+  "agent_id": "harbor-flyer-specialist",
+  "request_id": "f-req-5",
+  "product_id": "harbor-wool-throw",
+  "created_at": "2026-10-13T16:38:35Z",
+  "candidate_id": "cand-c366ec6bf8",
+  "outcome": "bad_response",
+  "error": "malformed response: steps is int, not an array",
+  "error_kind": "bad_response",
+  "integrity": null,
+  "image": null,
+  "content_status": null,
+  "inputs_synthetic": true,
+  "note": null
+ },
+ "echoed_key_text_only": {
+  "flyer_id": "fly-4d1cec5dc5",
+  "status": "failed",
+  "agent_id": "harbor-flyer-specialist",
+  "request_id": "f-req-6",
+  "product_id": "harbor-wool-throw",
+  "created_at": "2026-10-13T16:38:36Z",
+  "candidate_id": "cand-78bc611d7a",
+  "outcome": "no_image",
+  "error": "the provider completed without an image (its text: 'I cannot help. Your key is *** (echoed by the provider).')",
+  "error_kind": "no_image",
+  "integrity": null,
+  "image": null,
+  "content_status": null,
+  "inputs_synthetic": true,
+  "note": null
+ },
+ "provider_requests_total": 2
+}

@@ -1,0 +1,37 @@
+# V2-04 corrections - scripted test output (condensed), 2026-10-13
+# Source: tests/flyer_test.py from isolated copies; scripted Gemini stand-in and placeholder images only; NOT real Gemini.
+# Only the new correction checks are listed (C1-C6, B12-B14).
+
+## BEFORE the fix (new tests, unmodified application code; Part A only)
+PART A: backend seams (scripted Gemini stand-in; placeholder images; not real Gemini)
+review corrections
+FAIL C1 a valid saved output is listed, detailed, returned from the cache and served, with an explicit valid integrity state  [None]
+FAIL C2 a missing / truncated / replaced-by-another-valid-image / zero-byte / not-a-file artifact is an explicit storage-integrity failure in list, detail, the cached generation result and t...
+FAIL C3 unreadable storage and a database path pointing outside the managed folder are explicit integrity failures too (never a successful file response)  [('unchecked', 'unchecked')]
+PASS C3b integrity is computed on read, not stored: restoring the original bytes makes that flyer valid again without any generation or attempt change
+FAIL C4 a COMPLETED 200 response with a malformed container (top-level array, steps: 1, steps: [1], content: 1, content: ['x'], usage: 'lots') is a structured terminal failure: one send, att...
+FAIL C4b the usage totals the malformed response did carry are still recorded with the failure  [None]
+FAIL C5 an echoed API key (fake sentinel) in provider text blocks, the status string, the interaction id, an image label, a provider error message and a transport exception is redacted from ...
+FAIL C6 after a restart (fresh process, provider stopped, no key) damaged artifacts remain explicit integrity failures and malformed-response failures remain consumed failures: every retriev...
+PART A only: 22/29
+exit 1
+
+## AFTER the fix (full run, Part A + Part B)
+PART A: backend seams (scripted Gemini stand-in; placeholder images; not real Gemini)
+review corrections
+PASS C1 a valid saved output is listed, detailed, returned from the cache and served, with an explicit valid integrity state
+PASS C2 a missing / truncated / replaced-by-another-valid-image / zero-byte / not-a-file artifact is an explicit storage-integrity failure in list, detail, the cached generation result and t...
+PASS C3 unreadable storage and a database path pointing outside the managed folder are explicit integrity failures too (never a successful file response)
+PASS C3b integrity is computed on read, not stored: restoring the original bytes makes that flyer valid again without any generation or attempt change
+PASS C4 a COMPLETED 200 response with a malformed container (top-level array, steps: 1, steps: [1], content: 1, content: ['x']) is a structured terminal failure: one send, attempt done with ...
+PASS C4b the usage totals the malformed response did carry are still recorded with the failure
+PASS C4c valid handling is preserved: a malformed usage object (diagnostic only) does not fail an otherwise valid generation; it is simply not recorded
+PASS C5 an echoed API key (fake sentinel) in provider text blocks, the status string, the interaction id, an image label, a provider error message and a transport exception is redacted from ...
+PASS C6 after a restart (fresh process, provider stopped, no key) damaged artifacts remain explicit integrity failures and malformed-response failures remain consumed failures: every retriev...
+PART A done: 30/30
+PART B: real server, HTTP chat API and Hermes workers (scripted model; scripted Gemini stand-in; placeholder images)
+PASS B12 a damaged saved image (truncated on disk) is an explicit storage-integrity failure everywhere: list and detail show storage_failure with no image reference, the image endpoint answe...
+PASS B13 after an app restart the damaged flyer is still an explicit failure (zero provider requests); restoring the original bytes makes it served and valid again, with the attempt record u...
+PASS B14 through the real app a malformed 200 response is an explicit consumed failure (one send, status failed / outcome bad_response, retrievable after restart with zero further requests) ...
+44/44 checks passed (scripted Gemini + scripted model + placeholder images: wiring/enforcement only, NOT real Gemini output or product fidelity)
+exit 0

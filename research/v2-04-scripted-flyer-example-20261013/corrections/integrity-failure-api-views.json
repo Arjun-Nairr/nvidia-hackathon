@@ -1,0 +1,42 @@
+{
+ "note": "The saved image of the example flyer was truncated on disk (scripted test). List item, detail summary and the image endpoint answer:",
+ "list_item": {
+  "flyer_id": "fly-feb80319f5",
+  "status": "storage_failure",
+  "agent_id": "harbor-flyer-specialist",
+  "request_id": "f-req-1",
+  "product_id": "harbor-wool-throw",
+  "created_at": "2026-10-13T16:37:52Z",
+  "candidate_id": "cand-92d0037b79",
+  "outcome": "ok",
+  "error": "The generated image was saved but its stored file failed the integrity check: the saved image is 11463 bytes; 22926 were saved (truncated or replaced). It was not generated again and no second attempt is available.",
+  "error_kind": "storage_integrity",
+  "integrity": {
+   "state": "failed",
+   "problem": "the saved image is 11463 bytes; 22926 were saved (truncated or replaced)"
+  },
+  "image": null,
+  "content_status": null,
+  "inputs_synthetic": true,
+  "note": null
+ },
+ "detail_status": "storage_failure",
+ "detail_integrity": {
+  "state": "failed",
+  "problem": "the saved image is 11463 bytes; 22926 were saved (truncated or replaced)"
+ },
+ "detail_attempts": {
+  "used": 1,
+  "enabled": 1,
+  "final_max": 2,
+  "note": "This slice runs the initial generation only; the reviewed correction path is a later ticket. The final bound is two."
+ },
+ "image_endpoint": {
+  "http_status": 409,
+  "body": {
+   "ok": false,
+   "code": "artifact_integrity_failed",
+   "error": "The saved flyer image failed its integrity check: the saved image is 11463 bytes; 22926 were saved (truncated or replaced)."
+  }
+ }
+}

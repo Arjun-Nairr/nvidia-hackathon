@@ -53,7 +53,7 @@ check("A2 market_analysis behaviour is unchanged: all seven eligible tools plus 
 for bad in (["marketplace_search"], ["save_listing_draft"], ["read_recorded_evidence"], ["facebook_ad_research"], ["image_generation"], ["web_search"]):
     c, e = core.validate_create_agent(args(requested_tools=bad))
     check(f"A3 social_media cannot be granted {bad[0]} (not implemented for / not connected to this role): tool_not_permitted lists only its own tools",
-          e and e["code"] == "tool_not_permitted" and set(e["allowed_values"]) == set(SOC_TOOLS) | set(core.AD_TOOLS), e)   # V2-03 added the fb_* tools
+          e and e["code"] == "tool_not_permitted" and set(e["allowed_values"]) == set(SOC_TOOLS) | set(core.AD_TOOLS) | set(core.FLYER_TOOLS), e)   # V2-03 added the fb_* tools, V2-04 the flyer tools
 c, e = core.validate_create_agent(args("email"))
 check("A4 unknown/email roles stay unsupported and the corrective error names the two supported roles",
       e and e["code"] == "unsupported_role" and e["allowed_values"] == ["market_analysis", "social_media"], e)
@@ -68,10 +68,11 @@ check("A6 the two roles share no foundation text: different baseline names, resp
       and core._similar(roles.SOCIAL_BASELINE_SKILL, roles.BASELINE_SKILL) < 0.5 and roles.SOCIAL_RESPONSIBILITIES != roles.RESPONSIBILITIES
       and "competitor-analysis-baseline" not in roles.SOCIAL_BASELINE_SKILL + roles.SOCIAL_RESPONSIBILITIES
       and "market-analysis" not in roles.SOCIAL_BASELINE_SKILL.lower() + roles.SOCIAL_RESPONSIBILITIES.lower())
-check("A6b eligible social tools are the implemented ones only (V2-03 added the six fb_* ad-research tools; no generation tool is advertised; Marketplace tools stay out)",
-      set(core.ROLES["social_media"]["eligible_tools"]) == {"read_company_context", "memory", "skills", "inspect_image", "read_catalogue", *core.AD_TOOLS}
-      and not any("generat" in k or k.startswith("marketplace_") for k in core.ROLES["social_media"]["eligible_tools"])
-      and "image_generation" in core.ROLES["social_media"]["not_connected"] and "facebook_ad_research" not in core.ROLES["social_media"]["not_connected"])
+check("A6b eligible social tools are the implemented ones only (V2-03 six fb_* ad-research tools, V2-04 generate_flyer/read_flyer; Marketplace tools stay out; posting stays not connected)",
+      set(core.ROLES["social_media"]["eligible_tools"]) == {"read_company_context", "memory", "skills", "inspect_image", "read_catalogue", *core.AD_TOOLS, *core.FLYER_TOOLS}
+      and not any(k.startswith("marketplace_") for k in core.ROLES["social_media"]["eligible_tools"])
+      and "social_posting" in core.ROLES["social_media"]["not_connected"] and "image_generation" not in core.ROLES["social_media"]["not_connected"]
+      and "facebook_ad_research" not in core.ROLES["social_media"]["not_connected"])
 
 # the creation guard: classification only guides; the role the backend classified is the only role that may be created
 turn_state.route = None
@@ -97,8 +98,8 @@ check("A8 plugin hook and tool body both refuse a role other than the routed one
       blocked and blocked["action"] == "block" and passed is None and tool_refusal.get("code") == "role_not_permitted_for_request"
       and blocked2 and blocked2["action"] == "block", (blocked, passed, tool_refusal, blocked2))
 desc = hp.CREATE_SCHEMA["description"]
-check("A9 the create_agent description covers BOTH roles with their own guidance, names the ad tools for the social role and states generation is not connected",
-      "ROLE market_analysis" in desc and "ROLE social_media" in desc and "fb_ads_search" in desc and "image_generation" in desc
+check("A9 the create_agent description covers BOTH roles with their own guidance, names the ad tools and the flyer tool for the social role",
+      "ROLE market_analysis" in desc and "ROLE social_media" in desc and "fb_ads_search" in desc and "generate_flyer" in desc
       and "market_analysis or social_media" in hp.CREATE_SCHEMA["parameters"]["properties"]["role"]["description"])
 
 # routing decision rules (pure; the real Laya's probabilities are covered by tests/route_table.py)
@@ -197,7 +198,7 @@ try:
     print("   ACTUAL scripted creation response (social_media):", json.dumps(so))
     check("B5 main creates the social-media specialist: baseline social-media-flyer-baseline + custom skill; granted tools = requested + foundation; no ad/generation tool",
           so and so.get("ok") and so["skills"] == ["social-media-flyer-baseline", "feed-flyer-checklist"] and so["granted_tools"] == SOC_TOOLS
-          and so["approval_requirements"][-1]["requirement"].startswith("not connected"), so)
+          and so["approval_requirements"][-1]["requirement"].startswith("only with the granted generate_flyer"), so)
     aid_ma, aid_so = ma["agent_id"], so["agent_id"]
     agents = call("/api/agents")[1]
     check("B6 both agents are registered side by side with their own roles; creating the second did not touch the first (no paired creation, no deletion)",

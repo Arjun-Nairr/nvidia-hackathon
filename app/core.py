@@ -104,7 +104,10 @@ ROLES["social_media"] = {
         "fb_ads_find_advertiser, fb_ads_search, fb_ad_detail, fb_ad_image, save_ad_research, read_ad_research, plus inspect_image and read_catalogue) say that it may "
         "research US Facebook IMAGE ads read-only inside a manual request, within a backend allowance it cannot change, that it chooses the queries, advertisers "
         "and images itself, that reported reach is used only when the backend says it is available, and that it has no Marketplace data. Image or flyer generation "
-        "is NOT connected in either case and nothing can be posted. Do not claim capabilities it does not have; do not invent facts about the company."),
+        "is connected ONLY with generate_flyer (add generate_flyer and read_flyer, plus inspect_image and read_catalogue): it may then generate ONE flyer image per "
+        "manual request from the merchant's own catalogue photographs with Gemini, one paid attempt per request, saved UNCHECKED (nothing reviews or approves it yet). "
+        "Without generate_flyer, say image or flyer generation is NOT connected. Nothing can be posted in any case. Do not claim capabilities it does not have; "
+        "do not invent facts about the company."),
     "eligible_tools": {**{k: _MA[k] for k in ("read_company_context", "memory", "skills", "inspect_image", "read_catalogue")},
                        "fb_ads_find_advertiser": {"toolset": "ecom_fb_advertiser", "approval": "none",
                                                   "what": "Find Facebook Ad Library advertisers (pages) by name (read-only, US, counted against a backend allowance)."},
@@ -117,15 +120,21 @@ ROLES["social_media"] = {
                        "save_ad_research": {"toolset": "ecom_fb_save", "approval": "none",
                                             "what": "Save ONE research package: your source-linked ad references, your observations of images you inspected and the reach-gate state. Nothing is published."},
                        "read_ad_research": {"toolset": "ecom_fb_read", "approval": "none",
-                                            "what": "Read this specialist's saved ad research packages (stored data only; no new request is made)."}},
+                                            "what": "Read this specialist's saved ad research packages (stored data only; no new request is made)."},
+                       "generate_flyer": {"toolset": "ecom_flyer_generate", "approval": "none",
+                                          "what": "Generate ONE flyer image with Gemini from the product's registered merchant photographs and your prompt: one paid attempt per manual "
+                                                  "request, saved UNCHECKED (not reviewed or approved). Needs a configured Gemini key and real supplied photographs."},
+                       "read_flyer": {"toolset": "ecom_flyer_read", "approval": "none",
+                                      "what": "Read this specialist's saved flyers and their status (stored data only; no generation or provider request is made)."}},
     "mandatory_tools": ["read_company_context", "memory", "skills"],
-    "not_connected": ["image_generation", "social_posting", "instagram", "email", "web_search", "web_scraping", "scheduling", "marketplace_research"],
+    "not_connected": ["social_posting", "instagram", "email", "web_search", "web_scraping", "scheduling", "marketplace_research"],
     "approval_requirements": [
         {"action": "read company context / read the catalogue / inspect registered images / use own memory and skills", "requirement": "none"},
         {"action": "publish, post, send messages or change anything externally", "requirement": "user confirmation required; no such tool is granted"},
         {"action": "US Facebook image-ad research (fb_* tools)", "requirement": "only with the granted fb_* tools, inside a manual request, within a finite backend "
                                                                                  "allowance; no confirmation per read; no Marketplace, Instagram or video data"},
-        {"action": "image or flyer generation", "requirement": "not connected in this increment"},
+        {"action": "flyer generation (generate_flyer)", "requirement": "only with the granted generate_flyer tool, inside a manual request, one paid Gemini attempt per request "
+                                                                         "(backend-enforced), needs a configured key; the result is saved UNCHECKED; nothing is posted"},
     ],
 }
 PROVIDERS = ("openai-codex", "nebius-token-factory")   # the only two supported
@@ -140,6 +149,7 @@ NEBIUS_DEFAULT_MODEL = "nvidia/nemotron-3-super-120b-a12b"  # unverified Nebius 
 MARKETPLACE_TOOLS = ("marketplace_locate", "marketplace_search", "marketplace_item", "marketplace_photo")   # live research (app/research.py)
 AD_TOOLS = ("fb_ads_find_advertiser", "fb_ads_search", "fb_ad_detail", "fb_ad_image", "save_ad_research", "read_ad_research")   # Facebook ad research (app/ads.py)
 AD_RESEARCH_TOOLS = AD_TOOLS[:4]   # the tools that spend scraper attempts / image downloads (a specialist holding any of them gets the research-turn limits)
+FLYER_TOOLS = ("generate_flyer", "read_flyer")   # flyer generation (app/flyer.py): generate_flyer spends a paid Gemini attempt
 MAIN_TOOLSETS = ["ecom_company", "ecom_agents"]
 def _iterations(name, default):
     """Operator cap on agent iterations per turn (each is one model request; an exhausted turn adds one summary request). Anything not a whole number 1-40
@@ -157,6 +167,8 @@ RESEARCH_TURN_TIMEOUT, RESEARCH_MAX_ITERATIONS = 600, _iterations("ECOM_RESEARCH
 CHAT_MAX_ITERATIONS = _iterations("ECOM_CHAT_MAX_ITERATIONS", 12)
 # an ad-research turn is longer (searches, details, up to 4 downloads and as many inspections, then the package): 20 iterations (+1 summary request)
 AD_MAX_ITERATIONS = _iterations("ECOM_AD_MAX_ITERATIONS", 20)
+# a specialist that holds BOTH ad research and generate_flyer also inspects its merchant photos and generates: a longer turn
+FLYER_MAX_ITERATIONS = _iterations("ECOM_FLYER_MAX_ITERATIONS", 28)
 MAX_SKILLS, MAX_TEXT = 3, 8000
 
 
@@ -365,7 +377,14 @@ def db():
         bytes INTEGER, width INTEGER, height INTEGER, content_type TEXT, format TEXT, host TEXT, fetched_at REAL, path TEXT, PRIMARY KEY(run_id, image_id));
       CREATE TABLE IF NOT EXISTS ad_packages(package_id TEXT PRIMARY KEY, run_id TEXT UNIQUE, agent_id TEXT, company_id TEXT, conversation_id TEXT, request_id TEXT,
         status TEXT, summary TEXT, selection_basis TEXT, blocker TEXT, limitations TEXT, reach_gate TEXT, references_json TEXT, ads_considered TEXT,
-        call_accounting TEXT, identity TEXT, created_at REAL);""")
+        call_accounting TEXT, identity TEXT, created_at REAL);
+      CREATE TABLE IF NOT EXISTS flyer_allowance(scope TEXT PRIMARY KEY, attempts_max INTEGER NOT NULL, attempts_used INTEGER NOT NULL DEFAULT 0, created_at REAL);
+      CREATE TABLE IF NOT EXISTS flyer_runs(run_id TEXT PRIMARY KEY, agent_id TEXT, company_id TEXT, company_name TEXT, conversation_id TEXT, request_id TEXT,
+        message_id INTEGER, product_id TEXT, scope TEXT, attempts_final_max INTEGER, final_candidate_id TEXT, created_at REAL, UNIQUE(agent_id, request_id));
+      CREATE TABLE IF NOT EXISTS flyer_attempts(candidate_id TEXT PRIMARY KEY, run_id TEXT, attempt_no INTEGER, status TEXT, outcome TEXT, prompt TEXT, context_text TEXT,
+        product_json TEXT, inputs_json TEXT, references_json TEXT, provider TEXT, model TEXT, request_json TEXT, inputs_synthetic INTEGER, http_status INTEGER, error TEXT,
+        usage TEXT, interaction_id TEXT, ms INTEGER, out_path TEXT, out_sha256 TEXT, out_bytes INTEGER, out_width INTEGER, out_height INTEGER, out_mime TEXT,
+        created_at REAL, dispatched_at REAL, finished_at REAL, UNIQUE(run_id, attempt_no));""")
     if "meta" not in [r[1] for r in c.execute("PRAGMA table_info(messages)")]:   # routing metadata (added later; existing rows keep NULL)
         c.execute("ALTER TABLE messages ADD COLUMN meta TEXT")
     cols = [r[1] for r in c.execute("PRAGMA table_info(listing_drafts)")]
@@ -505,6 +524,13 @@ def image_roots():
     return base
 
 
+def merchant_image_roots():
+    """Directories holding the merchant's OWN registered photographs (file name = image ID): ECOM_IMAGE_DIRS, else the demo fixture folder. Unlike image_roots() this
+    never includes Marketplace diagnostic photos or ad-research images, so a competitor image can never be resolved as a merchant photo."""
+    env = os.environ.get("ECOM_IMAGE_DIRS")
+    return [Path(p) for p in env.split(os.pathsep) if p] if env else [ROOT / "tests" / "fixtures" / "demo_images"]
+
+
 def prepare_image(image_id):
     """Resolve a registered image ID to verified, model-ready pixels BEFORE any model call. Never takes a path or URL.
     Returns {ok, image_id, width, height, sent_width, sent_height, format, source_bytes, sha256, data_url} or a corrective error
@@ -578,7 +604,13 @@ def build_soul(c, company_name):
                   "can be posted or published. Marketplace data, Instagram, other web access or scraping, email and scheduling are NOT connected. Your outputs are "
                   "text: research findings, creative briefs, copy and visual direction. If asked for an image file or a published post, say plainly that you "
                   "cannot produce or publish it. ")
-    elif social:   # honest capability statement for the role when no ad tool was granted
+    if social and "generate_flyer" in held:   # generation is connected through generate_flyer (ads or not); posting never
+        limits = limits.replace("Image or flyer generation is NOT connected yet, and nothing can be posted or published.",
+                                "Flyer generation is connected only through your generate_flyer tool (one image per request, UNCHECKED), and nothing can be posted or published.")
+        if not ads:
+            limits = ("Flyer generation is connected through your generate_flyer tool (one Gemini image per request from the merchant's own photographs, saved UNCHECKED). "
+                      "Facebook ad research, Marketplace data, Instagram, other web access or scraping, email, scheduling and posting are NOT connected. ")
+    elif social and not ads:   # honest capability statement for the role when no ad tool was granted
         limits = ("Facebook ad research and image or flyer generation are NOT connected yet, and nothing can be posted or published. Web access, scraping, "
                   "email and scheduling are NOT connected either. Your outputs are text: creative briefs, copy and visual direction. If asked for an image file "
                   "or a published post, say plainly that you cannot produce or publish it. ")
@@ -595,6 +627,13 @@ def build_soul(c, company_name):
                    "that reach ranking was unavailable. Never substitute impressions, spend, likes, how long an ad ran or its position in the results for reach, and "
                    "never say an ad worked, sold or converted. Describe an ad image only after inspect_image showed you its pixels. Take principles from "
                    "references, never copy another advertiser's wording or imagery. You cannot contact advertisers or publish anything.\n") if ads else ""
+    flyer = ("You can generate ONE flyer image per manual request with `generate_flyer`: choose a catalogue product (`read_catalogue`), select 1-3 of THAT product's "
+             "registered merchant photograph ids (the real supplied photographs: Gemini receives exactly those), look at them with `inspect_image`, and write a prompt "
+             "with the exact text, price and layout to show, using only the supplied product facts (the backend appends the facts it holds). Competitor ad images may be "
+             "cited with `reference_ad_image_ids` as provenance only: they are never sent to Gemini and the product in the flyer is always the merchant's. You get ONE paid "
+             "attempt per request: a failed, corrupt or uncertain attempt consumes it and is never repeated, so write the prompt carefully. If it reports a missing key, "
+             "missing photographs or provenance, tell the user what to set up and do not retry. The saved flyer is UNCHECKED: nobody has reviewed that it matches the "
+             "product, price or text, so never call it approved, verified or accurate. `read_flyer` reads saved flyers. Nothing is posted.\n") if social and "generate_flyer" in held else ""
     catalogue = ("Use `read_catalogue` for the merchant's supplied product facts (name, specifications, declared price and currency, image ID). Copy them "
                  "exactly and never add to them.\n") if social and "read_catalogue" in held else ""
     vision = ("You can look at images with `inspect_image(image_id)`: it attaches the actual pixels of a registered image ID. Report observations per "
@@ -607,7 +646,7 @@ def build_soul(c, company_name):
             "read the company context you were granted, keep your own memory and manage your own skills. Say plainly when you lack evidence or "
             "live access instead of inventing data. You cannot create agents or take external actions. Read the company context for current "
             "company details: it can be edited after you were created.\n"
-            + research + vision + drafting + catalogue + ad_research + fnd["start"])
+            + research + vision + drafting + catalogue + ad_research + flyer + fnd["start"])
 
 
 def _skill_md(name, content):
@@ -785,7 +824,7 @@ def run_turn(agent_id, message, timeout=300, conv_override=None, route=None, req
         eligible = ROLES.get(r["role"], ROLES["market_analysis"])["eligible_tools"]   # the agent's OWN role decides what its stored grants mean
         toolsets = [eligible[t]["toolset"] for t in tools]
         conv = r["conversation_id"]
-        if any(t in MARKETPLACE_TOOLS or t in AD_RESEARCH_TOOLS for t in tools):
+        if any(t in MARKETPLACE_TOOLS or t in AD_RESEARCH_TOOLS or t == "generate_flyer" for t in tools):
             timeout = max(timeout, RESEARCH_TURN_TIMEOUT)
     pt = {}  # parent-side stage durations (ms), only used when ECOM_TIMING=1
     t = time.perf_counter()
@@ -800,7 +839,9 @@ def run_turn(agent_id, message, timeout=300, conv_override=None, route=None, req
     sig = (cfg["provider"], cfg["model"], tuple(toolsets), conv_override or conv)  # any change restarts this agent's worker
     req = {"op": "turn", "message": message, "toolsets": toolsets, "conversation": conv_override or conv,
            "provider": cfg["provider"], "model": cfg["model"], "route": route, "request_id": request_id,
-           "max_iterations": (AD_MAX_ITERATIONS if any(t in AD_RESEARCH_TOOLS for t in tools) else RESEARCH_MAX_ITERATIONS if any(t in MARKETPLACE_TOOLS for t in tools)
+           "max_iterations": (FLYER_MAX_ITERATIONS if "generate_flyer" in tools and any(t in AD_RESEARCH_TOOLS for t in tools)
+                              else AD_MAX_ITERATIONS if any(t in AD_RESEARCH_TOOLS for t in tools)
+                              else RESEARCH_MAX_ITERATIONS if any(t in MARKETPLACE_TOOLS for t in tools) or "generate_flyer" in tools
                               else CHAT_MAX_ITERATIONS) if agent_id != "main" else CHAT_MAX_ITERATIONS}
     t = time.perf_counter()
     try:
