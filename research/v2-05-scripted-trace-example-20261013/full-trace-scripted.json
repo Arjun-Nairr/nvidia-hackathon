@@ -1,0 +1,2362 @@
+{
+ "note": "SCRIPTED: stand-in Gemini (solid control colours), rule-based specialist, invented ads. Proves wiring, binding and bounds; NOT real Gemini output or real visual-review accuracy.",
+ "b1": {
+  "reply": "[MOCK REVIEW AGENT] Flyer fly-cfea8c0e4c status agent_review_passed candidate cand-0ba2d9fe81",
+  "activity": [
+   [
+    "read_catalogue",
+    "ok"
+   ],
+   [
+    "fb_ads_search",
+    "ok"
+   ],
+   [
+    "fb_ad_detail",
+    "ok"
+   ],
+   [
+    "fb_ad_detail",
+    "ok"
+   ],
+   [
+    "fb_ad_image",
+    "ok"
+   ],
+   [
+    "fb_ad_image",
+    "ok"
+   ],
+   [
+    "inspect_image",
+    "ok"
+   ],
+   [
+    "inspect_image",
+    "ok"
+   ],
+   [
+    "save_ad_research",
+    "ok"
+   ],
+   [
+    "inspect_image",
+    "ok"
+   ],
+   [
+    "inspect_image",
+    "ok"
+   ],
+   [
+    "generate_flyer",
+    "ok"
+   ],
+   [
+    "inspect_flyer",
+    "ok"
+   ],
+   [
+    "review_flyer",
+    "ok"
+   ],
+   [
+    "finalize_flyer",
+    "ok"
+   ]
+  ],
+  "detail": {
+   "flyer_id": "fly-cfea8c0e4c",
+   "status": "agent_review_passed",
+   "status_text": "Agent review passed (fallible; not human approval)",
+   "agent_id": "harbor-reviewing-specialist",
+   "request_id": "b-1",
+   "product_id": "harbor-wool-throw",
+   "created_at": "2026-10-13T17:25:03Z",
+   "candidate_id": "cand-0ba2d9fe81",
+   "outcome": "ok",
+   "error": null,
+   "error_kind": null,
+   "integrity": {
+    "state": "valid"
+   },
+   "image": {
+    "url": "/api/flyers/images/fly-cfea8c0e4c",
+    "width": 800,
+    "height": 1000,
+    "mime_type": "image/jpeg",
+    "sha256": "a13e1c11cb44635f52cd46a5070e0f23ed8cb8e628305396d65332dacfec690c",
+    "bytes": 13228
+   },
+   "content_status": "agent_review_passed",
+   "inputs_synthetic": true,
+   "note": "Agent review passed: an automated visual review of this candidate's actual pixels found no defect in the three checks. It is a fallible agent review, not human approval and not a guarantee that the product is reproduced exactly.",
+   "final": {
+    "selected": true,
+    "candidate_id": "cand-0ba2d9fe81",
+    "effective_candidate_id": "cand-0ba2d9fe81",
+    "selected_at": "2026-10-13T17:25:04Z",
+    "rationale": "Selected the candidate whose review result was best; reviewer decisions are fallible and nobody has approved it."
+   },
+   "review": {
+    "review_id": "rev-e53c0fd41b",
+    "candidate_id": "cand-0ba2d9fe81",
+    "sha256": "a13e1c11cb44635f52cd46a5070e0f23ed8cb8e628305396d65332dacfec690c",
+    "verdict": "passed",
+    "verified": true,
+    "delivery": "image_part_sent",
+    "checks": {
+     "product_appearance": {
+      "result": "pass",
+      "observation": "The shown product matches the supplied photographs in colour and form (scripted observation from the delivered pixels)."
+     },
+     "required_text_price": {
+      "result": "pass",
+      "observation": "The shown product matches the supplied photographs in colour and form (scripted observation from the delivered pixels)."
+     },
+     "layout_readability": {
+      "result": "pass",
+      "observation": "The shown product matches the supplied photographs in colour and form (scripted observation from the delivered pixels)."
+     }
+    },
+    "defects": [],
+    "uncertainties": "Fine print and fabric texture are not judged.",
+    "summary": "Scripted review of the candidate pixels: no defect observed.",
+    "references": [
+     {
+      "image_id": "hw-front",
+      "sha256": "3b5ed4aa671d9eb53344be46ee7ddf10bb51415181f3c6ac375052620872dca5"
+     },
+     {
+      "image_id": "hw-detail",
+      "sha256": "b3ac33add8bb69dbde07243912c6fb653ed938707d221505560325eacd46169b"
+     }
+    ],
+    "request_id": "b-1",
+    "created_at": "2026-10-13T17:25:04Z",
+    "note": "Agent review of the candidate's delivered pixels: fallible, not human approval."
+   },
+   "unresolved_issues": [],
+   "candidates_total": 1,
+   "attempts_used": 1,
+   "correction_used": false,
+   "identity": {
+    "agent_id": "harbor-reviewing-specialist",
+    "company_id": "default",
+    "company_name": "Harbor Textiles",
+    "conversation_id": "conv-harbor-reviewing-specialist",
+    "request_id": "b-1",
+    "message_id": 3,
+    "product_id": "harbor-wool-throw",
+    "run_id": "fly-cfea8c0e4c",
+    "scope": "b-main"
+   },
+   "attempts": {
+    "used": 1,
+    "enabled": 2,
+    "final_max": 2,
+    "corrections_used": 0,
+    "correction": {
+     "available": false,
+     "reason": "its verified review recorded no defect to correct (verdict passed)"
+    },
+    "note": "At most two generation attempts per request: the initial one and ONE correction after a verified review that recorded defects."
+   },
+   "candidates": [
+    {
+     "candidate_id": "cand-0ba2d9fe81",
+     "attempt_no": 1,
+     "kind": "initial",
+     "predecessor_id": null,
+     "status": "done",
+     "outcome": "ok",
+     "error": null,
+     "provider": "gemini-interactions",
+     "model": "gemini-nano-banana-2.1",
+     "http_status": 200,
+     "usage": {
+      "total_input_tokens": 2800,
+      "total_output_tokens": 1120,
+      "total_thought_tokens": 64,
+      "total_tokens": 3984
+     },
+     "interaction_id": "interaction-541a488f30bd",
+     "ms": 276,
+     "created_at": "2026-10-13T17:25:03Z",
+     "dispatched_at": "2026-10-13T17:25:03Z",
+     "finished_at": "2026-10-13T17:25:04Z",
+     "prompt": "Create a clean promotional flyer for Heritage Wool Throw. Headline: Heritage Wool Throw. Show the price exactly as declared: 64.5 EUR. Keep the supplied product photo prominent on a plain backdrop with a short call to action.",
+     "context_text": "Create a clean promotional flyer for Heritage Wool Throw. Headline: Heritage Wool Throw. Show the price exactly as declared: 64.5 EUR. Keep the supplied product photo prominent on a plain backdrop with a short call to action.\n\n--- Supplied merchant facts (authoritative: reproduce exactly, add nothing) ---\nMerchant: Harbor Textiles\nProduct: Heritage Wool Throw\nDeclared price: 64.5 EUR\nSpecifications: size: 130 x 180 cm; material: 100% wool; care: Dry clean\nBrand direction (merchant supplied): Calm, natural, plain-spoken\n--- Attached images ---\n2 real photograph(s) of this exact product (hw-front, hw-detail). The product in the flyer must be this product; do not alter its design, colour or proportions.\n",
+     "product": {
+      "product_id": "harbor-wool-throw",
+      "name": "Heritage Wool Throw",
+      "price": {
+       "amount": 64.5,
+       "currency": "EUR"
+      },
+      "specifications": {
+       "size": "130 x 180 cm",
+       "material": "100% wool",
+       "care": "Dry clean"
+      },
+      "category": "throws",
+      "merchant": "Harbor Textiles",
+      "catalogue_file": "catalogue.json",
+      "catalogue_sha256": "d90d4c59be5c295bfadb360eb5fc45eb4a1af8eac09d9e3110cbd147880613b6",
+      "demo": false
+     },
+     "inputs": [
+      {
+       "image_id": "hw-front",
+       "mime_type": "image/png",
+       "format": "PNG",
+       "bytes": 4235,
+       "sha256": "3b5ed4aa671d9eb53344be46ee7ddf10bb51415181f3c6ac375052620872dca5",
+       "width": 600,
+       "height": 800,
+       "kind": "test placeholder image (synthetic)",
+       "provenance": null,
+       "synthetic": true
+      },
+      {
+       "image_id": "hw-detail",
+       "mime_type": "image/jpeg",
+       "format": "JPEG",
+       "bytes": 12746,
+       "sha256": "b3ac33add8bb69dbde07243912c6fb653ed938707d221505560325eacd46169b",
+       "width": 600,
+       "height": 800,
+       "kind": "test placeholder image (synthetic)",
+       "provenance": null,
+       "synthetic": true
+      }
+     ],
+     "references": [
+      {
+       "image_id": "ad-1100000000000001-1",
+       "source_ad_id": "1100000000000001",
+       "source_url": "https://www.facebook.com/ads/library?id=1100000000000001",
+       "sha256": "f310255e7e9965d8fcbda32e1b2c3e87ec2f9fc729191b0afe170c7ab62f5e7c",
+       "sent_to_provider": false
+      },
+      {
+       "image_id": "ad-1100000000000003-1",
+       "source_ad_id": "1100000000000003",
+       "source_url": "https://www.facebook.com/ads/library?id=1100000000000003",
+       "sha256": "823f32cd1fd9d722cd7f97a3022ef96ac1faf04f46873eaf19812aa1504cae11",
+       "sent_to_provider": false
+      }
+     ],
+     "request": {
+      "endpoint": "/v1beta/interactions",
+      "model": "gemini-nano-banana-2.1",
+      "aspect_ratio": "4:5",
+      "image_size": "2K",
+      "mime_type": "image/jpeg",
+      "delivery": "inline",
+      "store": false,
+      "input_images": 2,
+      "timeout_s": 180,
+      "retries": 0
+     },
+     "corrections": [],
+     "integrity": {
+      "state": "valid"
+     },
+     "image": {
+      "url": "/api/flyers/images/cand-0ba2d9fe81",
+      "width": 800,
+      "height": 1000,
+      "mime_type": "image/jpeg",
+      "sha256": "a13e1c11cb44635f52cd46a5070e0f23ed8cb8e628305396d65332dacfec690c",
+      "bytes": 13228
+     },
+     "output": {
+      "image_id": "fly-cfea8c0e4c",
+      "sha256": "a13e1c11cb44635f52cd46a5070e0f23ed8cb8e628305396d65332dacfec690c",
+      "bytes": 13228,
+      "width": 800,
+      "height": 1000,
+      "mime_type": "image/jpeg"
+     },
+     "review": {
+      "review_id": "rev-e53c0fd41b",
+      "candidate_id": "cand-0ba2d9fe81",
+      "sha256": "a13e1c11cb44635f52cd46a5070e0f23ed8cb8e628305396d65332dacfec690c",
+      "verdict": "passed",
+      "verified": true,
+      "delivery": "image_part_sent",
+      "checks": {
+       "product_appearance": {
+        "result": "pass",
+        "observation": "The shown product matches the supplied photographs in colour and form (scripted observation from the delivered pixels)."
+       },
+       "required_text_price": {
+        "result": "pass",
+        "observation": "The shown product matches the supplied photographs in colour and form (scripted observation from the delivered pixels)."
+       },
+       "layout_readability": {
+        "result": "pass",
+        "observation": "The shown product matches the supplied photographs in colour and form (scripted observation from the delivered pixels)."
+       }
+      },
+      "defects": [],
+      "uncertainties": "Fine print and fabric texture are not judged.",
+      "summary": "Scripted review of the candidate pixels: no defect observed.",
+      "references": [
+       {
+        "image_id": "hw-front",
+        "sha256": "3b5ed4aa671d9eb53344be46ee7ddf10bb51415181f3c6ac375052620872dca5"
+       },
+       {
+        "image_id": "hw-detail",
+        "sha256": "b3ac33add8bb69dbde07243912c6fb653ed938707d221505560325eacd46169b"
+       }
+      ],
+      "request_id": "b-1",
+      "created_at": "2026-10-13T17:25:04Z",
+      "note": "Agent review of the candidate's delivered pixels: fallible, not human approval."
+     },
+     "selected": true
+    }
+   ],
+   "attempt": {
+    "candidate_id": "cand-0ba2d9fe81",
+    "attempt_no": 1,
+    "kind": "initial",
+    "predecessor_id": null,
+    "status": "done",
+    "outcome": "ok",
+    "error": null,
+    "provider": "gemini-interactions",
+    "model": "gemini-nano-banana-2.1",
+    "http_status": 200,
+    "usage": {
+     "total_input_tokens": 2800,
+     "total_output_tokens": 1120,
+     "total_thought_tokens": 64,
+     "total_tokens": 3984
+    },
+    "interaction_id": "interaction-541a488f30bd",
+    "ms": 276,
+    "created_at": "2026-10-13T17:25:03Z",
+    "dispatched_at": "2026-10-13T17:25:03Z",
+    "finished_at": "2026-10-13T17:25:04Z",
+    "prompt": "Create a clean promotional flyer for Heritage Wool Throw. Headline: Heritage Wool Throw. Show the price exactly as declared: 64.5 EUR. Keep the supplied product photo prominent on a plain backdrop with a short call to action.",
+    "context_text": "Create a clean promotional flyer for Heritage Wool Throw. Headline: Heritage Wool Throw. Show the price exactly as declared: 64.5 EUR. Keep the supplied product photo prominent on a plain backdrop with a short call to action.\n\n--- Supplied merchant facts (authoritative: reproduce exactly, add nothing) ---\nMerchant: Harbor Textiles\nProduct: Heritage Wool Throw\nDeclared price: 64.5 EUR\nSpecifications: size: 130 x 180 cm; material: 100% wool; care: Dry clean\nBrand direction (merchant supplied): Calm, natural, plain-spoken\n--- Attached images ---\n2 real photograph(s) of this exact product (hw-front, hw-detail). The product in the flyer must be this product; do not alter its design, colour or proportions.\n",
+    "product": {
+     "product_id": "harbor-wool-throw",
+     "name": "Heritage Wool Throw",
+     "price": {
+      "amount": 64.5,
+      "currency": "EUR"
+     },
+     "specifications": {
+      "size": "130 x 180 cm",
+      "material": "100% wool",
+      "care": "Dry clean"
+     },
+     "category": "throws",
+     "merchant": "Harbor Textiles",
+     "catalogue_file": "catalogue.json",
+     "catalogue_sha256": "d90d4c59be5c295bfadb360eb5fc45eb4a1af8eac09d9e3110cbd147880613b6",
+     "demo": false
+    },
+    "inputs": [
+     {
+      "image_id": "hw-front",
+      "mime_type": "image/png",
+      "format": "PNG",
+      "bytes": 4235,
+      "sha256": "3b5ed4aa671d9eb53344be46ee7ddf10bb51415181f3c6ac375052620872dca5",
+      "width": 600,
+      "height": 800,
+      "kind": "test placeholder image (synthetic)",
+      "provenance": null,
+      "synthetic": true
+     },
+     {
+      "image_id": "hw-detail",
+      "mime_type": "image/jpeg",
+      "format": "JPEG",
+      "bytes": 12746,
+      "sha256": "b3ac33add8bb69dbde07243912c6fb653ed938707d221505560325eacd46169b",
+      "width": 600,
+      "height": 800,
+      "kind": "test placeholder image (synthetic)",
+      "provenance": null,
+      "synthetic": true
+     }
+    ],
+    "references": [
+     {
+      "image_id": "ad-1100000000000001-1",
+      "source_ad_id": "1100000000000001",
+      "source_url": "https://www.facebook.com/ads/library?id=1100000000000001",
+      "sha256": "f310255e7e9965d8fcbda32e1b2c3e87ec2f9fc729191b0afe170c7ab62f5e7c",
+      "sent_to_provider": false
+     },
+     {
+      "image_id": "ad-1100000000000003-1",
+      "source_ad_id": "1100000000000003",
+      "source_url": "https://www.facebook.com/ads/library?id=1100000000000003",
+      "sha256": "823f32cd1fd9d722cd7f97a3022ef96ac1faf04f46873eaf19812aa1504cae11",
+      "sent_to_provider": false
+     }
+    ],
+    "request": {
+     "endpoint": "/v1beta/interactions",
+     "model": "gemini-nano-banana-2.1",
+     "aspect_ratio": "4:5",
+     "image_size": "2K",
+     "mime_type": "image/jpeg",
+     "delivery": "inline",
+     "store": false,
+     "input_images": 2,
+     "timeout_s": 180,
+     "retries": 0
+    },
+    "corrections": [],
+    "integrity": {
+     "state": "valid"
+    },
+    "image": {
+     "url": "/api/flyers/images/cand-0ba2d9fe81",
+     "width": 800,
+     "height": 1000,
+     "mime_type": "image/jpeg",
+     "sha256": "a13e1c11cb44635f52cd46a5070e0f23ed8cb8e628305396d65332dacfec690c",
+     "bytes": 13228
+    },
+    "output": {
+     "image_id": "fly-cfea8c0e4c",
+     "sha256": "a13e1c11cb44635f52cd46a5070e0f23ed8cb8e628305396d65332dacfec690c",
+     "bytes": 13228,
+     "width": 800,
+     "height": 1000,
+     "mime_type": "image/jpeg"
+    },
+    "review": {
+     "review_id": "rev-e53c0fd41b",
+     "candidate_id": "cand-0ba2d9fe81",
+     "sha256": "a13e1c11cb44635f52cd46a5070e0f23ed8cb8e628305396d65332dacfec690c",
+     "verdict": "passed",
+     "verified": true,
+     "delivery": "image_part_sent",
+     "checks": {
+      "product_appearance": {
+       "result": "pass",
+       "observation": "The shown product matches the supplied photographs in colour and form (scripted observation from the delivered pixels)."
+      },
+      "required_text_price": {
+       "result": "pass",
+       "observation": "The shown product matches the supplied photographs in colour and form (scripted observation from the delivered pixels)."
+      },
+      "layout_readability": {
+       "result": "pass",
+       "observation": "The shown product matches the supplied photographs in colour and form (scripted observation from the delivered pixels)."
+      }
+     },
+     "defects": [],
+     "uncertainties": "Fine print and fabric texture are not judged.",
+     "summary": "Scripted review of the candidate pixels: no defect observed.",
+     "references": [
+      {
+       "image_id": "hw-front",
+       "sha256": "3b5ed4aa671d9eb53344be46ee7ddf10bb51415181f3c6ac375052620872dca5"
+      },
+      {
+       "image_id": "hw-detail",
+       "sha256": "b3ac33add8bb69dbde07243912c6fb653ed938707d221505560325eacd46169b"
+      }
+     ],
+     "request_id": "b-1",
+     "created_at": "2026-10-13T17:25:04Z",
+     "note": "Agent review of the candidate's delivered pixels: fallible, not human approval."
+    },
+    "selected": true
+   },
+   "research": {
+    "ad_package_id": "adpkg-af264b032a",
+    "ad_run_id": "adrun-28bbe1ab28",
+    "status": "complete",
+    "selection_basis": "relevance_only",
+    "blocker": null,
+    "reach_gate": {
+     "state": "disabled_reach_unavailable",
+     "ranking_enabled": false,
+     "metric": null,
+     "geography": null,
+     "period": null,
+     "ads_recorded": 4,
+     "ads_with_reported_reach": 0,
+     "ads_with_ambiguous_reach": 0,
+     "reason": "No ad carries a reach value. Reach is unknown (not zero): select by relevance and say that reach ranking was unavailable.",
+     "rule": "Never substitute impressions, spend, likes, ad duration, audience size or search order for reach; reach is not proof of sales."
+    },
+    "reference_image_ids": [
+     "ad-1100000000000001-1",
+     "ad-1100000000000003-1"
+    ]
+   },
+   "history": [
+    {
+     "event": "generation_reserved",
+     "candidate_id": "cand-0ba2d9fe81",
+     "predecessor_id": null,
+     "at": "2026-10-13T17:25:03Z"
+    },
+    {
+     "event": "generation_finished",
+     "candidate_id": "cand-0ba2d9fe81",
+     "outcome": "ok",
+     "error": null,
+     "at": "2026-10-13T17:25:04Z"
+    },
+    {
+     "event": "review_saved",
+     "candidate_id": "cand-0ba2d9fe81",
+     "verdict": "passed",
+     "verified": true,
+     "delivery": "image_part_sent",
+     "defects": 0,
+     "at": "2026-10-13T17:25:04Z"
+    },
+    {
+     "event": "final_selected",
+     "candidate_id": "cand-0ba2d9fe81",
+     "at": "2026-10-13T17:25:04Z",
+     "rationale": "Selected the candidate whose review result was best; reviewer decisions are fallible and nobody has approved it."
+    }
+   ],
+   "allowance": {
+    "scope": "b-main",
+    "attempts_used": 1,
+    "attempts_max": 40
+   }
+  }
+ },
+ "b2": {
+  "reply": "[MOCK REVIEW AGENT] Flyer fly-dedc987d78 status agent_review_passed candidate cand-4fd8619967",
+  "activity": [
+   [
+    "read_catalogue",
+    "ok"
+   ],
+   [
+    "fb_ads_search",
+    "ok"
+   ],
+   [
+    "fb_ad_detail",
+    "ok"
+   ],
+   [
+    "fb_ad_detail",
+    "ok"
+   ],
+   [
+    "fb_ad_image",
+    "ok"
+   ],
+   [
+    "fb_ad_image",
+    "ok"
+   ],
+   [
+    "inspect_image",
+    "ok"
+   ],
+   [
+    "inspect_image",
+    "ok"
+   ],
+   [
+    "save_ad_research",
+    "ok"
+   ],
+   [
+    "inspect_image",
+    "ok"
+   ],
+   [
+    "inspect_image",
+    "ok"
+   ],
+   [
+    "generate_flyer",
+    "ok"
+   ],
+   [
+    "inspect_flyer",
+    "ok"
+   ],
+   [
+    "review_flyer",
+    "ok"
+   ],
+   [
+    "generate_flyer",
+    "ok"
+   ],
+   [
+    "inspect_flyer",
+    "ok"
+   ],
+   [
+    "review_flyer",
+    "ok"
+   ],
+   [
+    "finalize_flyer",
+    "ok"
+   ]
+  ],
+  "detail": {
+   "flyer_id": "fly-dedc987d78",
+   "status": "agent_review_passed",
+   "status_text": "Agent review passed (fallible; not human approval)",
+   "agent_id": "harbor-reviewing-specialist",
+   "request_id": "b-2",
+   "product_id": "harbor-wool-throw",
+   "created_at": "2026-10-13T17:25:06Z",
+   "candidate_id": "cand-4fd8619967",
+   "outcome": "ok",
+   "error": null,
+   "error_kind": null,
+   "integrity": {
+    "state": "valid"
+   },
+   "image": {
+    "url": "/api/flyers/images/fly-dedc987d78",
+    "width": 800,
+    "height": 1000,
+    "mime_type": "image/jpeg",
+    "sha256": "a13e1c11cb44635f52cd46a5070e0f23ed8cb8e628305396d65332dacfec690c",
+    "bytes": 13228
+   },
+   "content_status": "agent_review_passed",
+   "inputs_synthetic": true,
+   "note": "Agent review passed: an automated visual review of this candidate's actual pixels found no defect in the three checks. It is a fallible agent review, not human approval and not a guarantee that the product is reproduced exactly.",
+   "final": {
+    "selected": true,
+    "candidate_id": "cand-4fd8619967",
+    "effective_candidate_id": "cand-4fd8619967",
+    "selected_at": "2026-10-13T17:25:07Z",
+    "rationale": "Selected the candidate whose review result was best; reviewer decisions are fallible and nobody has approved it."
+   },
+   "review": {
+    "review_id": "rev-6e31d1b4ee",
+    "candidate_id": "cand-4fd8619967",
+    "sha256": "a13e1c11cb44635f52cd46a5070e0f23ed8cb8e628305396d65332dacfec690c",
+    "verdict": "passed",
+    "verified": true,
+    "delivery": "image_part_sent",
+    "checks": {
+     "product_appearance": {
+      "result": "pass",
+      "observation": "The shown product matches the supplied photographs in colour and form (scripted observation from the delivered pixels)."
+     },
+     "required_text_price": {
+      "result": "pass",
+      "observation": "The shown product matches the supplied photographs in colour and form (scripted observation from the delivered pixels)."
+     },
+     "layout_readability": {
+      "result": "pass",
+      "observation": "The shown product matches the supplied photographs in colour and form (scripted observation from the delivered pixels)."
+     }
+    },
+    "defects": [],
+    "uncertainties": "Fine print and fabric texture are not judged.",
+    "summary": "Scripted review of the candidate pixels: no defect observed.",
+    "references": [
+     {
+      "image_id": "hw-front",
+      "sha256": "3b5ed4aa671d9eb53344be46ee7ddf10bb51415181f3c6ac375052620872dca5"
+     },
+     {
+      "image_id": "hw-detail",
+      "sha256": "b3ac33add8bb69dbde07243912c6fb653ed938707d221505560325eacd46169b"
+     }
+    ],
+    "request_id": "b-2",
+    "created_at": "2026-10-13T17:25:07Z",
+    "note": "Agent review of the candidate's delivered pixels: fallible, not human approval."
+   },
+   "unresolved_issues": [],
+   "candidates_total": 2,
+   "attempts_used": 2,
+   "correction_used": true,
+   "identity": {
+    "agent_id": "harbor-reviewing-specialist",
+    "company_id": "default",
+    "company_name": "Harbor Textiles",
+    "conversation_id": "conv-harbor-reviewing-specialist",
+    "request_id": "b-2",
+    "message_id": 5,
+    "product_id": "harbor-wool-throw",
+    "run_id": "fly-dedc987d78",
+    "scope": "b-main"
+   },
+   "attempts": {
+    "used": 2,
+    "enabled": 2,
+    "final_max": 2,
+    "corrections_used": 1,
+    "correction": {
+     "available": false,
+     "reason": "the one correction of this request was already used"
+    },
+    "note": "At most two generation attempts per request: the initial one and ONE correction after a verified review that recorded defects."
+   },
+   "candidates": [
+    {
+     "candidate_id": "cand-09178816c3",
+     "attempt_no": 1,
+     "kind": "initial",
+     "predecessor_id": null,
+     "status": "done",
+     "outcome": "ok",
+     "error": null,
+     "provider": "gemini-interactions",
+     "model": "gemini-nano-banana-2.1",
+     "http_status": 200,
+     "usage": {
+      "total_input_tokens": 2800,
+      "total_output_tokens": 1120,
+      "total_thought_tokens": 64,
+      "total_tokens": 3984
+     },
+     "interaction_id": "interaction-541a488f30bd",
+     "ms": 63,
+     "created_at": "2026-10-13T17:25:06Z",
+     "dispatched_at": "2026-10-13T17:25:06Z",
+     "finished_at": "2026-10-13T17:25:06Z",
+     "prompt": "Create a clean promotional flyer for Heritage Wool Throw. Headline: Heritage Wool Throw. Show the price exactly as declared: 64.5 EUR. Keep the supplied product photo prominent on a plain backdrop with a short call to action.",
+     "context_text": "Create a clean promotional flyer for Heritage Wool Throw. Headline: Heritage Wool Throw. Show the price exactly as declared: 64.5 EUR. Keep the supplied product photo prominent on a plain backdrop with a short call to action.\n\n--- Supplied merchant facts (authoritative: reproduce exactly, add nothing) ---\nMerchant: Harbor Textiles\nProduct: Heritage Wool Throw\nDeclared price: 64.5 EUR\nSpecifications: size: 130 x 180 cm; material: 100% wool; care: Dry clean\nBrand direction (merchant supplied): Calm, natural, plain-spoken\n--- Attached images ---\n2 real photograph(s) of this exact product (hw-front, hw-detail). The product in the flyer must be this product; do not alter its design, colour or proportions.\n",
+     "product": {
+      "product_id": "harbor-wool-throw",
+      "name": "Heritage Wool Throw",
+      "price": {
+       "amount": 64.5,
+       "currency": "EUR"
+      },
+      "specifications": {
+       "size": "130 x 180 cm",
+       "material": "100% wool",
+       "care": "Dry clean"
+      },
+      "category": "throws",
+      "merchant": "Harbor Textiles",
+      "catalogue_file": "catalogue.json",
+      "catalogue_sha256": "d90d4c59be5c295bfadb360eb5fc45eb4a1af8eac09d9e3110cbd147880613b6",
+      "demo": false
+     },
+     "inputs": [
+      {
+       "image_id": "hw-front",
+       "mime_type": "image/png",
+       "format": "PNG",
+       "bytes": 4235,
+       "sha256": "3b5ed4aa671d9eb53344be46ee7ddf10bb51415181f3c6ac375052620872dca5",
+       "width": 600,
+       "height": 800,
+       "kind": "test placeholder image (synthetic)",
+       "provenance": null,
+       "synthetic": true
+      },
+      {
+       "image_id": "hw-detail",
+       "mime_type": "image/jpeg",
+       "format": "JPEG",
+       "bytes": 12746,
+       "sha256": "b3ac33add8bb69dbde07243912c6fb653ed938707d221505560325eacd46169b",
+       "width": 600,
+       "height": 800,
+       "kind": "test placeholder image (synthetic)",
+       "provenance": null,
+       "synthetic": true
+      }
+     ],
+     "references": [
+      {
+       "image_id": "ad-1100000000000001-1",
+       "source_ad_id": "1100000000000001",
+       "source_url": "https://www.facebook.com/ads/library?id=1100000000000001",
+       "sha256": "f310255e7e9965d8fcbda32e1b2c3e87ec2f9fc729191b0afe170c7ab62f5e7c",
+       "sent_to_provider": false
+      },
+      {
+       "image_id": "ad-1100000000000003-1",
+       "source_ad_id": "1100000000000003",
+       "source_url": "https://www.facebook.com/ads/library?id=1100000000000003",
+       "sha256": "823f32cd1fd9d722cd7f97a3022ef96ac1faf04f46873eaf19812aa1504cae11",
+       "sent_to_provider": false
+      }
+     ],
+     "request": {
+      "endpoint": "/v1beta/interactions",
+      "model": "gemini-nano-banana-2.1",
+      "aspect_ratio": "4:5",
+      "image_size": "2K",
+      "mime_type": "image/jpeg",
+      "delivery": "inline",
+      "store": false,
+      "input_images": 2,
+      "timeout_s": 180,
+      "retries": 0
+     },
+     "corrections": [],
+     "integrity": {
+      "state": "valid"
+     },
+     "image": {
+      "url": "/api/flyers/images/cand-09178816c3",
+      "width": 800,
+      "height": 1000,
+      "mime_type": "image/jpeg",
+      "sha256": "8d307be57c0c6b084c993a1950d4a5586546ecbea57dd7dfd5e1b6469b04e49d",
+      "bytes": 13229
+     },
+     "output": {
+      "image_id": "fly-dedc987d78",
+      "sha256": "8d307be57c0c6b084c993a1950d4a5586546ecbea57dd7dfd5e1b6469b04e49d",
+      "bytes": 13229,
+      "width": 800,
+      "height": 1000,
+      "mime_type": "image/jpeg"
+     },
+     "review": {
+      "review_id": "rev-a5907c6d20",
+      "candidate_id": "cand-09178816c3",
+      "sha256": "8d307be57c0c6b084c993a1950d4a5586546ecbea57dd7dfd5e1b6469b04e49d",
+      "verdict": "defects_found",
+      "verified": true,
+      "delivery": "image_part_sent",
+      "checks": {
+       "product_appearance": {
+        "result": "pass",
+        "observation": "The shown product matches the supplied photographs in colour and form (scripted observation from the delivered pixels)."
+       },
+       "required_text_price": {
+        "result": "fail",
+        "observation": "The price shown on the flyer does not match the declared price (scripted observation)."
+       },
+       "layout_readability": {
+        "result": "pass",
+        "observation": "The shown product matches the supplied photographs in colour and form (scripted observation from the delivered pixels)."
+       }
+      },
+      "defects": [
+       {
+        "defect_no": 1,
+        "check": "required_text_price",
+        "description": "The price on the flyer is not the declared price.",
+        "correction": "Show the price exactly as declared in the supplied facts and nothing else."
+       }
+      ],
+      "uncertainties": "Fine print and fabric texture are not judged.",
+      "summary": "Scripted review of the candidate pixels: a defect was found.",
+      "references": [
+       {
+        "image_id": "hw-front",
+        "sha256": "3b5ed4aa671d9eb53344be46ee7ddf10bb51415181f3c6ac375052620872dca5"
+       },
+       {
+        "image_id": "hw-detail",
+        "sha256": "b3ac33add8bb69dbde07243912c6fb653ed938707d221505560325eacd46169b"
+       }
+      ],
+      "request_id": "b-2",
+      "created_at": "2026-10-13T17:25:07Z",
+      "note": "Agent review of the candidate's delivered pixels: fallible, not human approval."
+     },
+     "selected": false
+    },
+    {
+     "candidate_id": "cand-4fd8619967",
+     "attempt_no": 2,
+     "kind": "correction",
+     "predecessor_id": "cand-09178816c3",
+     "status": "done",
+     "outcome": "ok",
+     "error": null,
+     "provider": "gemini-interactions",
+     "model": "gemini-nano-banana-2.1",
+     "http_status": 200,
+     "usage": {
+      "total_input_tokens": 3600,
+      "total_output_tokens": 1120,
+      "total_thought_tokens": 64,
+      "total_tokens": 4784
+     },
+     "interaction_id": "interaction-2bea98410961",
+     "ms": 76,
+     "created_at": "2026-10-13T17:25:07Z",
+     "dispatched_at": "2026-10-13T17:25:07Z",
+     "finished_at": "2026-10-13T17:25:07Z",
+     "prompt": "Create a clean promotional flyer for Heritage Wool Throw. Headline: Heritage Wool Throw. Show the price exactly as declared: 64.5 EUR. Keep the supplied product photo prominent on a plain backdrop with a short call to action.",
+     "context_text": "Create a clean promotional flyer for Heritage Wool Throw. Headline: Heritage Wool Throw. Show the price exactly as declared: 64.5 EUR. Keep the supplied product photo prominent on a plain backdrop with a short call to action.\n\n--- Supplied merchant facts (authoritative: reproduce exactly, add nothing) ---\nMerchant: Harbor Textiles\nProduct: Heritage Wool Throw\nDeclared price: 64.5 EUR\nSpecifications: size: 130 x 180 cm; material: 100% wool; care: Dry clean\nBrand direction (merchant supplied): Calm, natural, plain-spoken\n--- Attached images ---\n2 real photograph(s) of this exact product (hw-front, hw-detail). The product in the flyer must be this product; do not alter its design, colour or proportions.\n\n\n--- Correction request (this is the final attempt) ---\nThe LAST attached image is the previous draft flyer. Keep everything in it that is correct and change ONLY what these specific corrections name; the supplied merchant facts and the merchant photographs above remain authoritative.\n1. (defect 1, required_text_price) The price on the flyer is not the declared price. -> Show the price exactly as declared in the supplied facts and nothing else.\n",
+     "product": {
+      "product_id": "harbor-wool-throw",
+      "name": "Heritage Wool Throw",
+      "price": {
+       "amount": 64.5,
+       "currency": "EUR"
+      },
+      "specifications": {
+       "size": "130 x 180 cm",
+       "material": "100% wool",
+       "care": "Dry clean"
+      },
+      "category": "throws",
+      "merchant": "Harbor Textiles",
+      "catalogue_file": "catalogue.json",
+      "catalogue_sha256": "d90d4c59be5c295bfadb360eb5fc45eb4a1af8eac09d9e3110cbd147880613b6",
+      "demo": false
+     },
+     "inputs": [
+      {
+       "image_id": "hw-front",
+       "mime_type": "image/png",
+       "format": "PNG",
+       "bytes": 4235,
+       "sha256": "3b5ed4aa671d9eb53344be46ee7ddf10bb51415181f3c6ac375052620872dca5",
+       "width": 600,
+       "height": 800,
+       "kind": "test placeholder image (synthetic)",
+       "provenance": null,
+       "synthetic": true
+      },
+      {
+       "image_id": "hw-detail",
+       "mime_type": "image/jpeg",
+       "format": "JPEG",
+       "bytes": 12746,
+       "sha256": "b3ac33add8bb69dbde07243912c6fb653ed938707d221505560325eacd46169b",
+       "width": 600,
+       "height": 800,
+       "kind": "test placeholder image (synthetic)",
+       "provenance": null,
+       "synthetic": true
+      }
+     ],
+     "references": [
+      {
+       "image_id": "ad-1100000000000001-1",
+       "source_ad_id": "1100000000000001",
+       "source_url": "https://www.facebook.com/ads/library?id=1100000000000001",
+       "sha256": "f310255e7e9965d8fcbda32e1b2c3e87ec2f9fc729191b0afe170c7ab62f5e7c",
+       "sent_to_provider": false
+      },
+      {
+       "image_id": "ad-1100000000000003-1",
+       "source_ad_id": "1100000000000003",
+       "source_url": "https://www.facebook.com/ads/library?id=1100000000000003",
+       "sha256": "823f32cd1fd9d722cd7f97a3022ef96ac1faf04f46873eaf19812aa1504cae11",
+       "sent_to_provider": false
+      }
+     ],
+     "request": {
+      "endpoint": "/v1beta/interactions",
+      "model": "gemini-nano-banana-2.1",
+      "aspect_ratio": "4:5",
+      "image_size": "2K",
+      "mime_type": "image/jpeg",
+      "delivery": "inline",
+      "store": false,
+      "input_images": 3,
+      "timeout_s": 180,
+      "retries": 0,
+      "predecessor_id": "cand-09178816c3",
+      "predecessor_sha256": "8d307be57c0c6b084c993a1950d4a5586546ecbea57dd7dfd5e1b6469b04e49d"
+     },
+     "corrections": [
+      {
+       "defect_no": 1,
+       "check": "required_text_price",
+       "defect": "The price on the flyer is not the declared price.",
+       "instruction": "Show the price exactly as declared in the supplied facts and nothing else."
+      }
+     ],
+     "integrity": {
+      "state": "valid"
+     },
+     "image": {
+      "url": "/api/flyers/images/cand-4fd8619967",
+      "width": 800,
+      "height": 1000,
+      "mime_type": "image/jpeg",
+      "sha256": "a13e1c11cb44635f52cd46a5070e0f23ed8cb8e628305396d65332dacfec690c",
+      "bytes": 13228
+     },
+     "output": {
+      "image_id": "fly-dedc987d78",
+      "sha256": "a13e1c11cb44635f52cd46a5070e0f23ed8cb8e628305396d65332dacfec690c",
+      "bytes": 13228,
+      "width": 800,
+      "height": 1000,
+      "mime_type": "image/jpeg"
+     },
+     "review": {
+      "review_id": "rev-6e31d1b4ee",
+      "candidate_id": "cand-4fd8619967",
+      "sha256": "a13e1c11cb44635f52cd46a5070e0f23ed8cb8e628305396d65332dacfec690c",
+      "verdict": "passed",
+      "verified": true,
+      "delivery": "image_part_sent",
+      "checks": {
+       "product_appearance": {
+        "result": "pass",
+        "observation": "The shown product matches the supplied photographs in colour and form (scripted observation from the delivered pixels)."
+       },
+       "required_text_price": {
+        "result": "pass",
+        "observation": "The shown product matches the supplied photographs in colour and form (scripted observation from the delivered pixels)."
+       },
+       "layout_readability": {
+        "result": "pass",
+        "observation": "The shown product matches the supplied photographs in colour and form (scripted observation from the delivered pixels)."
+       }
+      },
+      "defects": [],
+      "uncertainties": "Fine print and fabric texture are not judged.",
+      "summary": "Scripted review of the candidate pixels: no defect observed.",
+      "references": [
+       {
+        "image_id": "hw-front",
+        "sha256": "3b5ed4aa671d9eb53344be46ee7ddf10bb51415181f3c6ac375052620872dca5"
+       },
+       {
+        "image_id": "hw-detail",
+        "sha256": "b3ac33add8bb69dbde07243912c6fb653ed938707d221505560325eacd46169b"
+       }
+      ],
+      "request_id": "b-2",
+      "created_at": "2026-10-13T17:25:07Z",
+      "note": "Agent review of the candidate's delivered pixels: fallible, not human approval."
+     },
+     "selected": true
+    }
+   ],
+   "attempt": {
+    "candidate_id": "cand-4fd8619967",
+    "attempt_no": 2,
+    "kind": "correction",
+    "predecessor_id": "cand-09178816c3",
+    "status": "done",
+    "outcome": "ok",
+    "error": null,
+    "provider": "gemini-interactions",
+    "model": "gemini-nano-banana-2.1",
+    "http_status": 200,
+    "usage": {
+     "total_input_tokens": 3600,
+     "total_output_tokens": 1120,
+     "total_thought_tokens": 64,
+     "total_tokens": 4784
+    },
+    "interaction_id": "interaction-2bea98410961",
+    "ms": 76,
+    "created_at": "2026-10-13T17:25:07Z",
+    "dispatched_at": "2026-10-13T17:25:07Z",
+    "finished_at": "2026-10-13T17:25:07Z",
+    "prompt": "Create a clean promotional flyer for Heritage Wool Throw. Headline: Heritage Wool Throw. Show the price exactly as declared: 64.5 EUR. Keep the supplied product photo prominent on a plain backdrop with a short call to action.",
+    "context_text": "Create a clean promotional flyer for Heritage Wool Throw. Headline: Heritage Wool Throw. Show the price exactly as declared: 64.5 EUR. Keep the supplied product photo prominent on a plain backdrop with a short call to action.\n\n--- Supplied merchant facts (authoritative: reproduce exactly, add nothing) ---\nMerchant: Harbor Textiles\nProduct: Heritage Wool Throw\nDeclared price: 64.5 EUR\nSpecifications: size: 130 x 180 cm; material: 100% wool; care: Dry clean\nBrand direction (merchant supplied): Calm, natural, plain-spoken\n--- Attached images ---\n2 real photograph(s) of this exact product (hw-front, hw-detail). The product in the flyer must be this product; do not alter its design, colour or proportions.\n\n\n--- Correction request (this is the final attempt) ---\nThe LAST attached image is the previous draft flyer. Keep everything in it that is correct and change ONLY what these specific corrections name; the supplied merchant facts and the merchant photographs above remain authoritative.\n1. (defect 1, required_text_price) The price on the flyer is not the declared price. -> Show the price exactly as declared in the supplied facts and nothing else.\n",
+    "product": {
+     "product_id": "harbor-wool-throw",
+     "name": "Heritage Wool Throw",
+     "price": {
+      "amount": 64.5,
+      "currency": "EUR"
+     },
+     "specifications": {
+      "size": "130 x 180 cm",
+      "material": "100% wool",
+      "care": "Dry clean"
+     },
+     "category": "throws",
+     "merchant": "Harbor Textiles",
+     "catalogue_file": "catalogue.json",
+     "catalogue_sha256": "d90d4c59be5c295bfadb360eb5fc45eb4a1af8eac09d9e3110cbd147880613b6",
+     "demo": false
+    },
+    "inputs": [
+     {
+      "image_id": "hw-front",
+      "mime_type": "image/png",
+      "format": "PNG",
+      "bytes": 4235,
+      "sha256": "3b5ed4aa671d9eb53344be46ee7ddf10bb51415181f3c6ac375052620872dca5",
+      "width": 600,
+      "height": 800,
+      "kind": "test placeholder image (synthetic)",
+      "provenance": null,
+      "synthetic": true
+     },
+     {
+      "image_id": "hw-detail",
+      "mime_type": "image/jpeg",
+      "format": "JPEG",
+      "bytes": 12746,
+      "sha256": "b3ac33add8bb69dbde07243912c6fb653ed938707d221505560325eacd46169b",
+      "width": 600,
+      "height": 800,
+      "kind": "test placeholder image (synthetic)",
+      "provenance": null,
+      "synthetic": true
+     }
+    ],
+    "references": [
+     {
+      "image_id": "ad-1100000000000001-1",
+      "source_ad_id": "1100000000000001",
+      "source_url": "https://www.facebook.com/ads/library?id=1100000000000001",
+      "sha256": "f310255e7e9965d8fcbda32e1b2c3e87ec2f9fc729191b0afe170c7ab62f5e7c",
+      "sent_to_provider": false
+     },
+     {
+      "image_id": "ad-1100000000000003-1",
+      "source_ad_id": "1100000000000003",
+      "source_url": "https://www.facebook.com/ads/library?id=1100000000000003",
+      "sha256": "823f32cd1fd9d722cd7f97a3022ef96ac1faf04f46873eaf19812aa1504cae11",
+      "sent_to_provider": false
+     }
+    ],
+    "request": {
+     "endpoint": "/v1beta/interactions",
+     "model": "gemini-nano-banana-2.1",
+     "aspect_ratio": "4:5",
+     "image_size": "2K",
+     "mime_type": "image/jpeg",
+     "delivery": "inline",
+     "store": false,
+     "input_images": 3,
+     "timeout_s": 180,
+     "retries": 0,
+     "predecessor_id": "cand-09178816c3",
+     "predecessor_sha256": "8d307be57c0c6b084c993a1950d4a5586546ecbea57dd7dfd5e1b6469b04e49d"
+    },
+    "corrections": [
+     {
+      "defect_no": 1,
+      "check": "required_text_price",
+      "defect": "The price on the flyer is not the declared price.",
+      "instruction": "Show the price exactly as declared in the supplied facts and nothing else."
+     }
+    ],
+    "integrity": {
+     "state": "valid"
+    },
+    "image": {
+     "url": "/api/flyers/images/cand-4fd8619967",
+     "width": 800,
+     "height": 1000,
+     "mime_type": "image/jpeg",
+     "sha256": "a13e1c11cb44635f52cd46a5070e0f23ed8cb8e628305396d65332dacfec690c",
+     "bytes": 13228
+    },
+    "output": {
+     "image_id": "fly-dedc987d78",
+     "sha256": "a13e1c11cb44635f52cd46a5070e0f23ed8cb8e628305396d65332dacfec690c",
+     "bytes": 13228,
+     "width": 800,
+     "height": 1000,
+     "mime_type": "image/jpeg"
+    },
+    "review": {
+     "review_id": "rev-6e31d1b4ee",
+     "candidate_id": "cand-4fd8619967",
+     "sha256": "a13e1c11cb44635f52cd46a5070e0f23ed8cb8e628305396d65332dacfec690c",
+     "verdict": "passed",
+     "verified": true,
+     "delivery": "image_part_sent",
+     "checks": {
+      "product_appearance": {
+       "result": "pass",
+       "observation": "The shown product matches the supplied photographs in colour and form (scripted observation from the delivered pixels)."
+      },
+      "required_text_price": {
+       "result": "pass",
+       "observation": "The shown product matches the supplied photographs in colour and form (scripted observation from the delivered pixels)."
+      },
+      "layout_readability": {
+       "result": "pass",
+       "observation": "The shown product matches the supplied photographs in colour and form (scripted observation from the delivered pixels)."
+      }
+     },
+     "defects": [],
+     "uncertainties": "Fine print and fabric texture are not judged.",
+     "summary": "Scripted review of the candidate pixels: no defect observed.",
+     "references": [
+      {
+       "image_id": "hw-front",
+       "sha256": "3b5ed4aa671d9eb53344be46ee7ddf10bb51415181f3c6ac375052620872dca5"
+      },
+      {
+       "image_id": "hw-detail",
+       "sha256": "b3ac33add8bb69dbde07243912c6fb653ed938707d221505560325eacd46169b"
+      }
+     ],
+     "request_id": "b-2",
+     "created_at": "2026-10-13T17:25:07Z",
+     "note": "Agent review of the candidate's delivered pixels: fallible, not human approval."
+    },
+    "selected": true
+   },
+   "research": {
+    "ad_package_id": "adpkg-611b3c951e",
+    "ad_run_id": "adrun-27c0555206",
+    "status": "complete",
+    "selection_basis": "relevance_only",
+    "blocker": null,
+    "reach_gate": {
+     "state": "disabled_reach_unavailable",
+     "ranking_enabled": false,
+     "metric": null,
+     "geography": null,
+     "period": null,
+     "ads_recorded": 4,
+     "ads_with_reported_reach": 0,
+     "ads_with_ambiguous_reach": 0,
+     "reason": "No ad carries a reach value. Reach is unknown (not zero): select by relevance and say that reach ranking was unavailable.",
+     "rule": "Never substitute impressions, spend, likes, ad duration, audience size or search order for reach; reach is not proof of sales."
+    },
+    "reference_image_ids": [
+     "ad-1100000000000001-1",
+     "ad-1100000000000003-1"
+    ]
+   },
+   "history": [
+    {
+     "event": "generation_reserved",
+     "candidate_id": "cand-09178816c3",
+     "predecessor_id": null,
+     "at": "2026-10-13T17:25:06Z"
+    },
+    {
+     "event": "generation_finished",
+     "candidate_id": "cand-09178816c3",
+     "outcome": "ok",
+     "error": null,
+     "at": "2026-10-13T17:25:06Z"
+    },
+    {
+     "event": "review_saved",
+     "candidate_id": "cand-09178816c3",
+     "verdict": "defects_found",
+     "verified": true,
+     "delivery": "image_part_sent",
+     "defects": 1,
+     "at": "2026-10-13T17:25:07Z"
+    },
+    {
+     "event": "correction_reserved",
+     "candidate_id": "cand-4fd8619967",
+     "predecessor_id": "cand-09178816c3",
+     "at": "2026-10-13T17:25:07Z"
+    },
+    {
+     "event": "generation_finished",
+     "candidate_id": "cand-4fd8619967",
+     "outcome": "ok",
+     "error": null,
+     "at": "2026-10-13T17:25:07Z"
+    },
+    {
+     "event": "review_saved",
+     "candidate_id": "cand-4fd8619967",
+     "verdict": "passed",
+     "verified": true,
+     "delivery": "image_part_sent",
+     "defects": 0,
+     "at": "2026-10-13T17:25:07Z"
+    },
+    {
+     "event": "final_selected",
+     "candidate_id": "cand-4fd8619967",
+     "at": "2026-10-13T17:25:07Z",
+     "rationale": "Selected the candidate whose review result was best; reviewer decisions are fallible and nobody has approved it."
+    }
+   ],
+   "allowance": {
+    "scope": "b-main",
+    "attempts_used": 3,
+    "attempts_max": 40
+   }
+  },
+  "gemini_requests": [
+   {
+    "store": false,
+    "text": "Create a clean promotional flyer for Heritage Wool Throw. Headline: Heritage Wool Throw. Show the price exactly as declared: 64.5 EUR. Keep the supplied product photo prominent on a plain backdrop with a short call to action.\n\n--- Supplied merchant facts (authoritative: reproduce exactly, add nothing) ---\nMerchant: Harbor Textiles\nProduct: Heritage Wool Throw\nDeclared price: 64.5 EUR\nSpecifications: size: 130 x 180 cm; material: 100% wool; care: Dry clean\nBrand direction (merchant supplied): Calm, natural, plain-spoken\n--- Attached images ---\n2 real photograph(s) of this exact product (hw-front, hw-detail). The product in the flyer must be this product; do not alter its design, colour or proportions.\n",
+    "images": [
+     {
+      "mime_type": "image/png",
+      "sha256": "3b5ed4aa671d9eb53344be46ee7ddf10bb51415181f3c6ac375052620872dca5",
+      "bytes": 4235
+     },
+     {
+      "mime_type": "image/jpeg",
+      "sha256": "b3ac33add8bb69dbde07243912c6fb653ed938707d221505560325eacd46169b",
+      "bytes": 12746
+     }
+    ],
+    "n_input": 3
+   },
+   {
+    "store": false,
+    "text": "Create a clean promotional flyer for Heritage Wool Throw. Headline: Heritage Wool Throw. Show the price exactly as declared: 64.5 EUR. Keep the supplied product photo prominent on a plain backdrop with a short call to action.\n\n--- Supplied merchant facts (authoritative: reproduce exactly, add nothing) ---\nMerchant: Harbor Textiles\nProduct: Heritage Wool Throw\nDeclared price: 64.5 EUR\nSpecifications: size: 130 x 180 cm; material: 100% wool; care: Dry clean\nBrand direction (merchant supplied): Calm, natural, plain-spoken\n--- Attached images ---\n2 real photograph(s) of this exact product (hw-front, hw-detail). The product in the flyer must be this product; do not alter its design, colour or proportions.\n\n\n--- Correction request (this is the final attempt) ---\nThe LAST attached image is the previous draft flyer. Keep everything in it that is correct and change ONLY what these specific corrections name; the supplied merchant facts and the merchant photographs above remain authoritative.\n1. (defect 1, required_text_price) The price on the flyer is not the declared price. -> Show the price exactly as declared in the supplied facts and nothing else.\n",
+    "images": [
+     {
+      "mime_type": "image/png",
+      "sha256": "3b5ed4aa671d9eb53344be46ee7ddf10bb51415181f3c6ac375052620872dca5",
+      "bytes": 4235
+     },
+     {
+      "mime_type": "image/jpeg",
+      "sha256": "b3ac33add8bb69dbde07243912c6fb653ed938707d221505560325eacd46169b",
+      "bytes": 12746
+     },
+     {
+      "mime_type": "image/jpeg",
+      "sha256": "8d307be57c0c6b084c993a1950d4a5586546ecbea57dd7dfd5e1b6469b04e49d",
+      "bytes": 13229
+     }
+    ],
+    "n_input": 4
+   }
+  ],
+  "model_pixel_means": [
+   [
+    221,
+    209,
+    185
+   ],
+   [
+    221,
+    209,
+    185
+   ],
+   [
+    100,
+    120,
+    170
+   ],
+   [
+    221,
+    209,
+    185
+   ],
+   [
+    100,
+    120,
+    170
+   ],
+   [
+    221,
+    209,
+    185
+   ],
+   [
+    100,
+    120,
+    170
+   ],
+   [
+    211,
+    147,
+    99
+   ],
+   [
+    221,
+    209,
+    185
+   ],
+   [
+    100,
+    120,
+    170
+   ],
+   [
+    211,
+    147,
+    99
+   ],
+   [
+    98,
+    155,
+    203
+   ],
+   [
+    221,
+    209,
+    185
+   ],
+   [
+    100,
+    120,
+    170
+   ],
+   [
+    211,
+    147,
+    99
+   ],
+   [
+    98,
+    155,
+    203
+   ],
+   [
+    221,
+    209,
+    185
+   ],
+   [
+    100,
+    120,
+    170
+   ],
+   [
+    211,
+    147,
+    99
+   ],
+   [
+    98,
+    155,
+    203
+   ],
+   [
+    212,
+    40,
+    40
+   ],
+   [
+    211,
+    147,
+    99
+   ],
+   [
+    98,
+    155,
+    203
+   ],
+   [
+    221,
+    209,
+    185
+   ],
+   [
+    100,
+    120,
+    170
+   ],
+   [
+    211,
+    147,
+    99
+   ],
+   [
+    98,
+    155,
+    203
+   ],
+   [
+    212,
+    40,
+    40
+   ],
+   [
+    211,
+    147,
+    99
+   ],
+   [
+    98,
+    155,
+    203
+   ],
+   [
+    221,
+    209,
+    185
+   ],
+   [
+    100,
+    120,
+    170
+   ],
+   [
+    211,
+    147,
+    99
+   ],
+   [
+    98,
+    155,
+    203
+   ],
+   [
+    212,
+    40,
+    40
+   ],
+   [
+    211,
+    147,
+    99
+   ],
+   [
+    98,
+    155,
+    203
+   ],
+   [
+    221,
+    209,
+    185
+   ],
+   [
+    100,
+    120,
+    170
+   ],
+   [
+    211,
+    147,
+    99
+   ],
+   [
+    98,
+    155,
+    203
+   ],
+   [
+    212,
+    40,
+    40
+   ],
+   [
+    211,
+    147,
+    99
+   ],
+   [
+    98,
+    155,
+    203
+   ],
+   [
+    40,
+    170,
+    82
+   ],
+   [
+    211,
+    147,
+    99
+   ],
+   [
+    98,
+    155,
+    203
+   ],
+   [
+    221,
+    209,
+    185
+   ],
+   [
+    100,
+    120,
+    170
+   ],
+   [
+    211,
+    147,
+    99
+   ],
+   [
+    98,
+    155,
+    203
+   ],
+   [
+    212,
+    40,
+    40
+   ],
+   [
+    211,
+    147,
+    99
+   ],
+   [
+    98,
+    155,
+    203
+   ],
+   [
+    40,
+    170,
+    82
+   ],
+   [
+    211,
+    147,
+    99
+   ],
+   [
+    98,
+    155,
+    203
+   ],
+   [
+    221,
+    209,
+    185
+   ],
+   [
+    100,
+    120,
+    170
+   ],
+   [
+    211,
+    147,
+    99
+   ],
+   [
+    98,
+    155,
+    203
+   ],
+   [
+    212,
+    40,
+    40
+   ],
+   [
+    211,
+    147,
+    99
+   ],
+   [
+    98,
+    155,
+    203
+   ],
+   [
+    40,
+    170,
+    82
+   ],
+   [
+    211,
+    147,
+    99
+   ],
+   [
+    98,
+    155,
+    203
+   ]
+  ]
+ },
+ "b3": {
+  "reply": "[MOCK REVIEW AGENT] Flyer fly-f2f174fa6f status unresolved_issues candidate cand-9d4e2c4a75",
+  "detail": {
+   "flyer_id": "fly-f2f174fa6f",
+   "status": "unresolved_issues",
+   "status_text": "UNAPPROVED draft with unresolved issues",
+   "agent_id": "harbor-reviewing-specialist",
+   "request_id": "b-3",
+   "product_id": "harbor-wool-throw",
+   "created_at": "2026-10-13T17:25:09Z",
+   "candidate_id": "cand-9d4e2c4a75",
+   "outcome": "ok",
+   "error": null,
+   "error_kind": null,
+   "integrity": {
+    "state": "valid"
+   },
+   "image": {
+    "url": "/api/flyers/images/fly-f2f174fa6f",
+    "width": 800,
+    "height": 1000,
+    "mime_type": "image/jpeg",
+    "sha256": "8d307be57c0c6b084c993a1950d4a5586546ecbea57dd7dfd5e1b6469b04e49d",
+    "bytes": 13229
+   },
+   "content_status": "unresolved_issues",
+   "inputs_synthetic": true,
+   "note": "UNAPPROVED draft with unresolved issues: the agent's visual review of this candidate found defects (or could not clear every check) and no further correction is available or was made. The image file is valid; its content is not cleared.",
+   "final": {
+    "selected": true,
+    "candidate_id": "cand-9d4e2c4a75",
+    "effective_candidate_id": "cand-9d4e2c4a75",
+    "selected_at": "2026-10-13T17:25:11Z",
+    "rationale": "Selected the candidate whose review result was best; reviewer decisions are fallible and nobody has approved it."
+   },
+   "review": {
+    "review_id": "rev-69eed01368",
+    "candidate_id": "cand-9d4e2c4a75",
+    "sha256": "8d307be57c0c6b084c993a1950d4a5586546ecbea57dd7dfd5e1b6469b04e49d",
+    "verdict": "defects_found",
+    "verified": true,
+    "delivery": "image_part_sent",
+    "checks": {
+     "product_appearance": {
+      "result": "pass",
+      "observation": "The shown product matches the supplied photographs in colour and form (scripted observation from the delivered pixels)."
+     },
+     "required_text_price": {
+      "result": "fail",
+      "observation": "The price shown on the flyer does not match the declared price (scripted observation)."
+     },
+     "layout_readability": {
+      "result": "pass",
+      "observation": "The shown product matches the supplied photographs in colour and form (scripted observation from the delivered pixels)."
+     }
+    },
+    "defects": [
+     {
+      "defect_no": 1,
+      "check": "required_text_price",
+      "description": "The price on the flyer is not the declared price.",
+      "correction": "Show the price exactly as declared in the supplied facts and nothing else."
+     }
+    ],
+    "uncertainties": "Fine print and fabric texture are not judged.",
+    "summary": "Scripted review of the candidate pixels: a defect was found.",
+    "references": [
+     {
+      "image_id": "hw-front",
+      "sha256": "3b5ed4aa671d9eb53344be46ee7ddf10bb51415181f3c6ac375052620872dca5"
+     },
+     {
+      "image_id": "hw-detail",
+      "sha256": "b3ac33add8bb69dbde07243912c6fb653ed938707d221505560325eacd46169b"
+     }
+    ],
+    "request_id": "b-3",
+    "created_at": "2026-10-13T17:25:10Z",
+    "note": "Agent review of the candidate's delivered pixels: fallible, not human approval."
+   },
+   "unresolved_issues": [
+    {
+     "defect_no": 1,
+     "check": "required_text_price",
+     "description": "The price on the flyer is not the declared price.",
+     "correction": "Show the price exactly as declared in the supplied facts and nothing else.",
+     "kind": "defect"
+    }
+   ],
+   "candidates_total": 2,
+   "attempts_used": 2,
+   "correction_used": true,
+   "identity": {
+    "agent_id": "harbor-reviewing-specialist",
+    "company_id": "default",
+    "company_name": "Harbor Textiles",
+    "conversation_id": "conv-harbor-reviewing-specialist",
+    "request_id": "b-3",
+    "message_id": 7,
+    "product_id": "harbor-wool-throw",
+    "run_id": "fly-f2f174fa6f",
+    "scope": "b-main"
+   },
+   "attempts": {
+    "used": 2,
+    "enabled": 2,
+    "final_max": 2,
+    "corrections_used": 1,
+    "correction": {
+     "available": false,
+     "reason": "the one correction of this request was already used"
+    },
+    "note": "At most two generation attempts per request: the initial one and ONE correction after a verified review that recorded defects."
+   },
+   "candidates": [
+    {
+     "candidate_id": "cand-9d4e2c4a75",
+     "attempt_no": 1,
+     "kind": "initial",
+     "predecessor_id": null,
+     "status": "done",
+     "outcome": "ok",
+     "error": null,
+     "provider": "gemini-interactions",
+     "model": "gemini-nano-banana-2.1",
+     "http_status": 200,
+     "usage": {
+      "total_input_tokens": 2800,
+      "total_output_tokens": 1120,
+      "total_thought_tokens": 64,
+      "total_tokens": 3984
+     },
+     "interaction_id": "interaction-541a488f30bd",
+     "ms": 63,
+     "created_at": "2026-10-13T17:25:09Z",
+     "dispatched_at": "2026-10-13T17:25:09Z",
+     "finished_at": "2026-10-13T17:25:09Z",
+     "prompt": "Create a clean promotional flyer for Heritage Wool Throw. Headline: Heritage Wool Throw. Show the price exactly as declared: 64.5 EUR. Keep the supplied product photo prominent on a plain backdrop with a short call to action.",
+     "context_text": "Create a clean promotional flyer for Heritage Wool Throw. Headline: Heritage Wool Throw. Show the price exactly as declared: 64.5 EUR. Keep the supplied product photo prominent on a plain backdrop with a short call to action.\n\n--- Supplied merchant facts (authoritative: reproduce exactly, add nothing) ---\nMerchant: Harbor Textiles\nProduct: Heritage Wool Throw\nDeclared price: 64.5 EUR\nSpecifications: size: 130 x 180 cm; material: 100% wool; care: Dry clean\nBrand direction (merchant supplied): Calm, natural, plain-spoken\n--- Attached images ---\n2 real photograph(s) of this exact product (hw-front, hw-detail). The product in the flyer must be this product; do not alter its design, colour or proportions.\n",
+     "product": {
+      "product_id": "harbor-wool-throw",
+      "name": "Heritage Wool Throw",
+      "price": {
+       "amount": 64.5,
+       "currency": "EUR"
+      },
+      "specifications": {
+       "size": "130 x 180 cm",
+       "material": "100% wool",
+       "care": "Dry clean"
+      },
+      "category": "throws",
+      "merchant": "Harbor Textiles",
+      "catalogue_file": "catalogue.json",
+      "catalogue_sha256": "d90d4c59be5c295bfadb360eb5fc45eb4a1af8eac09d9e3110cbd147880613b6",
+      "demo": false
+     },
+     "inputs": [
+      {
+       "image_id": "hw-front",
+       "mime_type": "image/png",
+       "format": "PNG",
+       "bytes": 4235,
+       "sha256": "3b5ed4aa671d9eb53344be46ee7ddf10bb51415181f3c6ac375052620872dca5",
+       "width": 600,
+       "height": 800,
+       "kind": "test placeholder image (synthetic)",
+       "provenance": null,
+       "synthetic": true
+      },
+      {
+       "image_id": "hw-detail",
+       "mime_type": "image/jpeg",
+       "format": "JPEG",
+       "bytes": 12746,
+       "sha256": "b3ac33add8bb69dbde07243912c6fb653ed938707d221505560325eacd46169b",
+       "width": 600,
+       "height": 800,
+       "kind": "test placeholder image (synthetic)",
+       "provenance": null,
+       "synthetic": true
+      }
+     ],
+     "references": [
+      {
+       "image_id": "ad-1100000000000001-1",
+       "source_ad_id": "1100000000000001",
+       "source_url": "https://www.facebook.com/ads/library?id=1100000000000001",
+       "sha256": "f310255e7e9965d8fcbda32e1b2c3e87ec2f9fc729191b0afe170c7ab62f5e7c",
+       "sent_to_provider": false
+      },
+      {
+       "image_id": "ad-1100000000000003-1",
+       "source_ad_id": "1100000000000003",
+       "source_url": "https://www.facebook.com/ads/library?id=1100000000000003",
+       "sha256": "823f32cd1fd9d722cd7f97a3022ef96ac1faf04f46873eaf19812aa1504cae11",
+       "sent_to_provider": false
+      }
+     ],
+     "request": {
+      "endpoint": "/v1beta/interactions",
+      "model": "gemini-nano-banana-2.1",
+      "aspect_ratio": "4:5",
+      "image_size": "2K",
+      "mime_type": "image/jpeg",
+      "delivery": "inline",
+      "store": false,
+      "input_images": 2,
+      "timeout_s": 180,
+      "retries": 0
+     },
+     "corrections": [],
+     "integrity": {
+      "state": "valid"
+     },
+     "image": {
+      "url": "/api/flyers/images/cand-9d4e2c4a75",
+      "width": 800,
+      "height": 1000,
+      "mime_type": "image/jpeg",
+      "sha256": "8d307be57c0c6b084c993a1950d4a5586546ecbea57dd7dfd5e1b6469b04e49d",
+      "bytes": 13229
+     },
+     "output": {
+      "image_id": "fly-f2f174fa6f",
+      "sha256": "8d307be57c0c6b084c993a1950d4a5586546ecbea57dd7dfd5e1b6469b04e49d",
+      "bytes": 13229,
+      "width": 800,
+      "height": 1000,
+      "mime_type": "image/jpeg"
+     },
+     "review": {
+      "review_id": "rev-69eed01368",
+      "candidate_id": "cand-9d4e2c4a75",
+      "sha256": "8d307be57c0c6b084c993a1950d4a5586546ecbea57dd7dfd5e1b6469b04e49d",
+      "verdict": "defects_found",
+      "verified": true,
+      "delivery": "image_part_sent",
+      "checks": {
+       "product_appearance": {
+        "result": "pass",
+        "observation": "The shown product matches the supplied photographs in colour and form (scripted observation from the delivered pixels)."
+       },
+       "required_text_price": {
+        "result": "fail",
+        "observation": "The price shown on the flyer does not match the declared price (scripted observation)."
+       },
+       "layout_readability": {
+        "result": "pass",
+        "observation": "The shown product matches the supplied photographs in colour and form (scripted observation from the delivered pixels)."
+       }
+      },
+      "defects": [
+       {
+        "defect_no": 1,
+        "check": "required_text_price",
+        "description": "The price on the flyer is not the declared price.",
+        "correction": "Show the price exactly as declared in the supplied facts and nothing else."
+       }
+      ],
+      "uncertainties": "Fine print and fabric texture are not judged.",
+      "summary": "Scripted review of the candidate pixels: a defect was found.",
+      "references": [
+       {
+        "image_id": "hw-front",
+        "sha256": "3b5ed4aa671d9eb53344be46ee7ddf10bb51415181f3c6ac375052620872dca5"
+       },
+       {
+        "image_id": "hw-detail",
+        "sha256": "b3ac33add8bb69dbde07243912c6fb653ed938707d221505560325eacd46169b"
+       }
+      ],
+      "request_id": "b-3",
+      "created_at": "2026-10-13T17:25:10Z",
+      "note": "Agent review of the candidate's delivered pixels: fallible, not human approval."
+     },
+     "selected": true
+    },
+    {
+     "candidate_id": "cand-0262396038",
+     "attempt_no": 2,
+     "kind": "correction",
+     "predecessor_id": "cand-9d4e2c4a75",
+     "status": "done",
+     "outcome": "ok",
+     "error": null,
+     "provider": "gemini-interactions",
+     "model": "gemini-nano-banana-2.1",
+     "http_status": 200,
+     "usage": {
+      "total_input_tokens": 3600,
+      "total_output_tokens": 1120,
+      "total_thought_tokens": 64,
+      "total_tokens": 4784
+     },
+     "interaction_id": "interaction-2bea98410961",
+     "ms": 63,
+     "created_at": "2026-10-13T17:25:10Z",
+     "dispatched_at": "2026-10-13T17:25:10Z",
+     "finished_at": "2026-10-13T17:25:10Z",
+     "prompt": "Create a clean promotional flyer for Heritage Wool Throw. Headline: Heritage Wool Throw. Show the price exactly as declared: 64.5 EUR. Keep the supplied product photo prominent on a plain backdrop with a short call to action.",
+     "context_text": "Create a clean promotional flyer for Heritage Wool Throw. Headline: Heritage Wool Throw. Show the price exactly as declared: 64.5 EUR. Keep the supplied product photo prominent on a plain backdrop with a short call to action.\n\n--- Supplied merchant facts (authoritative: reproduce exactly, add nothing) ---\nMerchant: Harbor Textiles\nProduct: Heritage Wool Throw\nDeclared price: 64.5 EUR\nSpecifications: size: 130 x 180 cm; material: 100% wool; care: Dry clean\nBrand direction (merchant supplied): Calm, natural, plain-spoken\n--- Attached images ---\n2 real photograph(s) of this exact product (hw-front, hw-detail). The product in the flyer must be this product; do not alter its design, colour or proportions.\n\n\n--- Correction request (this is the final attempt) ---\nThe LAST attached image is the previous draft flyer. Keep everything in it that is correct and change ONLY what these specific corrections name; the supplied merchant facts and the merchant photographs above remain authoritative.\n1. (defect 1, required_text_price) The price on the flyer is not the declared price. -> Show the price exactly as declared in the supplied facts and nothing else.\n",
+     "product": {
+      "product_id": "harbor-wool-throw",
+      "name": "Heritage Wool Throw",
+      "price": {
+       "amount": 64.5,
+       "currency": "EUR"
+      },
+      "specifications": {
+       "size": "130 x 180 cm",
+       "material": "100% wool",
+       "care": "Dry clean"
+      },
+      "category": "throws",
+      "merchant": "Harbor Textiles",
+      "catalogue_file": "catalogue.json",
+      "catalogue_sha256": "d90d4c59be5c295bfadb360eb5fc45eb4a1af8eac09d9e3110cbd147880613b6",
+      "demo": false
+     },
+     "inputs": [
+      {
+       "image_id": "hw-front",
+       "mime_type": "image/png",
+       "format": "PNG",
+       "bytes": 4235,
+       "sha256": "3b5ed4aa671d9eb53344be46ee7ddf10bb51415181f3c6ac375052620872dca5",
+       "width": 600,
+       "height": 800,
+       "kind": "test placeholder image (synthetic)",
+       "provenance": null,
+       "synthetic": true
+      },
+      {
+       "image_id": "hw-detail",
+       "mime_type": "image/jpeg",
+       "format": "JPEG",
+       "bytes": 12746,
+       "sha256": "b3ac33add8bb69dbde07243912c6fb653ed938707d221505560325eacd46169b",
+       "width": 600,
+       "height": 800,
+       "kind": "test placeholder image (synthetic)",
+       "provenance": null,
+       "synthetic": true
+      }
+     ],
+     "references": [
+      {
+       "image_id": "ad-1100000000000001-1",
+       "source_ad_id": "1100000000000001",
+       "source_url": "https://www.facebook.com/ads/library?id=1100000000000001",
+       "sha256": "f310255e7e9965d8fcbda32e1b2c3e87ec2f9fc729191b0afe170c7ab62f5e7c",
+       "sent_to_provider": false
+      },
+      {
+       "image_id": "ad-1100000000000003-1",
+       "source_ad_id": "1100000000000003",
+       "source_url": "https://www.facebook.com/ads/library?id=1100000000000003",
+       "sha256": "823f32cd1fd9d722cd7f97a3022ef96ac1faf04f46873eaf19812aa1504cae11",
+       "sent_to_provider": false
+      }
+     ],
+     "request": {
+      "endpoint": "/v1beta/interactions",
+      "model": "gemini-nano-banana-2.1",
+      "aspect_ratio": "4:5",
+      "image_size": "2K",
+      "mime_type": "image/jpeg",
+      "delivery": "inline",
+      "store": false,
+      "input_images": 3,
+      "timeout_s": 180,
+      "retries": 0,
+      "predecessor_id": "cand-9d4e2c4a75",
+      "predecessor_sha256": "8d307be57c0c6b084c993a1950d4a5586546ecbea57dd7dfd5e1b6469b04e49d"
+     },
+     "corrections": [
+      {
+       "defect_no": 1,
+       "check": "required_text_price",
+       "defect": "The price on the flyer is not the declared price.",
+       "instruction": "Show the price exactly as declared in the supplied facts and nothing else."
+      }
+     ],
+     "integrity": {
+      "state": "valid"
+     },
+     "image": {
+      "url": "/api/flyers/images/cand-0262396038",
+      "width": 800,
+      "height": 1000,
+      "mime_type": "image/jpeg",
+      "sha256": "8d307be57c0c6b084c993a1950d4a5586546ecbea57dd7dfd5e1b6469b04e49d",
+      "bytes": 13229
+     },
+     "output": {
+      "image_id": "fly-f2f174fa6f",
+      "sha256": "8d307be57c0c6b084c993a1950d4a5586546ecbea57dd7dfd5e1b6469b04e49d",
+      "bytes": 13229,
+      "width": 800,
+      "height": 1000,
+      "mime_type": "image/jpeg"
+     },
+     "review": {
+      "review_id": "rev-dc2049a74d",
+      "candidate_id": "cand-0262396038",
+      "sha256": "8d307be57c0c6b084c993a1950d4a5586546ecbea57dd7dfd5e1b6469b04e49d",
+      "verdict": "defects_found",
+      "verified": true,
+      "delivery": "image_part_sent",
+      "checks": {
+       "product_appearance": {
+        "result": "pass",
+        "observation": "The shown product matches the supplied photographs in colour and form (scripted observation from the delivered pixels)."
+       },
+       "required_text_price": {
+        "result": "fail",
+        "observation": "The price shown on the flyer does not match the declared price (scripted observation)."
+       },
+       "layout_readability": {
+        "result": "pass",
+        "observation": "The shown product matches the supplied photographs in colour and form (scripted observation from the delivered pixels)."
+       }
+      },
+      "defects": [
+       {
+        "defect_no": 1,
+        "check": "required_text_price",
+        "description": "The price on the flyer is not the declared price.",
+        "correction": "Show the price exactly as declared in the supplied facts and nothing else."
+       }
+      ],
+      "uncertainties": "Fine print and fabric texture are not judged.",
+      "summary": "Scripted review of the candidate pixels: a defect was found.",
+      "references": [
+       {
+        "image_id": "hw-front",
+        "sha256": "3b5ed4aa671d9eb53344be46ee7ddf10bb51415181f3c6ac375052620872dca5"
+       },
+       {
+        "image_id": "hw-detail",
+        "sha256": "b3ac33add8bb69dbde07243912c6fb653ed938707d221505560325eacd46169b"
+       }
+      ],
+      "request_id": "b-3",
+      "created_at": "2026-10-13T17:25:10Z",
+      "note": "Agent review of the candidate's delivered pixels: fallible, not human approval."
+     },
+     "selected": false
+    }
+   ],
+   "attempt": {
+    "candidate_id": "cand-9d4e2c4a75",
+    "attempt_no": 1,
+    "kind": "initial",
+    "predecessor_id": null,
+    "status": "done",
+    "outcome": "ok",
+    "error": null,
+    "provider": "gemini-interactions",
+    "model": "gemini-nano-banana-2.1",
+    "http_status": 200,
+    "usage": {
+     "total_input_tokens": 2800,
+     "total_output_tokens": 1120,
+     "total_thought_tokens": 64,
+     "total_tokens": 3984
+    },
+    "interaction_id": "interaction-541a488f30bd",
+    "ms": 63,
+    "created_at": "2026-10-13T17:25:09Z",
+    "dispatched_at": "2026-10-13T17:25:09Z",
+    "finished_at": "2026-10-13T17:25:09Z",
+    "prompt": "Create a clean promotional flyer for Heritage Wool Throw. Headline: Heritage Wool Throw. Show the price exactly as declared: 64.5 EUR. Keep the supplied product photo prominent on a plain backdrop with a short call to action.",
+    "context_text": "Create a clean promotional flyer for Heritage Wool Throw. Headline: Heritage Wool Throw. Show the price exactly as declared: 64.5 EUR. Keep the supplied product photo prominent on a plain backdrop with a short call to action.\n\n--- Supplied merchant facts (authoritative: reproduce exactly, add nothing) ---\nMerchant: Harbor Textiles\nProduct: Heritage Wool Throw\nDeclared price: 64.5 EUR\nSpecifications: size: 130 x 180 cm; material: 100% wool; care: Dry clean\nBrand direction (merchant supplied): Calm, natural, plain-spoken\n--- Attached images ---\n2 real photograph(s) of this exact product (hw-front, hw-detail). The product in the flyer must be this product; do not alter its design, colour or proportions.\n",
+    "product": {
+     "product_id": "harbor-wool-throw",
+     "name": "Heritage Wool Throw",
+     "price": {
+      "amount": 64.5,
+      "currency": "EUR"
+     },
+     "specifications": {
+      "size": "130 x 180 cm",
+      "material": "100% wool",
+      "care": "Dry clean"
+     },
+     "category": "throws",
+     "merchant": "Harbor Textiles",
+     "catalogue_file": "catalogue.json",
+     "catalogue_sha256": "d90d4c59be5c295bfadb360eb5fc45eb4a1af8eac09d9e3110cbd147880613b6",
+     "demo": false
+    },
+    "inputs": [
+     {
+      "image_id": "hw-front",
+      "mime_type": "image/png",
+      "format": "PNG",
+      "bytes": 4235,
+      "sha256": "3b5ed4aa671d9eb53344be46ee7ddf10bb51415181f3c6ac375052620872dca5",
+      "width": 600,
+      "height": 800,
+      "kind": "test placeholder image (synthetic)",
+      "provenance": null,
+      "synthetic": true
+     },
+     {
+      "image_id": "hw-detail",
+      "mime_type": "image/jpeg",
+      "format": "JPEG",
+      "bytes": 12746,
+      "sha256": "b3ac33add8bb69dbde07243912c6fb653ed938707d221505560325eacd46169b",
+      "width": 600,
+      "height": 800,
+      "kind": "test placeholder image (synthetic)",
+      "provenance": null,
+      "synthetic": true
+     }
+    ],
+    "references": [
+     {
+      "image_id": "ad-1100000000000001-1",
+      "source_ad_id": "1100000000000001",
+      "source_url": "https://www.facebook.com/ads/library?id=1100000000000001",
+      "sha256": "f310255e7e9965d8fcbda32e1b2c3e87ec2f9fc729191b0afe170c7ab62f5e7c",
+      "sent_to_provider": false
+     },
+     {
+      "image_id": "ad-1100000000000003-1",
+      "source_ad_id": "1100000000000003",
+      "source_url": "https://www.facebook.com/ads/library?id=1100000000000003",
+      "sha256": "823f32cd1fd9d722cd7f97a3022ef96ac1faf04f46873eaf19812aa1504cae11",
+      "sent_to_provider": false
+     }
+    ],
+    "request": {
+     "endpoint": "/v1beta/interactions",
+     "model": "gemini-nano-banana-2.1",
+     "aspect_ratio": "4:5",
+     "image_size": "2K",
+     "mime_type": "image/jpeg",
+     "delivery": "inline",
+     "store": false,
+     "input_images": 2,
+     "timeout_s": 180,
+     "retries": 0
+    },
+    "corrections": [],
+    "integrity": {
+     "state": "valid"
+    },
+    "image": {
+     "url": "/api/flyers/images/cand-9d4e2c4a75",
+     "width": 800,
+     "height": 1000,
+     "mime_type": "image/jpeg",
+     "sha256": "8d307be57c0c6b084c993a1950d4a5586546ecbea57dd7dfd5e1b6469b04e49d",
+     "bytes": 13229
+    },
+    "output": {
+     "image_id": "fly-f2f174fa6f",
+     "sha256": "8d307be57c0c6b084c993a1950d4a5586546ecbea57dd7dfd5e1b6469b04e49d",
+     "bytes": 13229,
+     "width": 800,
+     "height": 1000,
+     "mime_type": "image/jpeg"
+    },
+    "review": {
+     "review_id": "rev-69eed01368",
+     "candidate_id": "cand-9d4e2c4a75",
+     "sha256": "8d307be57c0c6b084c993a1950d4a5586546ecbea57dd7dfd5e1b6469b04e49d",
+     "verdict": "defects_found",
+     "verified": true,
+     "delivery": "image_part_sent",
+     "checks": {
+      "product_appearance": {
+       "result": "pass",
+       "observation": "The shown product matches the supplied photographs in colour and form (scripted observation from the delivered pixels)."
+      },
+      "required_text_price": {
+       "result": "fail",
+       "observation": "The price shown on the flyer does not match the declared price (scripted observation)."
+      },
+      "layout_readability": {
+       "result": "pass",
+       "observation": "The shown product matches the supplied photographs in colour and form (scripted observation from the delivered pixels)."
+      }
+     },
+     "defects": [
+      {
+       "defect_no": 1,
+       "check": "required_text_price",
+       "description": "The price on the flyer is not the declared price.",
+       "correction": "Show the price exactly as declared in the supplied facts and nothing else."
+      }
+     ],
+     "uncertainties": "Fine print and fabric texture are not judged.",
+     "summary": "Scripted review of the candidate pixels: a defect was found.",
+     "references": [
+      {
+       "image_id": "hw-front",
+       "sha256": "3b5ed4aa671d9eb53344be46ee7ddf10bb51415181f3c6ac375052620872dca5"
+      },
+      {
+       "image_id": "hw-detail",
+       "sha256": "b3ac33add8bb69dbde07243912c6fb653ed938707d221505560325eacd46169b"
+      }
+     ],
+     "request_id": "b-3",
+     "created_at": "2026-10-13T17:25:10Z",
+     "note": "Agent review of the candidate's delivered pixels: fallible, not human approval."
+    },
+    "selected": true
+   },
+   "research": {
+    "ad_package_id": "adpkg-d9f7cc7939",
+    "ad_run_id": "adrun-12ba89386a",
+    "status": "complete",
+    "selection_basis": "relevance_only",
+    "blocker": null,
+    "reach_gate": {
+     "state": "disabled_reach_unavailable",
+     "ranking_enabled": false,
+     "metric": null,
+     "geography": null,
+     "period": null,
+     "ads_recorded": 4,
+     "ads_with_reported_reach": 0,
+     "ads_with_ambiguous_reach": 0,
+     "reason": "No ad carries a reach value. Reach is unknown (not zero): select by relevance and say that reach ranking was unavailable.",
+     "rule": "Never substitute impressions, spend, likes, ad duration, audience size or search order for reach; reach is not proof of sales."
+    },
+    "reference_image_ids": [
+     "ad-1100000000000001-1",
+     "ad-1100000000000003-1"
+    ]
+   },
+   "history": [
+    {
+     "event": "generation_reserved",
+     "candidate_id": "cand-9d4e2c4a75",
+     "predecessor_id": null,
+     "at": "2026-10-13T17:25:09Z"
+    },
+    {
+     "event": "generation_finished",
+     "candidate_id": "cand-9d4e2c4a75",
+     "outcome": "ok",
+     "error": null,
+     "at": "2026-10-13T17:25:09Z"
+    },
+    {
+     "event": "review_saved",
+     "candidate_id": "cand-9d4e2c4a75",
+     "verdict": "defects_found",
+     "verified": true,
+     "delivery": "image_part_sent",
+     "defects": 1,
+     "at": "2026-10-13T17:25:10Z"
+    },
+    {
+     "event": "correction_reserved",
+     "candidate_id": "cand-0262396038",
+     "predecessor_id": "cand-9d4e2c4a75",
+     "at": "2026-10-13T17:25:10Z"
+    },
+    {
+     "event": "generation_finished",
+     "candidate_id": "cand-0262396038",
+     "outcome": "ok",
+     "error": null,
+     "at": "2026-10-13T17:25:10Z"
+    },
+    {
+     "event": "review_saved",
+     "candidate_id": "cand-0262396038",
+     "verdict": "defects_found",
+     "verified": true,
+     "delivery": "image_part_sent",
+     "defects": 1,
+     "at": "2026-10-13T17:25:10Z"
+    },
+    {
+     "event": "final_selected",
+     "candidate_id": "cand-9d4e2c4a75",
+     "at": "2026-10-13T17:25:11Z",
+     "rationale": "Selected the candidate whose review result was best; reviewer decisions are fallible and nobody has approved it."
+    }
+   ],
+   "allowance": {
+    "scope": "b-main",
+    "attempts_used": 5,
+    "attempts_max": 40
+   }
+  }
+ }
+}

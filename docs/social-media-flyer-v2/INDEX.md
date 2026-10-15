@@ -8,7 +8,7 @@ Created 2026-10-11 using to-tickets. Parent: `research/social-media-flyer-v2-spe
 | 02 | Verified integration plan and persistent usable product sample | None | Documentation accepted after direct Codex correction verification2026-10-11. Actual sample/local Gemini key missing, billing/live capabilities unverified. Report research/v2-ticket02-corrections-verification-20261011.md |
 | 03 | Specialist researches Facebook image ads with honest reach gating | 01, 02 Facebook findings | Accepted2026-10-13 after direct verification: ad80/80, analyst57/57, lint. Scripted only; research/v2-ticket03-corrections-verification-20261013.md |
 | 04 | Specialist selects product photos and generates one stored/displayed flyer | 01, 02 Gemini/sample findings | Accepted2026-10-13 after direct verification: flyer44/44 and lint. Scripted only; research/v2-ticket04-corrections-verification-20261013.md |
-| 05 | Actual-image review and at most one correction complete the agent flow | 03, 04 | Blocked |
+| 05 | Actual-image review and at most one correction complete the agent flow | 03, 04 | Accepted2026-10-14 at scripted level; independent49/49 + lint, all findings resolved. research/v2-ticket05-p2-verification-20261014.md |
 | 06 | One preserved live demonstration and user visual evaluation | 05; separately authorized live budget/credentials | Blocked |
 
 Recommended sequential execution: 02 -> 01 -> 03 -> 04 -> 05 -> 06. Checking API/sample availability first avoids implementing against guesses; 01 can still proceed if an external dependency is missing. No automatic parallel dispatch. 03 and 04 have independent prerequisites but Arjun's workflow remains one ticket at a time.

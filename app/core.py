@@ -104,8 +104,10 @@ ROLES["social_media"] = {
         "fb_ads_find_advertiser, fb_ads_search, fb_ad_detail, fb_ad_image, save_ad_research, read_ad_research, plus inspect_image and read_catalogue) say that it may "
         "research US Facebook IMAGE ads read-only inside a manual request, within a backend allowance it cannot change, that it chooses the queries, advertisers "
         "and images itself, that reported reach is used only when the backend says it is available, and that it has no Marketplace data. Image or flyer generation "
-        "is connected ONLY with generate_flyer (add generate_flyer and read_flyer, plus inspect_image and read_catalogue): it may then generate ONE flyer image per "
-        "manual request from the merchant's own catalogue photographs with Gemini, one paid attempt per request, saved UNCHECKED (nothing reviews or approves it yet). "
+        "is connected ONLY with the flyer tools (request all of generate_flyer, read_flyer, inspect_flyer, review_flyer, finalize_flyer, plus inspect_image and read_catalogue): "
+        "it may then generate ONE flyer image per manual request from the merchant's own catalogue photographs with Gemini, look at that image's actual pixels, review it against "
+        "the product photographs, the required text/price and the layout, make at most ONE specific correction (a second and last paid attempt) and select one final candidate; "
+        "its reviews are fallible agent reviews, never human approval. Without inspect_flyer/review_flyer/finalize_flyer a generated flyer stays UNCHECKED. "
         "Without generate_flyer, say image or flyer generation is NOT connected. Nothing can be posted in any case. Do not claim capabilities it does not have; "
         "do not invent facts about the company."),
     "eligible_tools": {**{k: _MA[k] for k in ("read_company_context", "memory", "skills", "inspect_image", "read_catalogue")},
@@ -122,10 +124,18 @@ ROLES["social_media"] = {
                        "read_ad_research": {"toolset": "ecom_fb_read", "approval": "none",
                                             "what": "Read this specialist's saved ad research packages (stored data only; no new request is made)."},
                        "generate_flyer": {"toolset": "ecom_flyer_generate", "approval": "none",
-                                          "what": "Generate ONE flyer image with Gemini from the product's registered merchant photographs and your prompt: one paid attempt per manual "
-                                                  "request, saved UNCHECKED (not reviewed or approved). Needs a configured Gemini key and real supplied photographs."},
+                                          "what": "Generate ONE flyer image with Gemini from the product's registered merchant photographs and your prompt (one paid attempt), or - from a "
+                                                  "defective, reviewed first candidate - ONE specific correction (the second and last paid attempt of the request). Needs a configured "
+                                                  "Gemini key and real supplied photographs."},
                        "read_flyer": {"toolset": "ecom_flyer_read", "approval": "none",
-                                      "what": "Read this specialist's saved flyers and their status (stored data only; no generation or provider request is made)."}},
+                                      "what": "Read this specialist's saved flyers: status, candidates, reviews and final selection (stored data only; no generation or provider request)."},
+                       "inspect_flyer": {"toolset": "ecom_flyer_inspect", "approval": "none",
+                                         "what": "Look at the actual pixels of a generated candidate of this request, with the merchant's photographs of the product, to review it (no provider request)."},
+                       "review_flyer": {"toolset": "ecom_flyer_review", "approval": "none",
+                                        "what": "Save your review of an inspected candidate: product appearance, required text/price, layout/readability, defects with specific corrections "
+                                                "and uncertainty. A fallible agent review, bound to the candidate's hash."},
+                       "finalize_flyer": {"toolset": "ecom_flyer_final", "approval": "none",
+                                          "what": "Select ONE candidate of this request as the final flyer with a short rationale. Nothing is published or approved."}},
     "mandatory_tools": ["read_company_context", "memory", "skills"],
     "not_connected": ["social_posting", "instagram", "email", "web_search", "web_scraping", "scheduling", "marketplace_research"],
     "approval_requirements": [
@@ -133,8 +143,9 @@ ROLES["social_media"] = {
         {"action": "publish, post, send messages or change anything externally", "requirement": "user confirmation required; no such tool is granted"},
         {"action": "US Facebook image-ad research (fb_* tools)", "requirement": "only with the granted fb_* tools, inside a manual request, within a finite backend "
                                                                                  "allowance; no confirmation per read; no Marketplace, Instagram or video data"},
-        {"action": "flyer generation (generate_flyer)", "requirement": "only with the granted generate_flyer tool, inside a manual request, one paid Gemini attempt per request "
-                                                                         "(backend-enforced), needs a configured key; the result is saved UNCHECKED; nothing is posted"},
+        {"action": "flyer generation (generate_flyer)", "requirement": "only with the granted generate_flyer tool, inside a manual request, at most TWO paid Gemini attempts per "
+                                                                         "request (initial + one reviewed correction; backend-enforced), needs a configured key; the result is "
+                                                                         "agent-reviewed (fallible) or UNCHECKED; nothing is posted"},
     ],
 }
 PROVIDERS = ("openai-codex", "nebius-token-factory")   # the only two supported
@@ -149,7 +160,7 @@ NEBIUS_DEFAULT_MODEL = "nvidia/nemotron-3-super-120b-a12b"  # unverified Nebius 
 MARKETPLACE_TOOLS = ("marketplace_locate", "marketplace_search", "marketplace_item", "marketplace_photo")   # live research (app/research.py)
 AD_TOOLS = ("fb_ads_find_advertiser", "fb_ads_search", "fb_ad_detail", "fb_ad_image", "save_ad_research", "read_ad_research")   # Facebook ad research (app/ads.py)
 AD_RESEARCH_TOOLS = AD_TOOLS[:4]   # the tools that spend scraper attempts / image downloads (a specialist holding any of them gets the research-turn limits)
-FLYER_TOOLS = ("generate_flyer", "read_flyer")   # flyer generation (app/flyer.py): generate_flyer spends a paid Gemini attempt
+FLYER_TOOLS = ("generate_flyer", "read_flyer", "inspect_flyer", "review_flyer", "finalize_flyer")   # flyer generation and review (app/flyer.py): generate_flyer spends a paid Gemini attempt
 MAIN_TOOLSETS = ["ecom_company", "ecom_agents"]
 def _iterations(name, default):
     """Operator cap on agent iterations per turn (each is one model request; an exhausted turn adds one summary request). Anything not a whole number 1-40
@@ -167,8 +178,8 @@ RESEARCH_TURN_TIMEOUT, RESEARCH_MAX_ITERATIONS = 600, _iterations("ECOM_RESEARCH
 CHAT_MAX_ITERATIONS = _iterations("ECOM_CHAT_MAX_ITERATIONS", 12)
 # an ad-research turn is longer (searches, details, up to 4 downloads and as many inspections, then the package): 20 iterations (+1 summary request)
 AD_MAX_ITERATIONS = _iterations("ECOM_AD_MAX_ITERATIONS", 20)
-# a specialist that holds BOTH ad research and generate_flyer also inspects its merchant photos and generates: a longer turn
-FLYER_MAX_ITERATIONS = _iterations("ECOM_FLYER_MAX_ITERATIONS", 28)
+# a specialist that holds BOTH ad research and generate_flyer also inspects its merchant photos, generates, reviews and may correct once: a longer turn
+FLYER_MAX_ITERATIONS = _iterations("ECOM_FLYER_MAX_ITERATIONS", 40)
 MAX_SKILLS, MAX_TEXT = 3, 8000
 
 
@@ -384,7 +395,18 @@ def db():
       CREATE TABLE IF NOT EXISTS flyer_attempts(candidate_id TEXT PRIMARY KEY, run_id TEXT, attempt_no INTEGER, status TEXT, outcome TEXT, prompt TEXT, context_text TEXT,
         product_json TEXT, inputs_json TEXT, references_json TEXT, provider TEXT, model TEXT, request_json TEXT, inputs_synthetic INTEGER, http_status INTEGER, error TEXT,
         usage TEXT, interaction_id TEXT, ms INTEGER, out_path TEXT, out_sha256 TEXT, out_bytes INTEGER, out_width INTEGER, out_height INTEGER, out_mime TEXT,
-        created_at REAL, dispatched_at REAL, finished_at REAL, UNIQUE(run_id, attempt_no));""")
+        created_at REAL, dispatched_at REAL, finished_at REAL, UNIQUE(run_id, attempt_no));
+      CREATE TABLE IF NOT EXISTS flyer_reviews(review_id TEXT PRIMARY KEY, candidate_id TEXT UNIQUE, run_id TEXT, agent_id TEXT, request_id TEXT, sha256 TEXT, width INTEGER,
+        height INTEGER, inspection_id INTEGER, delivery TEXT, verified INTEGER, verdict TEXT, checks_json TEXT, defects_json TEXT, uncertainties TEXT, summary TEXT,
+        refs_json TEXT, created_at REAL);""")
+    for table, cols in (("flyer_attempts", ("predecessor_id", "corrections_json")), ("flyer_runs", ("selection_rationale", "selected_at", "research_json"))):
+        have = [r[1] for r in c.execute(f"PRAGMA table_info({table})")]
+        for col in cols:   # ticket 5: the correction link and the explicit final selection (additive; old rows stay NULL)
+            if col not in have:
+                try:
+                    c.execute(f"ALTER TABLE {table} ADD COLUMN {col} TEXT")
+                except sqlite3.OperationalError:   # another process added it first
+                    pass
     if "meta" not in [r[1] for r in c.execute("PRAGMA table_info(messages)")]:   # routing metadata (added later; existing rows keep NULL)
         c.execute("ALTER TABLE messages ADD COLUMN meta TEXT")
     cols = [r[1] for r in c.execute("PRAGMA table_info(listing_drafts)")]
@@ -399,7 +421,13 @@ def db():
             c.execute("ALTER TABLE research_runs ADD COLUMN selected_location_call INTEGER")
         except sqlite3.OperationalError:   # another process added it first
             pass
-    for col in ("delivery", "request_id", "run_id"):   # how the image was sent; the backend-supplied request and run that inspected it (additive; old rows stay NULL = unknown/unbound)
+    for col in ("delivered_at", "boundary_at"):   # P1: the pixels were in an actual model request / a model response followed (hooks in app/hermes_plugin.py; NULL = not established)
+        if col not in [r[1] for r in c.execute("PRAGMA table_info(image_inspections)")]:
+            try:
+                c.execute(f"ALTER TABLE image_inspections ADD COLUMN {col} REAL")
+            except sqlite3.OperationalError:   # another process added it first
+                pass
+    for col in ("delivery", "request_id", "run_id", "detail"):   # how the image was sent; the backend-supplied request and run that inspected it (additive; old rows stay NULL = unknown/unbound)
         if col not in [r[1] for r in c.execute("PRAGMA table_info(image_inspections)")]:
             try:
                 c.execute(f"ALTER TABLE image_inspections ADD COLUMN {col} TEXT")
@@ -547,6 +575,17 @@ def prepare_image(image_id):
         if size > MAX_IMAGE_BYTES:
             return bad("image_too_large", f"Image {image_id!r} is {size} bytes; the limit is {MAX_IMAGE_BYTES}.")
         raw = path.read_bytes()
+    except OSError as e:
+        return bad("image_unreadable", f"Image {image_id!r} could not be read ({type(e).__name__}).")
+    return model_ready(image_id, raw)
+
+
+def model_ready(image_id, raw):
+    """Verified, model-ready pixels from raw image bytes (full decode, permitted type, bounded edge, re-encoded JPEG data URL). Same result and error shapes as
+    prepare_image; the caller has already decided WHICH bytes these are (a registered file, or a managed flyer candidate that passed its integrity check)."""
+    def bad(code, msg, hint="Do not describe or guess this image: report that it could not be inspected."):
+        return {**err(code, msg, "image_id", hint=hint), "image_id": image_id if isinstance(image_id, str) else None}
+    try:
         from PIL import Image
         im = Image.open(io.BytesIO(raw))
         fmt = im.format
@@ -604,12 +643,17 @@ def build_soul(c, company_name):
                   "can be posted or published. Marketplace data, Instagram, other web access or scraping, email and scheduling are NOT connected. Your outputs are "
                   "text: research findings, creative briefs, copy and visual direction. If asked for an image file or a published post, say plainly that you "
                   "cannot produce or publish it. ")
+    reviewing = social and all(t in held for t in ("inspect_flyer", "review_flyer"))   # the review/correction tools (V2-05)
     if social and "generate_flyer" in held:   # generation is connected through generate_flyer (ads or not); posting never
         limits = limits.replace("Image or flyer generation is NOT connected yet, and nothing can be posted or published.",
+                                "Flyer generation is connected only through your flyer tools (generate_flyer, inspect_flyer, review_flyer, finalize_flyer: one initial image and at most "
+                                "one reviewed correction per request), and nothing can be posted or published." if reviewing else
                                 "Flyer generation is connected only through your generate_flyer tool (one image per request, UNCHECKED), and nothing can be posted or published.")
         if not ads:
-            limits = ("Flyer generation is connected through your generate_flyer tool (one Gemini image per request from the merchant's own photographs, saved UNCHECKED). "
-                      "Facebook ad research, Marketplace data, Instagram, other web access or scraping, email, scheduling and posting are NOT connected. ")
+            limits = (("Flyer generation is connected through your flyer tools (one Gemini image per request from the merchant's own photographs, reviewed by you from its actual "
+                       "pixels, with at most one correction). ") if reviewing else
+                      ("Flyer generation is connected through your generate_flyer tool (one Gemini image per request from the merchant's own photographs, saved UNCHECKED). ")
+                      ) + "Facebook ad research, Marketplace data, Instagram, other web access or scraping, email, scheduling and posting are NOT connected. "
     elif social and not ads:   # honest capability statement for the role when no ad tool was granted
         limits = ("Facebook ad research and image or flyer generation are NOT connected yet, and nothing can be posted or published. Web access, scraping, "
                   "email and scheduling are NOT connected either. Your outputs are text: creative briefs, copy and visual direction. If asked for an image file "
@@ -634,6 +678,23 @@ def build_soul(c, company_name):
              "attempt per request: a failed, corrupt or uncertain attempt consumes it and is never repeated, so write the prompt carefully. If it reports a missing key, "
              "missing photographs or provenance, tell the user what to set up and do not retry. The saved flyer is UNCHECKED: nobody has reviewed that it matches the "
              "product, price or text, so never call it approved, verified or accurate. `read_flyer` reads saved flyers. Nothing is posted.\n") if social and "generate_flyer" in held else ""
+    if reviewing and flyer:
+        flyer = flyer.replace("You get ONE paid attempt per request: a failed, corrupt or uncertain attempt consumes it and is never repeated, so write the prompt carefully.",
+                              "You get ONE initial paid attempt per request, and a verified review that found defects permits ONE correction (below): a failed, corrupt or uncertain "
+                              "attempt consumes its slot and is never repeated, so write the prompt carefully.")
+        flyer += ("REVIEW AND AT MOST ONE CORRECTION. After `generate_flyer` succeeds, look at the saved image's ACTUAL pixels with `inspect_flyer(candidate_id)`: it attaches the "
+                  "candidate first and then the merchant's photographs of the product. The images reach you with your NEXT message, so call `review_flyer` in a LATER response, never in "
+                  "the same tool-call batch as `inspect_flyer` (that review is refused). Record what you saw with `review_flyer`: three checks - product_appearance (does the product "
+                  "match the merchant's photographs: colour, pattern, proportions), required_text_price (is every required word and the declared price present and exact) and "
+                  "layout_readability - each pass, fail or uncertain with what you observed; for every failed check give a defect with a specific correction; list what you are "
+                  "unsure of; echo the candidate_sha256 you were shown. A review counts only when the pixels were delivered to you: otherwise it is stored unverified and the "
+                  "result stays UNCHECKED, so never describe an image you could not see. If a verified review found defects you may make ONE correction: `generate_flyer` with "
+                  "`previous_candidate_id` and `corrections` ([{defect_no, instruction}] naming recorded defects). That is the second and last paid attempt of the request; the "
+                  "backend re-uses the original photographs, facts and prompt (you cannot change them) and sends the previous draft as the image to correct. There is no second "
+                  "correction. Inspect and review the corrected candidate too, then choose ONE final candidate with `finalize_flyer` (it need not be the newest; give a short "
+                  "rationale). A passing review is an 'agent review passed': a fallible automated check, never human approval and never a guarantee that the product is reproduced "
+                  "exactly. If defects remain, say they are unresolved and that the flyer is an unapproved draft. If no valid candidate exists, report the blocker; do not invent a "
+                  "review.\n")
     catalogue = ("Use `read_catalogue` for the merchant's supplied product facts (name, specifications, declared price and currency, image ID). Copy them "
                  "exactly and never add to them.\n") if social and "read_catalogue" in held else ""
     vision = ("You can look at images with `inspect_image(image_id)`: it attaches the actual pixels of a registered image ID. Report observations per "

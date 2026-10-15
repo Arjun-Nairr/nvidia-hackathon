@@ -1,0 +1,57 @@
+# V2-05 scripted test output (condensed), 2026-10-13
+# Source: tests/flyer_review_test.py from isolated copies; scripted Gemini/model/ad stand-ins and placeholder images; NOT real Gemini, NOT real visual-review accuracy.
+
+## BEFORE the implementation (new tests, code as at checkpoint ee16846 + test seams only)
+PART A: backend seams (scripted Gemini stand-in; placeholder images; not real Gemini)
+Traceback (most recent call last):
+  File "<isolated copy>\tests\flyer_review_test.py", line 229, in <module>
+    v1 = INSP(c1)
+         ^^^^^^^^
+  File "<isolated copy>\tests\flyer_review_test.py", line 172, in INSP
+    return flyer.inspect(agent, {"candidate_id": cid})
+           ^^^^^^^^^^^^^
+AttributeError: module 'app.flyer' has no attribute 'inspect'
+exit 1
+
+## AFTER (full run, Part A + Part B)
+PART A: backend seams (scripted Gemini stand-in; placeholder images; not real Gemini)
+PASS R1 an acceptable first candidate: ONE provider request; inspect_flyer delivers the candidate's real pixels first and the merchant's selected photographs after; the review is bound to the delivered hash and trusted i
+PASS R2 defective first candidate: the review records the failed check as a numbered defect; ONE correction names that defect; the second request carries the ORIGINAL merchant photographs (same bytes, same order), then t
+PASS R2b the first attempt's evidence is not overwritten by the correction: its record, review and image are byte-for-byte what they were before
+PASS R3 a defective second candidate: no third generation by any route (second correction, repeated correction, plain call, changed prompt): explicit refusal or the stored result, nothing sent; the final draft is file-va
+PASS R4 a review cannot be established without the delivered pixels: no inspection, the generic inspect_image, a wrong echoed hash, an unknown/other-run candidate, another request of the same agent and another agent are 
+PASS R4b one review per candidate: a second save returns the stored review (review_already_saved) and cannot flip a passed review into a failed one or the reverse
+PASS R4c a candidate file replaced after inspection (another valid image) is an INTEGRITY failure on review and on a new inspection; the inspection of the old bytes cannot be reused
+PASS R4d when the pixels did not reach the model (text fallback or unknown delivery) the review is stored as UNVERIFIED: it cannot support a correction, the result stays explicitly UNCHECKED, its defects are not presente
+PASS R5 a correction is refused (nothing sent, no attempt, no slot used) without a recorded verified review, with an unknown defect number, empty/vague/duplicate/malformed corrections, a missing previous candidate, a cha
+PASS R5b no content review is invented to authorise another generation: a passed review leaves nothing to correct; a first attempt that FAILED (provider refusal) has no candidate image to inspect or review and cannot be 
+PASS R6 four processes issue the SAME correction at once: exactly ONE provider request and two attempt rows in total; the others get the stored result or an explicit unknown-outcome answer, never a second send
+PASS R6b a correction whose connection is lost after the send is an UNKNOWN outcome that consumes the second slot: an identical retry, a reworded correction and a plain call send nothing, and the request never exceeds tw
+PASS R6c a second attempt that was reserved but has no outcome (crash or a call still running) is reported as uncertain; nothing is sent and no other attempt starts
+PASS R6d after a restart (fresh process, no key, provider unreachable) the final selection, both candidates, reviews, prompts and the final image are returned unchanged and a repeated correction request is answered from 
+PASS R7 the original product facts and merchant-photo hashes survive: a replaced photograph (same id, other bytes), a missing photograph, a changed declared price and a changed specification are explicit failures (nothin
+PASS R8 content defect and integrity failure are distinct: a file-valid defective candidate is 'unresolved_issues' with an image; a damaged one is 'storage_failure' with no image reference, cannot be inspected, corrected
+PASS R8b a damaged SUPERSEDED candidate does not spoil the selected one: the final stays 'agent_review_passed' and the damaged candidate is reported as an integrity failure of that candidate only
+PASS R9 an exhausted scope allowance refuses the correction before anything is sent (explicit allowance_exhausted; the first candidate stays a file-valid unresolved draft); raising the environment later does not re-size 
+PASS R10 two valid candidates and no selection = 'awaiting_selection' (no default image for the flyer id, each candidate retrievable); finalize selects ONE explicitly (here the OLDER candidate), is idempotent for the sam
+PASS R10b the rationale is bounded and cannot claim human approval or guarantees
+PASS R11 the final record links the request's saved ad research (package, selection basis, reach-gate state as recorded) and review/correction decisions; a request with NO ad research still generates, reviews and finalis
+PASS R12 the new tools are eligible only for social_media, granted only when requested, refused to an ungranted specialist, the analyst, an unregistered agent and a call outside a manual request; their schemas expose no 
+PART A done: 22/22
+PART B: real server, HTTP chat API and Hermes workers (scripted model, Gemini and ad provider stand-ins; placeholder images)
+PASS B1 main creates a social specialist WITH the review/correction tools (grants = requested + foundation) through the real create_agent tool; its SOUL describes the one-correction rule and fallible agent review
+PASS B1b the saved SOUL explains: inspect the actual candidate pixels, review three checks, at most ONE correction, explicit final selection, 'agent review passed' (never approved)
+PASS B2 acceptable first candidate through the real chat API: the specialist researched ads, inspected the merchant photographs, generated ONCE, inspected the candidate pixels, reviewed and finalised; ONE Gemini request 
+PASS B3 image bytes really reached the scripted reasoning model: the request after inspect_flyer carries the candidate's pixels (mean colour = the control colour) followed by the merchant photographs (their mean colours)
+PASS B4 defective first candidate through the real app: ONE specific correction naming the recorded defect, a second inspection and review, ONE final selection (the corrected candidate); exactly TWO Gemini requests; the 
+PASS B5 the scripted reviewer's two different decisions followed the two different candidate pixels it was shown (first mean ~ red control, second ~ green control)
+PASS B6 defective second candidate through the real app: a third attempt is refused (correction_limit_reached), exactly TWO Gemini requests, the final draft is file-valid and flagged 'unresolved_issues' with the defect t
+PASS B7 the specialist's explicit choice of the FIRST candidate is what the flyer serves (not the newest): final candidate = first, image bytes = first candidate's file
+PASS B8 no relevant ads: the specialist reports an honest blocker, no flyer record exists for the request and Gemini was never called
+PASS B9 a catalogue photograph that is not available is an honest setup blocker (merchant_image_missing): no generation, no inspection, no review
+PASS B10 when the model/provider cannot receive images the review is stored UNVERIFIED and the result is explicitly 'unchecked': no correction is possible and no pass is claimed
+PASS B11 after an app restart with the provider stand-in replaced and NO keys, the list, every flyer's detail (candidates, reviews, prompts, final selection, research link) and every image are identical, and the speciali
+PASS B12 the existing saved-flyer card has minimal renderings for the new states (final selection, agent review passed / unresolved issues / unchecked, candidate count, unresolved issues) from backend data
+PASS B13 no stored grant or saved SOUL was widened or rewritten by any of this
+36/36 checks passed (scripted Gemini + scripted model + placeholder images: wiring/enforcement only, NOT real Gemini output or visual-review accuracy)
+exit 0

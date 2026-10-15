@@ -4,6 +4,7 @@ route = None
 request_id = None   # the backend's id of the manual chat request being answered (set by app/worker.py each turn; never model-supplied)
 run_id = None       # the research run opened lazily for (agent, request) by app/research.py during this turn
 ad_run_id = None    # the Facebook ad-research run opened lazily for (agent, request) by app/ads.py during this turn
+pending_images = {}   # inspect_flyer inspections awaiting their model round trip: inspection id -> {urls, request}; this worker process only, cleared each turn (app/flyer.py)
 vision_probe = None   # set by app/worker.py each turn: callable -> "image_part_sent" | "text_fallback" | "unknown" for the live agent's provider/model
 
 

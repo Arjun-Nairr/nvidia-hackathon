@@ -11,14 +11,23 @@ Control (POST /control, JSON; {"reset": true} first clears the log and behaviour
           | ECHOED-KEY responses (the stand-in puts its sentinel key into provider text): "echo_text" (completed, text only), "echo_status" (status string), "echo_id"
             (valid image, interaction id), "echo_mime" (image labelled image/<key>)
   "delay_ms": 0
+  "colors": [[r,g,b], ...]  successful generations return SOLID control colours in this order (cycling; a known-control image the scripted reviewer can judge from its
+            pixels). Default: seeded placeholders.
 GET /stats -> {"requests": [{path, has_key, key_in_query, model, store, response_format, text, images: [{mime_type, sha256, bytes}], n_input}], "total": n}"""
 import base64, hashlib, io, json, sys, threading, time
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 
 LOCK = threading.Lock()
 LOG = []
-CTL = {"mode": "ok", "delay_ms": 0}
+CTL = {"mode": "ok", "delay_ms": 0, "colors": None, "n_ok": 0}
 KEY = "TEST-GEMINI-KEY-SENTINEL"
+
+
+def solid(color, size=(800, 1000), fmt="JPEG"):
+    from PIL import Image
+    b = io.BytesIO()
+    Image.new("RGB", size, tuple(color)).save(b, fmt)
+    return b.getvalue()
 
 
 def placeholder(seed, size=(800, 1000), fmt="JPEG"):
@@ -56,8 +65,8 @@ class H(BaseHTTPRequestHandler):
             with LOCK:
                 if body.get("reset"):
                     LOG.clear()
-                    CTL.update({"mode": "ok", "delay_ms": 0})
-                CTL.update({k: v for k, v in body.items() if k in ("mode", "delay_ms")})
+                    CTL.update({"mode": "ok", "delay_ms": 0, "colors": None, "n_ok": 0})
+                CTL.update({k: v for k, v in body.items() if k in ("mode", "delay_ms", "colors")})
             return self._send(200, CTL)
         inputs = body.get("input") if isinstance(body.get("input"), list) else []
         imgs, text = [], ""
@@ -96,6 +105,10 @@ class H(BaseHTTPRequestHandler):
         def img(data, mime="image/jpeg"):
             return {"type": "image", "data": base64.b64encode(data).decode(), "mime_type": mime}
         good = placeholder(seed)
+        if CTL.get("colors"):
+            with LOCK:
+                good = solid(CTL["colors"][CTL["n_ok"] % len(CTL["colors"])])
+                CTL["n_ok"] += 1
         steps = [{"type": "user_input", "content": [{"type": "text", "text": "(echo)"}]}]
         content = [{"type": "text", "text": "Here is the flyer."}, img(good)]
         if mode == "failed":

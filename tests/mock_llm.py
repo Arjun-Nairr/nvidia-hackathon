@@ -22,7 +22,7 @@ SOCIAL_ARGS = {
                 "2. Choose one main message and the lead photo.\n3. Write two copy options and list what could not be verified."}],
     "requested_tools": ["inspect_image", "read_catalogue"]}
 
-STATS = {"requests": 0, "slow": 0, "last_model": "", "routing_ctx_seen": 0, "image_requests": 0, "last_images": [], "image_log": []}
+STATS = {"requests": 0, "slow": 0, "last_model": "", "routing_ctx_seen": 0, "image_requests": 0, "last_images": [], "image_log": [], "batches": [], "rejected_image_requests": 0}
 
 
 def image_parts(msgs):
@@ -277,6 +277,118 @@ def flyer_policy(msgs, names, user):
                      else f"[MOCK FLYER AGENT] Flyer NOT generated: {r.get('code')} - {str(r.get('error'))[:160]}")}
 
 
+# ---- scripted REVIEW POLICY (V2-05 plumbing tests). A user message containing REVIEW_AGENT makes the mock behave like a small rule-based social specialist for
+# the whole goal: ad research (the ad policy above, until it ends), merchant photo inspection, ONE generate_flyer, inspect_flyer, review_flyer, at most ONE correction
+# (generate_flyer with previous_candidate_id) and finalize_flyer. Its content judgement is PIXEL-DRIVEN on purpose: a candidate whose mean colour is strongly red
+# (the stand-in Gemini's 'colors' control) is judged to show the wrong price, anything else passes; so the decision can only follow pixels that really reached it.
+# Options: SKIP_ADS (no ad research), GENERATE_ANYWAY (generate even when the ad research is blocked), IMAGES:<id>,<id>, NO_CORRECT, PICK_FIRST (finalize the first
+# candidate even if a second exists), TRY_THIRD (try a second correction), REVIEW_BLIND (call review_flyer without inspect_flyer), WRONG_HASH (echo a wrong hash),
+# NO_FINALIZE, BATCH_REVIEW (inspect_flyer + review_flyer in one assistant message). A scripted stand-in, NOT a model and never evidence of model quality or of real visual accuracy.
+def _is_red(img):
+    m = (img or {}).get("mean") or [0, 0, 0]
+    return m[0] > 150 and m[0] > m[1] + 60
+
+
+def review_policy(msgs, names, user):
+    tr = trace_since_last_user(msgs)
+    say = lambda t: {"text": "[MOCK REVIEW AGENT] " + t}
+    call = lambda n, a: {"call": (n, a)}
+    if "SKIP_ADS" not in user:
+        d = ad_policy(msgs, names, user)
+        if "call" in d:
+            return d
+        if "BLOCKED" in d["text"] and "GENERATE_ANYWAY" not in user:
+            return say(d["text"].replace("[MOCK AD AGENT] ", "") + " Flyer NOT generated: no relevant ad references were found, so there is nothing to base a flyer on.")
+        if "NOT saved" in d["text"]:
+            return say(d["text"].replace("[MOCK AD AGENT] ", ""))
+    cat = next((r for n, a, r in tr if n == "read_catalogue"), None)
+    if cat is None:
+        return call("read_catalogue", {})
+    prods = cat.get("products") or []
+    if not prods:
+        return say("Flyer NOT generated: the catalogue has no products: " + str(cat.get("error"))[:160])
+    p = prods[0]
+    m = re.search(r"IMAGES:([\w,-]+)", user)
+    ids = m.group(1).split(",") if m else [i["image_id"] for i in (p.get("images") or [])][:2]
+    inspected = {a.get("image_id") for n, a, r in tr if n == "inspect_image"}
+    for iid in ids:
+        if iid not in inspected:
+            return call("inspect_image", {"image_id": iid})
+    gens = [t for t in tr if t[0] == "generate_flyer"]
+    if not gens:
+        pr = p.get("price") or {}
+        refs = [x["image_id"] for n, a, r in tr if n == "save_ad_research" for x in (a.get("references") or [])][:2]
+        args = {"product_id": p["product_id"], "selected_product_image_ids": ids,
+                "prompt": f"Create a clean promotional flyer for {p.get('name')}. Headline: {p.get('name')}. Show the price exactly as declared: {pr.get('amount')} "
+                          f"{pr.get('currency')}. Keep the supplied product photo prominent on a plain backdrop with a short call to action."}
+        if refs:
+            args["reference_ad_image_ids"] = refs
+        return call("generate_flyer", args)
+    if gens[0][2].get("ok") is not True:
+        return say(f"Flyer NOT generated: {gens[0][2].get('code')} - {str(gens[0][2].get('error'))[:160]}")
+    # tool results that carried pixels: tool_call_id -> decoded images
+    pix, names_by_id = {}, {}
+    for mm in msgs[max(i for i, x in enumerate(msgs) if x["role"] == "user") + 1:]:
+        if mm["role"] == "assistant":
+            for tc in mm.get("tool_calls") or []:
+                names_by_id[tc["id"]] = (tc["function"]["name"], json.loads(tc["function"]["arguments"] or "{}"))
+        elif mm["role"] == "tool":
+            nm, a = names_by_id.get(mm.get("tool_call_id"), (None, {}))
+            if nm == "inspect_flyer":
+                pix[a.get("candidate_id")] = image_parts([mm])
+    cands = []   # candidates in the order generated: (candidate_id, generate result)
+    for _, a, r in gens:
+        if r.get("ok") is True and r.get("candidate_id") and r["candidate_id"] not in [c[0] for c in cands] and not r.get("cached"):
+            cands.append((r["candidate_id"], r))
+    reviews = {a.get("candidate_id"): (r, a) for n, a, r in tr if n == "review_flyer" and r.get("code") != "image_not_yet_delivered"}
+    seen = {a.get("candidate_id") for n, a, r in tr if n == "inspect_flyer"}
+    for cid, r in cands:
+        if cid not in reviews:
+            if "REVIEW_BLIND" not in user and cid not in seen:
+                if "BATCH_REVIEW" in user:   # the defect under test: inspect and a (necessarily blind) review in ONE assistant tool-call batch
+                    ok_ = {"result": "pass", "observation": "Fabricated in the same batch as the inspection, before any pixel was delivered (scripted)."}
+                    return {"calls": [("inspect_flyer", {"candidate_id": cid}),
+                                      ("review_flyer", {"candidate_id": cid, "candidate_sha256": (r.get("image") or {}).get("sha256", ""),
+                                                        "checks": {n_: ok_ for n_ in ("product_appearance", "required_text_price", "layout_readability")}, "defects": [],
+                                                        "summary": "Scripted same-batch review written without seeing the pixels."})]}
+                return call("inspect_flyer", {"candidate_id": cid})
+            img = (pix.get(cid) or [None])[0]
+            red = _is_red(img)
+            sha = "0" * 64 if "WRONG_HASH" in user else (r.get("image") or {}).get("sha256", "")
+            if "REVIEW_BLIND" in user and cid not in pix:
+                red = False
+            ok = {"result": "pass", "observation": "The shown product matches the supplied photographs in colour and form (scripted observation from the delivered pixels)."}
+            checks = {"product_appearance": ok, "required_text_price": ok, "layout_readability": ok}
+            defects = []
+            if red:
+                checks["required_text_price"] = {"result": "fail", "observation": "The price shown on the flyer does not match the declared price (scripted observation)."}
+                defects = [{"check": "required_text_price", "description": "The price on the flyer is not the declared price.",
+                            "correction": "Show the price exactly as declared in the supplied facts and nothing else."}]
+            return call("review_flyer", {"candidate_id": cid, "candidate_sha256": sha, "checks": checks, "defects": defects,
+                                         "summary": "Scripted review of the candidate pixels: " + ("a defect was found." if red else "no defect observed."),
+                                         "uncertainties": "Fine print and fabric texture are not judged."})
+    first_rev = reviews.get(cands[0][0]) if cands else None
+    if (first_rev and first_rev[0].get("verdict") == "defects_found" and len(cands) == 1 and "NO_CORRECT" not in user and len(gens) == 1):
+        ds = first_rev[0].get("defects") or []
+        return call("generate_flyer", {"previous_candidate_id": cands[0][0],
+                                       "corrections": [{"defect_no": d["defect_no"], "instruction": d.get("correction") or "Show the declared price exactly."} for d in ds]})
+    if len(gens) >= 2 and gens[1][2].get("ok") is not True and "wait" not in gens[1][2]:
+        pass   # the correction failed: the first candidate stays the draft
+    if "TRY_THIRD" in user and len(cands) == 2 and len(gens) == 2 and reviews.get(cands[1][0], ({},))[0].get("verdict") == "defects_found":
+        return call("generate_flyer", {"previous_candidate_id": cands[1][0], "corrections": [{"defect_no": 1, "instruction": "Show the declared price exactly."}]})
+
+    def score(c):
+        r = (reviews.get(c[0]) or ({},))[0]
+        return 0 if r.get("verdict") == "passed" else 1
+    pick = cands[0] if ("PICK_FIRST" in user or len(cands) == 1) else sorted(cands, key=score)[0]
+    fins = [t for t in tr if t[0] == "finalize_flyer"]
+    if not fins and "NO_FINALIZE" not in user:
+        return call("finalize_flyer", {"candidate_id": pick[0], "rationale": "Selected the candidate whose review result was best; reviewer decisions are fallible and nobody has approved it."})
+    last = (fins[-1][2] if fins else reviews.get(pick[0], ({},))[0]) or {}
+    fid = (gens[0][2] or {}).get("flyer_id")
+    return say(f"Flyer {fid} status {last.get('status')} candidate {pick[0]}" if last.get("ok", True) else f"Flyer {fid} NOT finalized: {last.get('code')}")
+
+
 def decide(body):
     STATS["requests"] += 1; STATS["last_model"] = body.get("model", "")
     if body["messages"][-1]["role"] == "user" and "SLOW" in json.dumps(body["messages"][-1]["content"]):
@@ -292,6 +404,9 @@ def decide(body):
     _users = [m for m in msgs if m["role"] == "user"]
     if _users and "RESEARCH_AGENT" in json.dumps(_users[-1]["content"]):
         return research_policy(msgs, names)
+    if _users and "REVIEW_AGENT" in json.dumps(_users[-1]["content"]):
+        u = _users[-1]["content"]
+        return review_policy(msgs, names, u if isinstance(u, str) else json.dumps(u))
     if _users and "FLYER_AGENT" in json.dumps(_users[-1]["content"]):
         u = _users[-1]["content"]
         return flyer_policy(msgs, names, u if isinstance(u, str) else json.dumps(u))
@@ -357,12 +472,20 @@ class H(BaseHTTPRequestHandler):
         self.wfile.write(json.dumps(STATS if self.path.startswith("/stats") else {"data": [{"id": "mock"}]}).encode())
     def do_POST(self):
         body = json.loads(self.rfile.read(int(self.headers["Content-Length"])))
+        _users = [m for m in body["messages"] if m["role"] == "user"]
+        if _users and "REJECT_IMAGES" in json.dumps(_users[-1]["content"]) and image_parts(body["messages"]):   # a provider that 400s on list-type tool content
+            STATS["rejected_image_requests"] += 1
+            raw = json.dumps({"error": {"message": "text is not set", "type": "invalid_request_error"}}).encode()
+            self.send_response(400); self.send_header("Content-Type", "application/json")
+            self.send_header("Content-Length", str(len(raw))); self.end_headers(); self.wfile.write(raw); return
         d, cid, stream = decide(body), "chatcmpl-" + uuid.uuid4().hex[:8], body.get("stream")
+        if len(d.get("calls", [])) > 1:
+            STATS["batches"].append([c_[0] for c_ in d["calls"]])   # tool-call batches (several calls in ONE assistant message)
         msg = {"role": "assistant", "content": d.get("text")}
-        if "call" in d:
-            msg["tool_calls"] = [{"id": "call_" + uuid.uuid4().hex[:6], "type": "function",
-                                  "function": {"name": d["call"][0], "arguments": json.dumps(d["call"][1])}}]
-        fin = "tool_calls" if "call" in d else "stop"
+        for c_ in ([d["call"]] if "call" in d else d.get("calls", [])):
+            msg.setdefault("tool_calls", []).append({"id": "call_" + uuid.uuid4().hex[:6], "type": "function",
+                                                     "function": {"name": c_[0], "arguments": json.dumps(c_[1])}})
+        fin = "tool_calls" if msg.get("tool_calls") else "stop"
         usage = {"prompt_tokens": 10, "completion_tokens": 5, "total_tokens": 15}
         if not stream:
             out = {"id": cid, "object": "chat.completion", "created": int(time.time()), "model": body.get("model"),
@@ -378,9 +501,8 @@ class H(BaseHTTPRequestHandler):
             self.wfile.write(b"data: " + json.dumps(c).encode() + b"\n\n"); self.wfile.flush()
         ev({"role": "assistant", "content": ""})
         if d.get("text"): ev({"content": d["text"]})
-        if "call" in d:
-            tc = msg["tool_calls"][0]; tc = {"index": 0, **tc}
-            ev({"tool_calls": [tc]})
+        for i_, tc in enumerate(msg.get("tool_calls") or []):
+            ev({"tool_calls": [{"index": i_, **tc}]})
         ev({}, fin, usage)
         self.wfile.write(b"data: [DONE]\n\n"); self.wfile.flush()
 

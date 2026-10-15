@@ -41,8 +41,15 @@ def check(name, ok, detail=""):
 def http(port, path, body=None, timeout=600, raw=False):
     req = urllib.request.Request(f"http://127.0.0.1:{port}{path}", data=json.dumps(body).encode() if body is not None else None, headers={"Content-Type": "application/json"})
     try:
-        r = urllib.request.urlopen(req, timeout=timeout)
-        data = r.read()
+        for attempt in range(5):   # an intermittent Windows loopback reset of a large READ (~70 KB history; cause undiagnosed): a GET is idempotent, so re-read it
+            try:
+                r = urllib.request.urlopen(req, timeout=timeout)
+                data = r.read()
+                break
+            except ConnectionResetError:
+                if body is not None or attempt == 4:
+                    raise
+                time.sleep(1)
         return r.status, (data if raw else json.loads(data)), r.headers.get("Content-Type")
     except urllib.error.HTTPError as e:
         data = e.read()
@@ -211,7 +218,7 @@ check("A2 the attempt record keeps the exact prompt/context snapshot, input hash
       and a1["candidate_id"] == r1["candidate_id"] and a1["output"]["sha256"] == hashlib.sha256(img1[0]).hexdigest() == r1["image"]["sha256"] and img1[1] == "image/jpeg"
       and im1 is not None and im1.format == "JPEG" and f1["identity"]["agent_id"] == "soc" and f1["identity"]["company_name"] == "Harbor Textiles"
       and f1["identity"]["request_id"] == "req-1" and f1["identity"]["product_id"] == "harbor-wool-throw" and f1["inputs_synthetic"] is True
-      and f1["attempts"] == {"used": 1, "enabled": 1, "final_max": 2, "note": f1["attempts"]["note"]} and "UNCHECKED" in f1["note"], (f1.get("status"), a1.get("outcome")))
+      and (f1["attempts"]["used"], f1["attempts"]["enabled"], f1["attempts"]["final_max"]) == (1, 2, 2) and "UNCHECKED" in f1["note"], (f1.get("status"), a1.get("outcome")))
 check("A2b the tool result carries identifiers and hashes only (no image payload, key or signed URL) and never claims review or approval",
       len(json.dumps(r1)) < 3000 and KEY not in json.dumps(r1) and "base64" not in json.dumps(r1) and r1["status"] == "unchecked" and "approved" not in r1["note"].lower().replace("not approved", ""),
       json.dumps(r1)[:200])
@@ -282,9 +289,10 @@ check("A8 a missing Gemini key is a clear structured setup error naming the fiel
 req("req-val")
 bad = []
 for extra in ({"model": "x"}, {"api_key": "k"}, {"url": "https://evil.example/x.png"}, {"path": "C:/x.png"}, {"run_id": "fly-0000000000"}, {"attempt": 2}, {"allowance": 99},
-              {"previous_candidate_id": "cand-0000000000"}, {"corrections": "x"}, {"image_size": "4K"}):
+              {"image_size": "4K"}):
     bad.append(("invalid_argument", code(G({**BASE, **extra}))))
-bad += [("bad_argument", code(G({**BASE, "product_id": 5}))), ("bad_argument", code(G({**BASE, "selected_product_image_ids": []}))),
+bad += [("bad_argument", code(G({**BASE, "previous_candidate_id": "cand-0000000000"}))),   # V2-05: a correction needs BOTH previous_candidate_id and corrections
+        ("bad_argument", code(G({**BASE, "corrections": "x"}))), ("bad_argument", code(G({**BASE, "product_id": 5}))), ("bad_argument", code(G({**BASE, "selected_product_image_ids": []}))),
         ("bad_argument", code(G({**BASE, "selected_product_image_ids": ["hw-front", "hw-detail", "hw-room", "hl-main"]}))),
         ("bad_argument", code(G({**BASE, "selected_product_image_ids": ["hw-front", "hw-front"]}))),
         ("bad_argument", code(G({**BASE, "selected_product_image_ids": ["../../app"]}))),
@@ -675,6 +683,7 @@ okc, e = core.validate_create_agent({"role": "social_media", "name": "Harbor Soc
 ana_c, e2 = core.validate_create_agent({"role": "market_analysis", "name": "Harbor Analyst", "objective": "o" * 50, "instructions": "i" * 50, "skills": GOODSK,
                                         "requested_tools": ["generate_flyer"]})
 soul_f = core.build_soul({"name": "S", "role": "social_media", "objective": "o", "instructions": "i", "tools": FLYER2 + ["inspect_image", "read_catalogue"]}, "Harbor")
+soul_g = core.build_soul({"name": "S", "role": "social_media", "objective": "o", "instructions": "i", "tools": ["generate_flyer", "read_flyer", "inspect_image", "read_catalogue"]}, "Harbor")
 soul_fa = core.build_soul({"name": "S", "role": "social_media", "objective": "o", "instructions": "i", "tools": FLYER2 + list(core.AD_TOOLS) + ["inspect_image", "read_catalogue"]}, "Harbor")
 soul_n = core.build_soul({"name": "S", "role": "social_media", "objective": "o", "instructions": "i", "tools": ["inspect_image", "read_catalogue"]}, "Harbor")
 soul_ads = core.build_soul({"name": "S", "role": "social_media", "objective": "o", "instructions": "i", "tools": list(core.AD_TOOLS) + ["inspect_image", "read_catalogue"]}, "Harbor")
@@ -683,7 +692,8 @@ desc = hp.CREATE_SCHEMA["description"]
 check("A17 generate_flyer/read_flyer are eligible only for social_media (never the analyst or main), granted only when requested and described honestly: the SOUL explains the "
       "one-attempt/UNCHECKED rules only when granted and says generation is NOT connected otherwise; existing wording for ad-only and plain specialists is unchanged",
       set(FLYER2) <= set(soc_el) and not (set(FLYER2) & set(ana_el)) and e is None and set(FLYER2) <= set(okc["tools"]) and e2 and e2["code"] == "tool_not_permitted"
-      and "generate_flyer" in soul_f and "UNCHECKED" in soul_f and "ONE paid attempt" in soul_f and "Flyer generation is connected" in soul_f
+      and "generate_flyer" in soul_f and "UNCHECKED" in soul_f and "ONE initial paid attempt" in soul_f and "ONE correction" in soul_f and "inspect_flyer" in soul_f
+      and "Flyer generation is connected" in soul_f and "ONE paid attempt" in soul_g and "inspect_flyer" not in soul_g and "ONE correction" not in soul_g
       and "generate_flyer" in soul_fa and "Image or flyer generation is NOT connected" not in soul_fa and "Flyer generation is connected only through" in soul_fa
       and "generate_flyer" not in soul_n and "Facebook ad research and image or flyer generation are NOT connected" in soul_n
       and "generate_flyer" not in soul_ads and "Image or flyer generation is NOT connected" in soul_ads and "generate_flyer" not in soul_ma

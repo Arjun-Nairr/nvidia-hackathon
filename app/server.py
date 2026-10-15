@@ -16,7 +16,7 @@ ACTIVITY_LABELS = {"create_agent": "Creating specialist", "read_company_context"
                    "marketplace_search": "Searching Facebook Marketplace", "marketplace_item": "Reading a Marketplace listing",
                    "marketplace_photo": "Fetching a listing photo", "fb_ads_find_advertiser": "Finding Facebook advertisers", "fb_ads_search": "Searching Facebook image ads",
                    "fb_ad_detail": "Reading a Facebook ad", "fb_ad_image": "Fetching an ad image", "save_ad_research": "Saving ad research",
-                   "read_ad_research": "Reading saved ad research", "generate_flyer": "Generating a flyer", "read_flyer": "Reading saved flyers"}
+                   "read_ad_research": "Reading saved ad research", "generate_flyer": "Generating a flyer", "read_flyer": "Reading saved flyers", "inspect_flyer": "Looking at a flyer candidate", "review_flyer": "Saving a flyer review", "finalize_flyer": "Selecting the final flyer"}
 
 
 def fail(code, message, status, retryable=False, **extra):
@@ -212,6 +212,8 @@ class H(BaseHTTPRequestHandler):
             s, a, b = flyer.image_state(parts[3])
             if s == "ok":
                 return self.send(200, a, b)
+            if s == "unselected":   # two valid candidates and no explicit final selection: no default image (each candidate id still serves its own file)
+                return self.send(409, {"ok": False, "code": "final_not_selected", "error": "This flyer has two candidates and none was selected as final; request a candidate image by id."})
             if s == "integrity":   # the flyer exists but its stored file failed validation: an explicit failure, never a file
                 return self.send(409, {"ok": False, "code": "artifact_integrity_failed", "error": f"The saved flyer image failed its integrity check: {a}."})
             return self.send(404, {"ok": False, "code": "unknown_image", "error": "No such managed flyer image."})

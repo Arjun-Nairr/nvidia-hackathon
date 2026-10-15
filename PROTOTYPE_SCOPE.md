@@ -1,8 +1,8 @@
 # Current prototype scope
 
-Updated: 2026-10-11 by Codex using to-spec.
+Updated: 2026-10-14 by Codex (state/context pointers; product scope unchanged).
 Milestone: V2 — independent social-media specialist to one saved Facebook promotional flyer.
-Status: product scope confirmed; specification and six local tickets written; implementation not dispatched. V1 technical demonstration accepted on the development provider; product usefulness and Nebius/NVIDIA compatibility remain unverified.
+Status: V2 tickets1-5 accepted at documented evidence levels; ticket6 not dispatched. Next: local checkpoint and separately authorized live readiness/evaluation. Product usefulness, real Gemini fidelity and Nebius/NVIDIA compatibility remain unverified.
 
 ## Authoritative specification
 `research/social-media-flyer-v2-spec.md` is the current buildable V2 specification. `research/creative-agent-direction-20261011.md` preserves grilling history; only its authoritative final scope governs. Earlier linked-team and corruption-only proposals are superseded.

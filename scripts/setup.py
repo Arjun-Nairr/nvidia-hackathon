@@ -53,8 +53,9 @@ Do not promise a specialist a capability that its role does not list.
 Be specific about what is connected. Facebook Marketplace research exists only for a market_analysis specialist that was granted the
 marketplace tools. Facebook image-ad research (read-only, US ads, finite backend allowance) exists only for a social_media specialist that was
 granted the fb_* ad tools, and its create_agent description lists them; it has no Marketplace data. Flyer generation (ONE Gemini image per manual
-request, one paid attempt, saved UNCHECKED, needs a configured Gemini key and the merchant's real photographs) exists only for a social_media specialist
-granted generate_flyer. Nothing can be posted, published or emailed by anyone. Say so when it matters. Editing company details later updates the saved context; it does not rewrite existing
+request, one initial paid attempt, needs a configured Gemini key and the merchant's real photographs) exists only for a social_media specialist
+granted generate_flyer; with the flyer review tools it may review the image's actual pixels, make at most ONE correction and select one final candidate (a
+fallible agent review, never human approval), and without them the result stays UNCHECKED. Nothing can be posted, published or emailed by anyone. Say so when it matters. Editing company details later updates the saved context; it does not rewrite existing
 specialists' saved instructions.
 """, encoding="utf-8")
 core.ca_env()

@@ -112,10 +112,14 @@ async function select(id){
 async function loadFlyers(id,my){   // saved flyers of this specialist, exactly as the backend stored them (status and errors are never reinterpreted)
   let f;try{f=await j('/api/flyers?agent_id='+encodeURIComponent(id))}catch{return}
   const el=$('flyers');if(!el||my!==selSeq||!f.length)return;
-  const LAB={unchecked:'UNCHECKED',storage_failure:'STORAGE / INTEGRITY FAILURE',failed:'GENERATION FAILED',in_progress_or_unknown:'OUTCOME UNKNOWN'};
-  el.innerHTML='<h2>Saved flyers</h2>'+f.map(x=>`<div class="card"><b class="${x.status==='unchecked'?'':'st-error'}">${esc(LAB[x.status]||x.status)}</b> <span class="mut">${esc(x.flyer_id)} · ${esc(x.product_id)}</span>`+
+  const LAB={unchecked:'UNCHECKED',agent_review_passed:'AGENT REVIEW PASSED',unresolved_issues:'UNRESOLVED ISSUES (UNAPPROVED DRAFT)',awaiting_selection:'AWAITING SELECTION',storage_failure:'STORAGE / INTEGRITY FAILURE',failed:'GENERATION FAILED',in_progress_or_unknown:'OUTCOME UNKNOWN'};
+  el.innerHTML='<h2>Saved flyers</h2>'+f.map(x=>`<div class="card"><b class="${x.status==='unchecked'||x.status==='agent_review_passed'?'':'st-error'}">${esc(LAB[x.status]||x.status)}</b> <span class="mut">${esc(x.flyer_id)} · ${esc(x.product_id)}</span>`+
     (x.image?`<br><img src="${esc(x.image.url)}" alt="Saved flyer ${esc(x.flyer_id)}" style="max-width:100%;border:1px solid var(--line);border-radius:6px;margin-top:6px"><div class="mut">${x.image.width}x${x.image.height} · sha256 ${esc(x.image.sha256.slice(0,12))}…</div>`:'')+
-    (x.note?`<div class="mut">${esc(x.note)}</div>`:'')+(x.error?`<div class="st-error">${esc(x.error_kind||x.outcome||'error')}: ${esc(x.error)}</div>`:'')+
+    (x.note?`<div class="mut">${esc(x.note)}</div>`:'')+
+    (x.candidates_total>1?`<div class="mut">${x.candidates_total} candidates${x.correction_used?' (one correction used)':''}${x.final&&x.final.selected?' · final selected':' · no final selected'}</div>`:'')+
+    (x.final&&x.final.rationale?`<div class="mut">Selection: ${esc(x.final.rationale)}</div>`:'')+
+    (x.review?`<div class="mut">Review: ${esc(x.review.verdict)}${x.review.verified?'':' (pixels not confirmed delivered)'}</div>`:'')+
+    (x.unresolved_issues&&x.unresolved_issues.length?'<div class="st-error">Unresolved: '+x.unresolved_issues.map(i=>esc(i.check)+': '+esc(i.description)).join('; ')+'</div>':'')+(x.error?`<div class="st-error">${esc(x.error_kind||x.outcome||'error')}: ${esc(x.error)}</div>`:'')+
     (x.inputs_synthetic?'<div class="mut">Inputs were synthetic test stand-ins.</div>':'')+'</div>').join('');
 }
 async function loadRows(id){

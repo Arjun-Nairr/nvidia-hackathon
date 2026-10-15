@@ -107,6 +107,7 @@ def main():
             turn_state.route = None
             turn_state.request_id = turn_state.run_id = turn_state.ad_run_id = None
             turn_state.vision_probe = None
+            turn_state.pending_images.clear()
         new = res["messages"][len(history):]
         tools = []
         for m in new:

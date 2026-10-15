@@ -233,23 +233,73 @@ FB_READ_SCHEMA = {
 
 FLYER_GEN_SCHEMA = {
     "name": "generate_flyer",
-    "description": ("Generate ONE flyer image with Gemini for this manual request from a catalogue product's registered MERCHANT photographs and your prompt. You get one paid "
-                    "attempt per request: any outcome after it is sent (refusal, corrupt or multiple outputs, lost connection) consumes it and it is never repeated; a stored result "
-                    "is returned instead. Give product_id (read_catalogue), 1-3 of THAT product's image ids and a prompt with the exact headline, price and layout (the backend adds "
-                    "the supplied facts). reference_ad_image_ids may cite ad images you downloaded in this request: they are provenance only and are NEVER sent to Gemini. "
-                    "No URL, path, credential, model, size, run or attempt argument exists. The saved flyer is UNCHECKED: nobody has reviewed it; never call it approved. "
-                    "Returns flyer_id, candidate_id, status and the image's hash/size, or a structured error (missing_credentials, image_not_registered_for_product, "
-                    "synthetic_asset_not_allowed, asset_provenance_missing, attempt_already_consumed, generation_failed ...)."),
-    "parameters": {"type": "object", "additionalProperties": False, "required": ["product_id", "selected_product_image_ids", "prompt"], "properties": {
-        "product_id": {"type": "string", "description": "A product_id from read_catalogue."},
+    "description": ("Generate a flyer image with Gemini for this manual request. INITIAL generation: give product_id (read_catalogue), 1-3 of THAT product's registered merchant "
+                    "image ids and a prompt with the exact headline, price and layout (the backend adds the supplied facts); reference_ad_image_ids may cite ad images you "
+                    "downloaded in this request: provenance only, NEVER sent to Gemini. CORRECTION (at most ONE, the second and last paid attempt of the request): give ONLY "
+                    "previous_candidate_id (the first candidate) and corrections [{defect_no, instruction}] naming defects recorded by a VERIFIED review_flyer of that candidate; the "
+                    "backend re-uses the original photographs, facts and prompt (they cannot be changed; changed or missing originals are refused) and sends the previous draft as "
+                    "the image to correct. Any outcome after a send (refusal, corrupt or multiple outputs, lost connection) consumes its attempt and is never repeated; a stored "
+                    "result is returned instead. No URL, path, credential, model, size, run or attempt argument exists. A new candidate is UNCHECKED until you inspect_flyer and "
+                    "review_flyer it; never call it approved. Returns flyer_id, candidate_id, status and the image's hash/size, or a structured error (missing_credentials, "
+                    "image_not_registered_for_product, review_required, review_not_verified, no_defect_to_correct, original_input_changed, correction_limit_reached, "
+                    "attempt_already_consumed, generation_failed ...)."),
+    "parameters": {"type": "object", "additionalProperties": False, "properties": {
+        "product_id": {"type": "string", "description": "A product_id from read_catalogue (initial generation)."},
         "selected_product_image_ids": {"type": "array", "items": {"type": "string"}, "description": "1-3 of this product's registered merchant image ids (read_catalogue images)."},
         "prompt": {"type": "string", "description": "40-3000 characters: the design brief with the exact required text, price as declared and layout."},
-        "reference_ad_image_ids": {"type": "array", "items": {"type": "string"}, "description": "Optional (max 3): ad image ids from this request's ad research, cited as provenance only."}}}}
+        "reference_ad_image_ids": {"type": "array", "items": {"type": "string"}, "description": "Optional (max 3): ad image ids from this request's ad research, cited as provenance only."},
+        "previous_candidate_id": {"type": "string", "description": "CORRECTION only: the first candidate's id (from this request). With it, send only corrections."},
+        "corrections": {"type": "array", "description": "CORRECTION only (1-6): specific instructions, each naming a defect number recorded in the verified review.",
+                        "items": {"type": "object", "properties": {"defect_no": {"type": "integer"},
+                                                                    "instruction": {"type": "string", "description": "10-400 characters: exactly what to change."}},
+                                  "required": ["defect_no", "instruction"]}}}}}
 
 FLYER_READ_SCHEMA = {
     "name": "read_flyer",
-    "description": "Read this specialist's saved flyers from storage (no generation, no provider request). Without flyer_id: summaries with status; with flyer_id: the full record.",
+    "description": ("Read this specialist's saved flyers from storage (no generation, no provider request). Without flyer_id: summaries with status; with flyer_id: the full record "
+                    "(candidates, prompts, inputs, reviews, corrections, final selection, research link, history)."),
     "parameters": {"type": "object", "additionalProperties": False, "properties": {"flyer_id": {"type": "string"}}}}
+
+FLYER_INSPECT_SCHEMA = {
+    "name": "inspect_flyer",
+    "description": ("Look at the ACTUAL pixels of a flyer candidate generated in this request, together with the merchant's photographs of the product, to review it. The candidate "
+                    "is the first image, the merchant photographs follow. Fails explicitly when the candidate has no image or its saved file failed the integrity check (an integrity "
+                    "failure is not a content defect). The images reach you with your NEXT model request: look at them, then call review_flyer in a LATER response, never in the same tool-call batch as inspect_flyer. Whether the image reached you is recorded by the backend; if you cannot see it, say so and do not review it."),
+    "parameters": {"type": "object", "additionalProperties": False, "required": ["candidate_id"],
+                   "properties": {"candidate_id": {"type": "string", "description": "A candidate_id returned by generate_flyer in this request."}}}}
+
+FLYER_REVIEW_SCHEMA = {
+    "name": "review_flyer",
+    "description": ("Save your visual review of an INSPECTED candidate (one review per candidate). Three checks - product_appearance (matches the merchant photographs), "
+                    "required_text_price (every required word and the declared price present and exact) and layout_readability - each pass, fail or uncertain with what you "
+                    "observed; a defect with a SPECIFIC correction for every failed check; what you are unsure of; echo the candidate_sha256 shown with the pixels. The backend "
+                    "binds the review to the trusted request, run, candidate and the exact image hash, and counts it as a completed review only if the pixels were delivered to you in a "
+                    "model request and a response followed (otherwise it is stored UNVERIFIED and the flyer stays UNCHECKED). Call it in a LATER response than inspect_flyer; a review "
+                    "in the same batch is refused and nothing is saved. It is a fallible agent review, never human approval or a fidelity guarantee."),
+    "parameters": {"type": "object", "additionalProperties": False, "required": ["candidate_id", "candidate_sha256", "checks", "summary"], "properties": {
+        "candidate_id": {"type": "string"}, "candidate_sha256": {"type": "string", "description": "The 64-hex hash shown with the inspected candidate."},
+        "checks": {"type": "object", "description": "Exactly product_appearance, required_text_price, layout_readability; each {result: pass|fail|uncertain, observation (10-600 chars)}.",
+                   "additionalProperties": {"type": "object", "properties": {"result": {"type": "string", "enum": ["pass", "fail", "uncertain"]}, "observation": {"type": "string"}},
+                                           "required": ["result", "observation"]}},
+        "defects": {"type": "array", "description": "One entry per failed check (max 8).", "items": {"type": "object", "required": ["check", "description", "correction"], "properties": {
+            "check": {"type": "string", "enum": ["product_appearance", "required_text_price", "layout_readability"]},
+            "description": {"type": "string", "description": "10-400 characters: what is wrong, as seen."},
+            "correction": {"type": "string", "description": "10-400 characters: the specific change to make."}}}},
+        "uncertainties": {"type": "string", "description": "What you could not judge (optional, max 600)."},
+        "summary": {"type": "string", "description": "20-600 characters."}}}}
+
+FLYER_FINAL_SCHEMA = {
+    "name": "finalize_flyer",
+    "description": ("Select ONE candidate of this request as the final flyer, with a short factual rationale (20-600 characters). It need not be the newest. The selection is stored "
+                    "once with the request's ad-research link and cannot be changed. The flyer's status then follows that candidate's own review: 'agent review passed' (verified), "
+                    "'unresolved issues' (an UNAPPROVED draft) or 'unchecked' (no verified review). Nothing is published or approved."),
+    "parameters": {"type": "object", "additionalProperties": False, "required": ["candidate_id", "rationale"],
+                   "properties": {"candidate_id": {"type": "string"}, "rationale": {"type": "string"}}}}
+
+
+def _flyer_inspect(p, **kw):   # the image envelope travels as-is (like inspect_image); errors are JSON text
+    r = flyer.inspect(os.environ.get("ECOM_AGENT_ID", ""), p if isinstance(p, dict) else {})
+    return r if isinstance(r, dict) and r.get("_multimodal") else json.dumps(r)
 
 
 def _read_catalogue(p, **kw):
@@ -308,6 +358,20 @@ def _guarded_update(p, **kw):   # main only, and only for a request the backend 
     return json.dumps(core.update_company(p if isinstance(p, dict) else {}, source="main"))
 
 
+def _api_request(request_messages=None, api_request_id=None, **kw):   # pre_api_request: the payload really being sent to the model for this attempt
+    try:
+        flyer.note_request(request_messages, api_request_id)
+    except Exception:
+        pass   # fail closed: an unconfirmed delivery simply never verifies
+
+
+def _api_response(api_request_id=None, **kw):   # post_api_request: a model response completed (observer; its return value is ignored)
+    try:
+        flyer.note_response(api_request_id)
+    except Exception:
+        pass
+
+
 def _routing_context(**kw):
     c = (turn_state.route or {}).get("context")
     return {"context": c} if c else None
@@ -330,8 +394,12 @@ def register(ctx):
         for schema, ts, fn in ((FB_ADV_SCHEMA, "ecom_fb_advertiser", ads.find_advertiser), (FB_SEARCH_SCHEMA, "ecom_fb_search", ads.search),
                                (FB_DETAIL_SCHEMA, "ecom_fb_detail", ads.detail), (FB_IMAGE_SCHEMA, "ecom_fb_image", ads.image),
                                (FB_SAVE_SCHEMA, "ecom_fb_save", ads.save_package), (FB_READ_SCHEMA, "ecom_fb_read", ads.read_package),
-                               (FLYER_GEN_SCHEMA, "ecom_flyer_generate", flyer.generate), (FLYER_READ_SCHEMA, "ecom_flyer_read", flyer.read_flyer)):
+                               (FLYER_GEN_SCHEMA, "ecom_flyer_generate", flyer.generate), (FLYER_READ_SCHEMA, "ecom_flyer_read", flyer.read_flyer),
+                               (FLYER_REVIEW_SCHEMA, "ecom_flyer_review", flyer.review), (FLYER_FINAL_SCHEMA, "ecom_flyer_final", flyer.finalize)):
             ctx.register_tool(name=schema["name"], toolset=ts, schema=schema, handler=_mp(fn))
+        ctx.register_tool(name="inspect_flyer", toolset="ecom_flyer_inspect", schema=FLYER_INSPECT_SCHEMA, handler=_flyer_inspect)
+        ctx.register_hook("pre_api_request", _api_request)     # supported Hermes observer hooks: delivery of review pixels is established ONLY by these two
+        ctx.register_hook("post_api_request", _api_response)
     if me == "main":
         ctx.register_tool(name="create_agent", toolset="ecom_agents", schema=CREATE_SCHEMA,
                           handler=_guarded_create)
