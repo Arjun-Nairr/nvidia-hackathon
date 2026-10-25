@@ -1,8 +1,10 @@
 # V2-06 — Preserve one live flyer and get visual feedback
 
-Status: BLOCKED; no paid demonstration authorization yet.
+Status: offline demo runner (scripts/v2_06_demo.py) implemented 2026-10-15; its five review corrections implemented 2026-10-16 and scripted-tested (tests/v2_06_demo_fixes_test.py 40/40, tests/v2_06_demo_test.py 41/41, lint) - ACCEPTED at scripted level by Codex2026-10-17 (independent corrections40/40 + lint; research/v2-ticket06-corrections-verification-20261017.md), not live-proven. V2-06 and live validation are INCOMPLETE: no live call made; authentication arrangement unresolved; key, real photos/facts/provenance and Arjun's allowance approval missing; live code path never executed. research/v2-06-live-readiness-20261015.md (section 7a)
 Blocked by: V2-05 accepted; usable actual sample, credentials and separately agreed total scraper/photo/reasoning/Gemini call budget.
 Parent: `research/social-media-flyer-v2-spec.md`, acceptance8–9.
+
+Current scope override 2026-10-25: see HANDOUT.md (this ticket is historical and its second-login route is superseded). Use the existing project login/runtime with reviewed data preservation; a separate authenticated live-demo copy is no longer required. The isolated runner remains historical scripted evidence, not the required next step. No new runtime changes or paid calls authorized here.
 
 ## Outcome
 One manually initiated real US Facebook research/Gemini/actual-review run produces a preserved flyer with honest provenance/status for Arjun to judge without struggling through the old dashboard.

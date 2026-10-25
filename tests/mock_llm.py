@@ -473,6 +473,12 @@ class H(BaseHTTPRequestHandler):
     def do_POST(self):
         body = json.loads(self.rfile.read(int(self.headers["Content-Length"])))
         _users = [m for m in body["messages"] if m["role"] == "user"]
+        if _users and "LLM_500" in json.dumps(_users[-1]["content"]):   # a provider that answers every request with HTTP 500 (counts retry behaviour)
+            STATS["requests"] += 1
+            STATS["failed_500"] = STATS.get("failed_500", 0) + 1
+            raw = json.dumps({"error": {"message": "scripted server error", "type": "server_error"}}).encode()
+            self.send_response(500); self.send_header("Content-Type", "application/json")
+            self.send_header("Content-Length", str(len(raw))); self.end_headers(); self.wfile.write(raw); return
         if _users and "REJECT_IMAGES" in json.dumps(_users[-1]["content"]) and image_parts(body["messages"]):   # a provider that 400s on list-type tool content
             STATS["rejected_image_requests"] += 1
             raw = json.dumps({"error": {"message": "text is not set", "type": "invalid_request_error"}}).encode()

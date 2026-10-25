@@ -32,7 +32,7 @@ Note: `research/v2-integration-feasibility.md` (cited; documentation vs source r
 - **Proposed total live call allowance (counts only; not a dollar ceiling, not authorization to spend):** ScrapeCreators <= 11 attempts, <= 5 ad-image downloads, Gemini <= 4 calls (2 probe + 2 demo), reasoning model <= 26 requests.
 - **Readiness:** ticket 03 contract/caps ready, live coverage/reach unverified; ticket 04 contract ready, live blocked by Gemini key and sample. Recommended next: V2-01.
 
-## Corrections (Claude, 2026-10-11): implemented, awaiting direct Codex verification
+## Corrections (Claude, 2026-10-11) - historical heading; accepted after direct verification (research/v2-ticket02-corrections-verification-20261011.md)
 Responds to `research/v2-ticket02-review-20261011.md` (kept as historical evidence). Documentation only; no paid call, install, runtime change or sample.
 1. **Campaign grouping:** `collation_id` = "Facebook's internal ID for related ads in a campaign", `collation_count` = "The number of ads in the campaign", `ad_archive_id` = "The *actual* ad id" (official Company Ads and Search ads field descriptions). Not proof of identical creative: distinct `ad_archive_id` records are preserved; campaign id/count stored separately; no creative dedupe from these fields. The "unexplained" claim and "group_no" dedupe rule were removed.
 2. **Cost:** the unsupported "well under $1" assurance was removed. Four 2K image outputs = $0.2016 at the documented $0.0504; input and text/thinking charges are additional, so total spend is unmeasured and conditional. The call allowance is not a dollar ceiling or authorization to spend.

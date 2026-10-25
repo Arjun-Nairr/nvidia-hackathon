@@ -1,5 +1,7 @@
 # Specification: V2 independent social-media specialist
 
+> HISTORICAL (2026-10-25): original V2 specification, kept as implementation/evidence reference. Current scope and decisions live in HANDOUT.md; conflicting demo-login, public-onboarding and extra-role proposals here are superseded.
+
 Date: 2026-10-11. Codex using to-spec. Status: ready for ticket decomposition; settled product scope with explicit integration feasibility dependencies. This document is not authorization to install, implement, run paid probes, publish or deploy.
 
 ## Problem

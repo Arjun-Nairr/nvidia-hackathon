@@ -1,89 +1,59 @@
-# Shared project handout
+# Project handout (single project context)
 
-Updated 2026-10-14 by Codex: ticket5 accepted (scripted49/49 + lint). Current state overrides history.
-Keep below 400 lines AND about 10 KB; aim for 80-120 short lines. Archive history, do not hide it in long paragraphs.
-Read this plus PROTOTYPE_SCOPE.md and the active task. Load deeper references only for a specific question.
-Original handout preserved exactly at .scratch/context-history/HANDOUT-before-20261014.md (ignored; historical, not startup context).
+Updated 2026-10-25 by the Ticket 00 consolidation. Load this + the active prompt + targeted implementation files; open history only for a specific question.
+Superseded briefs (old scope, glossary, handout, Codex notes) are archived at docs/archive/superseded-20261025/ (see its README).
 
-## Current state
-- V1 technical demo accepted on the subscription development provider; product usefulness and NVIDIA compatibility remain unverified.
-- V2 tickets1-4 accepted at their documented evidence levels. Facebook ad and Gemini-generation work is scripted-tested, not live-proven.
-- Ticket5 ACCEPTED for scripted wiring/enforcement after P1 + both P2 verification. Final report: research/v2-ticket05-p2-verification-20261014.md. Real model/Gemini quality remains unverified.
-- P1: supported Hermes API hooks confirm candidate/reference pixels in model input plus a response boundary; same-batch review refused. Scripted chat path verified; live Responses/NVIDIA unverified.
-- Cached results describe one attempt; final-flyer state is separate. Candidate selection uses current artifact validity; no valid file => storage failure, never regeneration.
-- Next: checkpoint ticket5, then ticket6 live readiness/evaluation with separately approved inputs and budget. No dispatch, commit/push or paid probe performed here.
-- Ticket6/live demo not dispatched. No paid probe authorized. Real merchant photos/facts and Gemini key were last reported missing; billing unconfirmed.
-- Ticket graph: docs/social-media-flyer-v2/INDEX.md. Current review: research/v2-ticket05-review-20261014.md.
-- Independent latest: review49/49 + lint. Logs in .scratch/verify-v2-05-p2-20261014/. Local HTTP resets reported by Claude remain undiagnosed.
-- Local checkpoint ee16846 = accepted ticket4; 9d9ecbe = accepted ticket3. Ticket5 changes remain uncommitted; inspect git status before editing.
-- origin: https://github.com/Arjun-Nairr/nvidia-hackathon.git. Initial79d8094 was confirmed pushed. Repository was public; do not assume later commits pushed or visibility changed.
+## Purpose and scope
+- Hackathon ecommerce multi-agent prototype on Hermes Agent: a main agent understands one business, then creates bounded, business-customized specialists that do useful work. The claim is real execution, meaningful customization, honest outcomes and basic usability, not advertising quality or commercial effectiveness.
+- Sole operator: Arjun. One prepared home-textile business, "Northloom Demo Studio": a labelled demonstration built on one Met public-domain quilt (three licensed museum photos). USD 79 is an arbitrary test price, not a retail offer; claim no ownership, inventory, condition, care or museum endorsement.
+- Out of scope: extra roles, customer accounts, multi-business hosting, document/PDF/OCR intake, live website discovery, cross-specialist handoffs, posting/contact/account writes, schedules, fine-tuning.
 
-## Collaboration and context
-- Arjun directs product/scope/authorization. Codex researches, plans, writes inline prompts and verifies; Claude implements.
-- Prompts are delivered in chat, never saved as prompt files. Do not create AGENTS.md/CLAUDE.md wrappers just for this workflow.
-- Claude has Matt skills installed. Resolve its own names/files/references; do not assume Codex's curated package matches upstream.
-- Load one primary execution skill; supporting skills/references only when the task needs them. User scope overrides generic skill commit/review workflows.
-- Full two-axis code-review once per ticket; corrections use direct Codex inspection/focused tests, no repeat reviewer team.
-- New implementation/correction slices start fresh with this handout, current scope and targeted issue. Never load all research/history/scratch files by default.
-- Keep normal test output concise: log to ignored scratch, show summary and failures. Inspect selected functions instead of repeatedly printing whole large files.
-- Unknown failure needs diagnosis; do not guess causes or broaden the task. Tests should assert behavior, not reproduce implementation logic.
-- Build small useful slices, then evaluate; no speculative framework, broad cleanup or exhaustive hypothetical hardening.
-- Explicitly challenge weak assumptions. Distinguish documented capability, scripted wiring, live evidence and product usefulness.
-- No provider/model switches, real runtime resets, publishing/deployment, external messages or paid calls unless the task authorizes them.
-- Preserve unrelated edits; stage reviewed files explicitly. Credentials/runtime/dependencies/scratch/archive copies stay out of Git.
+## Agreed workflow (target)
+1. Operator enters a website link. A prepared website snapshot (never claimed as fetched live) identifies the business; the normal composer stays blocked.
+2. Main reads the snapshot and shows a brief business summary, about 5-10 MCQs (each with a write-in option) and an optional correction box.
+3. Operator answers. Main merges source facts and operator input into shared business context, keeping them distinguishable, then unlocks chat and explains which roles fit. The operator chooses; submitting the form authorizes no specialist.
+4. On request, main configures one semi-prebuilt specialist: objective, style, business instructions, context, minimal eligible tools, optional skills. The backend validates and creates the Hermes profile.
+5. Operator inspects the specialist and chats with it directly. Requested changes are validated and persisted on the SAME specialist. Direct tasks run autonomously within configured limits; no per-tool permission prompts.
 
-## Product scope and next direction
-- Ecommerce company-specific team: main onboards/provisions semi-prebuilt specialists; backend owns foundations, lifecycle, tools and permissions.
-- Main customizes role/identity/objective/instructions/context/priorities/eligible tools/custom skills. It cannot invent privileges.
-- Supported specialists: market_analysis and social_media. User chats with each; no forced pair or analyst-to-social handoff.
-- V2 social specialist independently researches US Facebook Ad Library image ads and creates one home-textile promotional flyer.
-- Marketplace listings are analyst evidence, not paid ads. Instagram, video, news and other roles are outside V2.
-- Missing/ambiguous/incomparable reach disables ranking, not relevance-based generation. No impressions/likes/views proxies or sales-effectiveness claims.
-- Actual supplied product photographs/facts required for live work. Synthetic fixtures must be labelled and confined to isolated tests.
-- Gemini gets selected merchant photos plus prompt/context; competitor images remain reasoning/provenance references.
-- Generated-file integrity is separate from actual-pixel content review. At most TWO dispatched attempts per manual request: initial + one correction.
-- Failed/corrupt/unknown dispatched attempts count, with no automatic replay/retries. No third attempt or second correction.
-- One explicitly selected final flyer; preserve candidates, input hashes, prompts, reviews, uncertainty and decision rationale.
-- Review is fallible agent review, not human approval. No actual pixel delivery means unchecked/unverified.
-- Posting/sending/contact/account-changing features deferred until planned agent system and usable UI are complete.
-- After V2: at most one additional useful specialist (email is a candidate, not agreed implementation), then focus on evaluation/UI/evidence/accuracy/learning.
-- End V2: independent external review and broader audit, reviewer/tool TBD; no external code upload authorized by this roadmap alone.
-- Evaluate useful actions and decision records, not final output alone; agent rationale is a claim checked against evidence, not private chain-of-thought.
+## Roles, customization, memory, logging
+- Exactly two roles, at most ONE instance each: market analyst (competitor products/prices/listings; today only narrower Marketplace research and listing drafts) and social-media specialist (US Facebook Ad Library image-ad research, Gemini flyer, actual-image review). Operator activates; never auto-create both.
+- Semi-prebuilt: we provide role foundations, baseline skills, potential tools, memory lifecycle and enforced permissions. Main customizes within them and cannot invent tools or privileges. Extra custom skills are optional (reusable procedures only); necessary tool dependencies stay usable. This is configuration, not fine-tuning.
+- Shared business context is runtime/company.json; only main writes it. Each agent keeps separate private Hermes memory; specialists suggest shared corrections through main. Current shared facts override conflicting private notes. No vector store or memory-cleanup framework.
+- Flyer rules: reach ranking only when documented reach exists; one initial Gemini generation plus at most one correction after actual-image review; failed or unknown dispatches count; no silent replay.
+- Basic Neon execution logging is REQUIRED for the finished demo: backend-observed steps (source/profile/questionnaire, requested/validated/applied configuration, tool calls and results, generation/review/final/error) with identities, timestamps and any available timing/usage. Rationale is a model claim, not hidden reasoning or proof. No secrets or raw image payloads. Local SQLite/traces suffice for early tests.
 
-## Runtime and data
-- Local single-company app, unauthenticated loopback: http://127.0.0.1:8800. UI is temporary; backend/API owns behavior and permissions.
-- Hermes Python library AIAgent, one lazy long-lived worker per profile; no separate gateway per specialist. Cold startup remains slow; no streaming or idle shutdown.
-- Main-only Laya classification is routing guidance, not authorization, fine-tuning or guaranteed context/latency reduction. Small tuned table has one known miss.
-- app/core.py: company/config/registry/grants/profiles; app/worker.py + workers.py: turns/processes; hermes_plugin.py: tools/hooks; turn_state.py: trusted request state.
-- app/ads.py: ad runs/evidence/allowances; app/flyer.py: generation/candidates/reviews/correction/final selection; listing.py: catalogue/legacy drafts; server.py: APIs.
-- runtime/company.json = shared supplied company facts; runtime/app.db = app registry/transcripts/research/artifacts/accounting (SQLite).
-- runtime/hermes_home/profiles/<agent_id> = private SOUL/skills/memory/Hermes sessions. Specialist memory is isolated; artifacts do not belong in conversational memory.
-- runtime/hermes_home/auth.json = project subscription login. Never adopt/refresh external personal Codex/Hermes logins.
-- Hermes system-prompt memory refreshes at a new session; mid-session preferences remain in history. Request replay cache is in memory and lost on server restart.
-- Toolsets derive from stored role/grants. Only main creates agents/updates company; specialists cannot recursively spawn or grant tools.
-- Existing profiles/grants/SOUL are preserved; new capabilities require explicit provisioning, not silent widening.
+## Terms
+Demo operator = Arjun. Demo business = the prepared example. Website snapshot = saved source copy, distinct from the company profile main derives and the operator clarifies (shared business context, main-owned). Role foundation = predefined purpose, boundaries and potential tools. Specialist = business-customized agent on a foundation. Specialist memory = one agent's private notes. Website, catalogue, configuration, memory and execution logs are different records; a website does not establish goals, price, material or size.
 
-## Configuration and commands
-- secrets/local.env ignored; secrets/local.env.template tracked placeholders. Never print keys/tokens/auth headers.
-- Development reasoning: openai-codex / gpt-5.6-terra. Nebius route exists but live NVIDIA/tool/vision compatibility remains unverified; reported Nebius credit budget $25.
-- LLM_PROVIDER + LLM_MODEL select reasoning provider/model; NEBIUS_API_KEY/NEBIUS_MODEL support Nebius, no fallback.
-- GEMINI_API_KEY + GEMINI_MODEL configure separate image provider. Current model/API contract lives in research/v2-04-flyer-generation-result-20261013.md; reverify before a live call.
-- ScrapeCreators key is configured; previously used V1 allowances/demo cannot be reset or repeated automatically.
-- Launch .\run.bat (setup + app server). Login only if needed: .\login_codex.bat. Models: .\list_models.bat.
-- Hermes interpreter: %LOCALAPPDATA%\hermes\hermes-agent\venv\Scripts\python.exe. Do not install dev dependencies into it or modify personal profiles.
-- .\lint.bat = pinned project-local Ruff + ESLint including inline HTML scripts; .\lint.bat setup restores tooling. No autofix/startup coupling.
-- Tests that wipe runtime run only on fresh isolated copies of app/scripts/tests, without secrets/runtime. Use their explicit *_I_AM_A_COPY guard.
-- Run suites one at a time (fixed ports; orphaned mock servers collide). Large local chat responses are sometimes reset on this PC; flyer_review_test replays the request id.
-- On this PC SSLKEYLOGFILE may need removal from a test subprocess environment; TLS verification remains enabled. core.ca_env handles Windows roots.
+## Status (evidence level matters)
+- V1 accepted 2026-10-11 live on the subscription provider: main plus analyst, Marketplace research, image inspection, listing drafts (research/v1-clean-demo-verification-20261011.md). Product usefulness and NVIDIA compatibility unverified.
+- V2 tickets 1-5 accepted at SCRIPTED level only: independent social role, integration feasibility, Facebook ad research with reach gating, flyer generation, actual-image review with one correction (delivery-bound review). Local checkpoints: 9d9ecbe (ticket 3), ee16846 (4), 98758d9 (5).
+- Ticket 6 offline demo runner and five corrections: accepted scripted (41/41, 40/40, lint). It is evidence only; its isolated live-runner/second-login route is superseded.
+- Unbuilt (agreed future work, not features): website-snapshot reading, MCQ/form state, onboarding chat gate, one-per-role enforcement (today only names are unique), optional skills (creation still requires them), source-aware main intake, specialist-chat persisted configuration/grant updates, Neon, the analyst's broader responsibilities, UI redesign.
+- Not established: any live V2 Gemini flyer or actual-image review quality, live Responses delivery, Nebius/NVIDIA tool/vision compatibility (reported $25 credit; provider switch deferred by Arjun, not dropped), a coherent website snapshot. Key presence does not prove validity or billing. Local response resets and startup stalls are undiagnosed.
 
-## Evidence pointers (conditional)
-- V1 acceptance: research/v1-clean-demo-verification-20261011.md. Old original incomplete live archive was replaced by a separately authorized clean demo, not recovered.
-- V2 integration docs/sample blockers: research/v2-integration-feasibility.md; research/v2-ticket02-corrections-verification-20261011.md.
-- Role foundation: research/v2-ticket01-review-20261011.md.
-- Ad acceptance: research/v2-ticket03-corrections-verification-20261013.md (ad80/80, analyst57/57).
-- Flyer acceptance: research/v2-ticket04-corrections-verification-20261013.md (flyer44/44).
-- Ticket5 implementation/evidence: research/v2-05-review-correction-result-20261013.md; research/v2-05-scripted-trace-example-20261013/.
-- Ticket5 required corrections: research/v2-ticket05-review-20261014.md. P1 result: research/v2-05-p1-delivery-verification-20261014.md (43/43 scripted). P2 result: research/v2-05-p2-corrections-20261014.md (flyer_review_test 49/49 scripted).
-- Scope details: research/social-media-flyer-v2-spec.md, load the relevant decision/acceptance section only.
-- CODEX_NOTES.md is Codex's working agreement, not mandatory Claude startup context; relevant rules are summarized here.
-- Archived notes and earlier research contain superseded directions. Never revive them over current scope or claim old pending-review status is current.
+## Immediate sequence
+- The original unfinished task is the first real flyer probe / full social-specialist test. It uses the existing project authentication and runtime with a scoped preservation/setup plan. The isolated live-runner/second-login route is superseded.
+- Offline readiness passed with ignored demo/v2-06-inputs/ (catalogue.json, company.json, three hash-verified quilt photos). The ignored copy demo/v2-06-live-20261023 was prepared but never signed in or run; it holds copied API keys, so delete it once unneeded.
+- Website/MCQ onboarding, configuration updates and Neon are NOT prerequisites for testing the existing flyer capability. Existing local evidence supports the first test; Neon is needed for the finished demo.
+- Next: a small Claude task preparing the existing app and sample for a separately authorized probe. Then the probe (own go-ahead, explicit call bounds). Then the unbuilt items above, an evaluation that changes requirements and checks persisted behavior on the same specialist, UI/QoL, Nebius/NVIDIA verification, and independent external review (tool TBD; no upload authorized).
+
+## Architecture and files
+- Local single-company app at http://127.0.0.1:8800, unauthenticated loopback; the UI is temporary and the backend/API owns behavior and permissions. Hermes AIAgent library, one lazy long-lived worker per profile; no gateway per specialist.
+- app/core.py company/config/registry/grants/profiles; worker.py + workers.py turns; hermes_plugin.py tools/hooks; turn_state.py trusted request state; ads.py ad research/allowances; flyer.py generation, review, correction, selection; listing.py catalogue/drafts; server.py APIs. Only main creates agents or edits company facts; specialists cannot spawn or grant tools.
+- runtime/ (ignored): company.json shared facts; app.db registry/transcripts/research/artifacts/accounting; hermes_home/profiles/<agent_id> private SOUL, skills, memory and sessions; hermes_home/auth.json is the project login. Never adopt or refresh personal Codex/Hermes logins. Existing profiles and grants are preserved; new capability needs explicit provisioning.
+- Config: secrets/local.env (ignored; template tracked). Reasoning is openai-codex / gpt-5.6-terra via LLM_PROVIDER + LLM_MODEL; Nebius via NEBIUS_API_KEY/NEBIUS_MODEL with no fallback; Gemini image via GEMINI_API_KEY + GEMINI_MODEL (verified contract in research/v2-04-flyer-generation-result-20261013.md; recheck before a live call). V1 ScrapeCreators allowances are spent and cannot be reset automatically.
+
+## Commands
+- .\run.bat starts setup and the app. .\login_codex.bat only if login is needed. .\list_models.bat lists models. .\lint.bat runs pinned Ruff and ESLint (.\lint.bat setup restores tooling).
+- Hermes Python: %LOCALAPPDATA%\hermes\hermes-agent\venv\Scripts\python.exe (no dev dependencies in it).
+- Tests that wipe runtime run only on fresh isolated copies of app/scripts/tests without secrets/runtime, behind the *_I_AM_A_COPY guard. Run suites one at a time (fixed ports). Remove SSLKEYLOGFILE from test subprocesses if needed; TLS verification stays on.
+
+## Collaboration rules
+- Arjun directs scope and authorization. Codex plans, writes inline prompts and verifies; Claude implements. Prompts live in chat, never in prompt files; no AGENTS.md/CLAUDE.md wrappers. CODEX_NOTES.md holds Codex-only preferences and is not startup context.
+- Each Claude task: read this handout, load only task-relevant material, execute the bounded slice, verify, update this handout, then stop. One primary execution skill; /compact after completed tasks.
+- Code review once per ticket; corrections get direct inspection and focused tests. Log verbose output to ignored .scratch and show summaries and failures.
+- Diagnose before fixing; build small useful slices; challenge weak assumptions; separate documented capability, scripted wiring, live evidence and product usefulness.
+- No provider/model switch, runtime reset, deployment, external message, paid call, commit or push unless the task authorizes it. Stage explicit paths; credentials, runtime, dependencies and scratch stay out of Git.
+- Origin https://github.com/Arjun-Nairr/nvidia-hackathon.git (initial 79d8094 pushed; later push status and visibility unverified; repository was public).
+- Historical evidence is under research/ and docs/social-media-flyer-v2/ (index there lists per-ticket reports).

@@ -24,7 +24,7 @@ The social specialist selects product photos, writes a feature-informed prompt, 
 ## Completion evidence
 Return one sample saved flyer or explicit blocker, selected input images, prompt snapshot, candidate status/hash, call accounting and read-after-restart results. Update ticket/index/HANDOUT. Preserve generated/evidence artifacts before any isolated-copy cleanup.
 
-## Result (Claude, 2026-10-13) - awaiting Codex review, not accepted
+## Result (Claude, 2026-10-13) - historical heading; ticket accepted 2026-10-13 after its corrections (research/v2-ticket04-corrections-verification-20261013.md)
 Note `research/v2-04-flyer-generation-result-20261013.md`; preserved scripted example `research/v2-04-scripted-flyer-example-20261013/` (placeholder image and inputs: wiring evidence only).
 - Catalogue: additive `images` list (V1 single `image` kept), `read_catalogue` exposes registered images; merchant-only image roots; competitor/Marketplace ids can never be a merchant photo.
 - Tools `generate_flyer` / `read_flyer` (social_media only, granted at creation via `requested_tools`; existing specialists untouched). Gemini Interactions contract re-verified 2026-10-13 (recorded changes: output mime `image/jpeg` only per API reference, `delivery: inline`); explicit `GEMINI_MODEL`, one plain HTTPS POST, no SDK/retries, `store=false`.
