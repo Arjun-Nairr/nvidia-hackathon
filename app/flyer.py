@@ -807,10 +807,26 @@ def _dispatch(run_id, cand, cfg, key, payload, inputs, attempt_no, predecessor=N
             "attempts": {"used": attempt_no, "enabled": ATTEMPTS_ENABLED, "final_max": ATTEMPTS_FINAL_MAX}}
 
 
+STORE = False
+
+
+def _response_format(cfg):
+    """The image response_format that is actually sent. `delivery` is deliberately absent: the live service answered HTTP 400 'Image delivery mode is not supported.'
+    when it was set (V2-06 probe, 2026-10-25) although the API reference lists it; the documented image-generation examples omit it and the default is inline data."""
+    return {"type": "image", "aspect_ratio": ASPECT, "image_size": cfg["size"], "mime_type": OUT_MIME}
+
+
+def _request_record(cfg, n_images):
+    """The sanitized request metadata stored with an attempt, derived from the SAME values _payload sends (never a separate copy)."""
+    rf = _response_format(cfg)
+    return {"endpoint": ENDPOINT, "model": cfg["model"], "aspect_ratio": rf["aspect_ratio"], "image_size": rf["image_size"], "mime_type": rf["mime_type"], "store": STORE,
+            "input_images": n_images, "timeout_s": TIMEOUT_S, "retries": 0}
+
+
 def _payload(cfg, context_text, images):
     return {"model": cfg["model"],
             "input": [{"type": "text", "text": context_text}] + [{"type": "image", "mime_type": m, "data": base64.b64encode(raw).decode("ascii")} for m, raw in images],
-            "response_format": {"type": "image", "aspect_ratio": ASPECT, "image_size": cfg["size"], "mime_type": OUT_MIME, "delivery": "inline"}, "store": False}
+            "response_format": _response_format(cfg), "store": STORE}
 
 
 def generate(agent_id, args):
@@ -903,8 +919,7 @@ def generate(agent_id, args):
     company = core.load_company()
     facts = _facts_text(cat, p, company, ids)
     context_text = prompt.strip() + "\n\n" + facts
-    request = {"endpoint": ENDPOINT, "model": cfg["model"], "aspect_ratio": ASPECT, "image_size": cfg["size"], "mime_type": OUT_MIME, "delivery": "inline", "store": False,
-               "input_images": len(inputs), "timeout_s": TIMEOUT_S, "retries": 0}
+    request = _request_record(cfg, len(inputs))
     snap = {"company_name": company.get("name"), "product_id": pid, "prompt": prompt.strip(), "context_text": context_text, "model": cfg["model"], "request": request,
             "synthetic": bool(synthetic),
             "product": {"product_id": pid, "name": p.get("name"), "price": p.get("price"), "specifications": p.get("specifications"), "category": p.get("category"),
@@ -1043,8 +1058,7 @@ def _correct(agent_id, rid, args):
                     "authoritative.\n" + "\n".join(lines) + "\n")
     corrections = [{"defect_no": w["defect_no"], "check": defects[w["defect_no"]]["check"], "defect": defects[w["defect_no"]]["description"], "instruction": w["instruction"]}
                    for w in wanted]
-    request = {**json.loads(prev["request_json"]), "model": cfg["model"], "image_size": cfg["size"], "input_images": len(cur) + 1, "predecessor_id": prev_id,
-               "predecessor_sha256": prev["out_sha256"]}
+    request = {**_request_record(cfg, len(cur) + 1), "predecessor_id": prev_id, "predecessor_sha256": prev["out_sha256"]}   # rebuilt, not copied: an older stored record may differ from what is sent now
     snap = {"prompt": prev["prompt"], "context_text": context_text, "model": cfg["model"], "request": request, "synthetic": bool(prev["inputs_synthetic"]),
             "product": stored_p, "inputs": stored_in, "references": json.loads(prev["references_json"]), "corrections": corrections}
     state, run2, a = _reserve_correction(agent_id, rid, prev_id, snap)

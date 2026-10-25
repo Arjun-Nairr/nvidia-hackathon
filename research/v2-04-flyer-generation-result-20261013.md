@@ -26,7 +26,7 @@ Sources read: `ai.google.dev/gemini-api/docs/image-generation`, `.../docs/intera
 **Material changes from the feasibility note (`research/v2-integration-feasibility.md` section 3):**
 
 1. **Output mime type.** The API reference enumerates only `image/jpeg` for `response_format.mime_type`; the guide shows both jpeg and png in examples. The note recommended `image/png`. The backend now requests `image/jpeg` and checks that whatever comes back decodes as an allowed type and matches its label.
-2. **`delivery` is a documented field.** The backend sets `inline` explicitly and never fetches a provider URI.
+2. **`delivery` is a documented field.** The backend sets `inline` explicitly and never fetches a provider URI. **CORRECTED 2026-10-25:** the field is listed in the API reference, but the LIVE service rejected it (HTTP 400 `Image delivery mode is not supported.`, V2-06 probe); the backend now omits it (default is inline data) and still never fetches a provider URI.
 3. The response shape (status, steps, usage names, `errors[]`) is now documented; the feasibility note had inferred parts of it.
 
 **Still unverified** (not on the pages as fetched, or not testable without a key): that `store: false` is accepted for this model; HTTP error body shape (the code reads `error.message` or `errors[0].message` when present and otherwise the status); safety-block representation; cost per call (note section 3 figures are pricing-page values, total unmeasured); edit/regeneration fidelity; the unread tails of the two long pages; SDK retry behaviour was not restated on these pages, so the no-SDK decision rests on the earlier source reading.

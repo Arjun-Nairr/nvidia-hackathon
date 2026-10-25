@@ -293,7 +293,10 @@ PRED2 = {
     "images order": [i["sha256"] for i in rq2.get("images", [])] == [sha(FRONT), sha(DETAIL), sha_of(g2)] and rq2.get("n_input") == 4,
     "text": rq2.get("text", "").startswith(PROMPT) and "Declared price: 64.5 EUR" in rq2.get("text", "") and "100% wool" in rq2.get("text", "")
             and "Show the price exactly as declared: 64.5 EUR, and change nothing else." in rq2.get("text", ""),
-    "request flags": rq2.get("store") is False and rq2.get("extra_fields") == [],
+    "request flags": rq2.get("store") is False and rq2.get("extra_fields") == [] and "delivery" not in (rq2.get("response_format") or {}),
+    "correction record agrees with what was sent": (lambda r: "delivery" not in r and all(r.get(k) == rq2["response_format"][k] for k in ("aspect_ratio", "image_size", "mime_type"))
+                                                     and r.get("store") is rq2["store"] and r.get("input_images") == rq2["n_input"] - 1)(
+        json.loads(core.db().execute("SELECT request_json FROM flyer_attempts WHERE candidate_id=?", (c2b,)).fetchone()[0])),
     "second review+final": rv2b.get("verdict") == "passed" and fin2.get("status") == "agent_review_passed" and f2.get("status") == "agent_review_passed"
                            and f2["final"]["candidate_id"] == c2b and len(cands2) == 2,
     "candidate records": cands2[0]["candidate_id"] == c2a and cands2[1]["predecessor_id"] == c2a and cands2[0]["review"]["verdict"] == "defects_found"

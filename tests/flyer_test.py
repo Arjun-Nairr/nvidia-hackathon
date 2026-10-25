@@ -201,7 +201,7 @@ check("A1 the scripted provider received exactly ONE request carrying the chosen
       "key only in the header; store=false; documented request fields only",
       r1.get("ok") and st["total"] == 1 and rq["path"] == "/v1beta/interactions" and rq["has_key"] and not rq["key_in_query"] and rq["model"] == "gemini-nano-banana-2.1"
       and rq["store"] is False and rq["extra_fields"] == [] and rq["images"] == want_imgs and rq["n_input"] == 3
-      and rq["response_format"] == {"type": "image", "aspect_ratio": "4:5", "image_size": "2K", "mime_type": "image/jpeg", "delivery": "inline"}
+      and rq["response_format"] == {"type": "image", "aspect_ratio": "4:5", "image_size": "2K", "mime_type": "image/jpeg"}
       and rq["text"].startswith(PROMPT) and "Heritage Wool Throw" in rq["text"] and "64.5 EUR" in rq["text"] and "100% wool" in rq["text"] and "Calm, natural" in rq["text"], (r1, rq))
 fid = r1.get("flyer_id")
 f1 = flyer.get_flyer(fid) or {}
@@ -209,6 +209,11 @@ a1 = f1.get("attempt", {})
 img1 = flyer.image_file(fid)
 from PIL import Image
 im1 = Image.open(io.BytesIO(img1[0])) if img1 else None
+rr1 = a1.get("request", {})
+check("A1b the outgoing request has NO response_format.delivery (the live service rejected it with HTTP 400 'Image delivery mode is not supported.' on 2026-10-25), and the recorded request metadata "
+      "agrees with what was actually sent: same model, aspect ratio, size, mime type, store flag and image count, and no delivery key",
+      "delivery" not in rq["response_format"] and "delivery" not in rr1 and rr1.get("model") == rq["model"] and rr1.get("store") is rq["store"] and rr1.get("input_images") == rq["n_input"] - 1
+      and all(rr1.get(k) == rq["response_format"][k] for k in ("aspect_ratio", "image_size", "mime_type")), (rq["response_format"], rr1))
 check("A2 the attempt record keeps the exact prompt/context snapshot, input hashes, product snapshot, provider/model/request settings, usage, and one candidate artifact whose "
       "stored hash equals its bytes; status unchecked; trusted identity bound by the backend",
       f1.get("status") == "unchecked" and f1["content_status"] == "unchecked" and a1["prompt"] == PROMPT and a1["context_text"] == rq["text"]

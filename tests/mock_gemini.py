@@ -3,6 +3,7 @@ and image-generation guide on 2026-10-13 (POST /v1beta/interactions, x-goog-api-
 steps[].content[] image blocks, usage totals), but every image it returns is a GENERATED PLACEHOLDER. It says nothing about real Gemini output quality,
 fidelity, cost or availability. Never report a result from it as real Gemini proof.
 Usage: python tests/mock_gemini.py [port]
+Rejects (HTTP 400, as the live service did) any request whose response_format carries "delivery"; the request is still logged so tests can see it.
 Control (POST /control, JSON; {"reset": true} first clears the log and behaviour):
   "mode": "ok" | "refuse" (HTTP 400) | "auth" (401) | "rate" (429) | "server" (500) | "failed" (status failed) | "no_image" | "two_images" | "corrupt" (undecodable bytes)
           | "bad_base64" | "wrong_mime" (JPEG bytes labelled image/png) | "uri_only" | "tiny" (8x8 image) | "drop" (connection closed, no answer) | "redirect" (302)
@@ -84,6 +85,9 @@ class H(BaseHTTPRequestHandler):
             time.sleep(CTL["delay_ms"] / 1000)
         if self.path.split("?")[0] != "/v1beta/interactions":
             return self._send(404, {"error": {"code": 404, "message": "not found"}})
+        rf = body.get("response_format")
+        if isinstance(rf, dict) and "delivery" in rf:   # the LIVE service answered exactly this to response_format.delivery (inline or uri) on 2026-10-25 (V2-06 probe): never accept the field
+            return self._send(400, {"error": {"code": 400, "message": "Image delivery mode is not supported.", "status": "INVALID_ARGUMENT"}})
         mode = CTL["mode"]
         if mode == "drop":
             self.connection.close()
