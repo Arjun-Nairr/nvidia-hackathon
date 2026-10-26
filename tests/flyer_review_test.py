@@ -1233,11 +1233,13 @@ try:
     fid_b15, st_b15, cand_b15 = flyer_of(r15)
     det15 = http(APP, f"/api/flyers/{fid_b15}")[1] if fid_b15 else {}
     rej1 = http(MOCK, "/stats")[1]["rejected_image_requests"]
-    check("B15 failed dispatch through the real loop: the provider 400s the image-bearing request, Hermes retries with text only, so the review (if saved) is UNVERIFIED and the flyer is "
-          "explicitly unchecked: no pass is claimed and no correction is possible (ONE Gemini request)",
-          rej1 > rej0 and gem_n() == 1 and det15.get("status") == "unchecked"
-          and not any(c.get("review", {}).get("verified") for c in det15.get("candidates") or []) and "agent_review_passed" not in json.dumps(det15.get("status")),
-          (rej1 - rej0, gem_n(), det15.get("status"), [c.get("review") for c in det15.get("candidates") or []]))
+    seq15 = acts(r15)
+    saves15 = [x for x in r15.get("activity", []) if x.get("tool") == "save_ad_research"]
+    check("B15 failed image delivery through the real loop: the provider 400s the image-bearing request and Hermes retries with text only, so the competitor images were NEVER confirmed "
+          "delivered: save_ad_research is refused (image_not_delivered), the specialist stops BEFORE any Gemini request (no unresearched flyer, no pass claimed, nothing to correct)",
+          rej1 > rej0 and gem_n() == 0 and not fid_b15 and "generate_flyer" not in seq15 and saves15
+          and all("image_not_delivered" in str(x.get("output")) for x in saves15) and "agent_review_passed" not in json.dumps(r15.get("text", "")),
+          (rej1 - rej0, gem_n(), seq15, [str(x.get("output"))[:160] for x in saves15], str(r15.get("text", ""))[:200]))
 
     if os.environ.get("REVIEW_EVIDENCE_DIR"):
         ev = Path(os.environ["REVIEW_EVIDENCE_DIR"])

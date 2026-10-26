@@ -986,7 +986,9 @@ def save_package(agent_id, a):
         insp = {}   # ONLY inspections bound to this request and this run count; another request's (or a legacy unbound) inspection of identical bytes does not
         for r in d.execute("SELECT * FROM image_inspections WHERE agent_id=? AND kind='live_ad_image' AND request_id=? AND run_id=? ORDER BY id",
                            (agent_id, run["request_id"], rid)):
-            insp[(r["image_id"], r["sha256"])] = dict(r)   # the latest inspection of exactly these bytes within this request wins
+            old = insp.get((r["image_id"], r["sha256"]))   # the latest inspection of exactly these bytes within this request wins, but never replaces a CONFIRMED one
+            if old is None or r["delivered_at"] or not old["delivered_at"]:
+                insp[(r["image_id"], r["sha256"])] = dict(r)
     groups = _campaigns(ads)
     out_refs, missing, seen_img = [], [], set()
     for i, r in enumerate(refs):
@@ -1022,15 +1024,17 @@ def save_package(agent_id, a):
                                   f"{w}.visual_features")
         if basis == "reach_ranked" and reach_view(ads[no])["state"] != "reported":
             return research._fail("reach_ranking_unavailable", f"{w} cites ad {no}, which carries no reported reach, so it cannot be a reach-ranked selection.", f"{w}.ad_no", reach_gate=gate)
-        delivery = row.get("delivery") if row.get("delivery") in ("image_part_sent", "text_fallback", "unknown") else "unknown"
-        if delivery != "image_part_sent":
-            missing.append(f"image {iid}: its pixels were not delivered to a supported vision path ({'text-only fallback' if delivery == 'text_fallback' else 'delivery status unknown'}); "
-                           "its observations are model text only, not verified visual evidence")
+        if not row.get("delivered_at"):   # a capability prediction (image_part_sent) is not delivery: only a model request that carried these exact pixels, then its response, is
+            return research._fail("image_not_delivered", f"{w}.image_id {iid!r} was inspected, but no model request that carried its pixels and was answered is recorded for this "
+                                  "inspection (the inspection result reaches you only with your NEXT response; a text-only fallback or a failed request never delivers it), so it is not "
+                                  "verified visual evidence.", f"{w}.image_id",
+                                  hint="Call inspect_image on the image, then save the research in a LATER step (never in the same tool-call batch as inspect_image). If your model "
+                                       "cannot receive images, save a blocker without references instead.")
         out_refs.append({"ad_no": no, "source_ad_id": ads[no]["ad_archive_id"], "source_url": ads[no].get("source_url"), "image_id": iid, "image_no": reg["image_no"],
                          "image_source": reg["source_field"], "sha256": reg["sha256"], "bytes": reg["bytes"], "width": reg["width"], "height": reg["height"], "host": reg["host"],
                          "retrieved_at": _iso(reg["fetched_at"]), "inspected_at": _iso(row["ts"]), "inspection_sha256": row["sha256"], "inspection_request_id": row["request_id"],
-                         "inspection_run_id": row["run_id"], "delivery": delivery,
-                         "counts_as_verified_evidence": delivery == "image_part_sent", "why_relevant": why.strip(), "visual_features": [f.strip() for f in feats],
+                         "inspection_run_id": row["run_id"], "delivery": "image_part_sent",
+                         "delivery_confirmed": True, "delivered_at": _iso(row["delivered_at"]), "counts_as_verified_evidence": True, "why_relevant": why.strip(), "visual_features": [f.strip() for f in feats],
                          "model_observations": obs.strip(), "model_uncertainties": str(r.get("uncertainties") or "").strip()[:600]})
     status = "blocked" if not refs else ("complete" if not missing else "partial")
     cited = sorted({r["ad_no"] for r in out_refs})

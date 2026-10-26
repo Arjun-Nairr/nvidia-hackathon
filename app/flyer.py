@@ -1137,8 +1137,7 @@ def inspect(agent_id, args):
                         (agent_id, a["candidate_id"], "flyer_candidate", a["out_sha256"], a["out_width"], a["out_height"], time.time(),
                          delivery if delivery in listing.DELIVERY else "unknown", rid, run["run_id"], json.dumps({"references": refs})))
     # the capability prediction above is NOT delivery: the hooks confirm it only when these exact images are in an actual model request and a response follows
-    turn_state.pending_images[cur.lastrowid] = {"urls": {hashlib.sha256(u.encode("utf-8")).hexdigest() for u in [cand["data_url"]] + [pr["data_url"] for _, pr in parts]},
-                                                "request": None}
+    expect_delivery(cur.lastrowid, [cand["data_url"]] + [pr["data_url"] for _, pr in parts])
     head = (f"REVIEW MATERIAL for candidate {a['candidate_id']} (candidate_sha256 {a['out_sha256']}, {a['out_width']}x{a['out_height']}). The FIRST image below is the generated flyer's "
             f"real pixels; the following {len(parts)} image(s) are the merchant's own photographs of the product that were supplied to the generator.\n"
             f"Supplied facts: product {product.get('name')!r}; declared price {pr_.get('amount')} {pr_.get('currency')}; specifications: {specs or 'none'}.\n"
@@ -1168,6 +1167,12 @@ def _data_urls(node, out):
     elif isinstance(node, (list, tuple)):
         for v in node:
             _data_urls(v, out)
+
+
+def expect_delivery(inspection_id, data_urls):
+    """Register an inspection row whose EXACT image data URLs must appear in a later model request that a response then completes (note_request / note_response below).
+    Used by inspect_flyer and inspect_image; the capability prediction stored on the row is never confirmation."""
+    turn_state.pending_images[inspection_id] = {"urls": {hashlib.sha256(u.encode("utf-8")).hexdigest() for u in data_urls}, "request": None}
 
 
 def note_request(request_messages, api_request_id):

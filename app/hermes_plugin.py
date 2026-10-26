@@ -79,7 +79,9 @@ def _inspect_image(p, **kw):
         return json.dumps(r)
     delivery = turn_state.image_delivery()   # preparation is not delivery: how Hermes will actually send this image for the active provider/model
     try:   # trusted inspection log (backend-written; a saved draft may only cite images inspected here). Logging trouble must not hide the image.
-        listing.record_inspection(os.environ.get("ECOM_AGENT_ID", "main"), r, delivery)
+        row_id = listing.record_inspection(os.environ.get("ECOM_AGENT_ID", "main"), r, delivery)
+        if row_id:   # delivery is confirmed only by the pre/post_api_request hooks below (the next model request must carry exactly these pixels)
+            flyer.expect_delivery(row_id, [r["data_url"]])
     except Exception:
         pass
     note = (f"Image {r['image_id']} ({r['width']}x{r['height']}, {r['format']}) is attached below: these are its real pixels. Describe only what is "
@@ -211,7 +213,7 @@ FB_SAVE_SCHEMA = {
     "name": "save_ad_research",
     "description": ("Save ONE research package for this request: your selected visual references, what you actually saw in each inspected image, and how you selected them. The backend "
                     "adds identity, source links, image hashes and lineage, call accounting and the reach gate. Every reference must be an image of an ad of this request that you "
-                    "downloaded with fb_ad_image AND inspected with inspect_image. selection_basis reach_ranked is refused unless reach_gate says ranking is enabled (same metric, geography and a stated measurement period). Claims about "
+                    "downloaded with fb_ad_image AND inspected with inspect_image in an EARLIER step: the image reaches you only with your next response, so save in a LATER step, never in the same tool-call batch as inspect_image (an unconfirmed inspection is refused). selection_basis reach_ranked is refused unless reach_gate says ranking is enabled (same metric, geography and a stated measurement period). Claims about "
                     "sales, results or effectiveness are refused. With no relevant ads, save a blocked package (no references; state the blocker). One package per request; nothing "
                     "is published."),
     "parameters": {"type": "object", "additionalProperties": False, "required": ["summary", "selection_basis"], "properties": {

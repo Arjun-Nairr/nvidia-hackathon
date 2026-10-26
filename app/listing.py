@@ -195,9 +195,10 @@ def record_inspection(agent_id, prepared, delivery="unknown"):
     # accepts only an inspection bound to ITS request and run; rows written before this column existed stay unbound (NULL) and never count there.
     run_id = getattr(turn_state, "ad_run_id", None) if ad else getattr(turn_state, "run_id", None) if live else None
     with core.db() as d:
-        d.execute("INSERT INTO image_inspections(agent_id, image_id, kind, sha256, width, height, ts, delivery, request_id, run_id) VALUES(?,?,?,?,?,?,?,?,?,?)",
-                  (agent_id, iid, kind, prepared["sha256"], prepared["width"], prepared["height"], time.time(), delivery if delivery in DELIVERY else "unknown",
-                   getattr(turn_state, "request_id", None), run_id))
+        cur = d.execute("INSERT INTO image_inspections(agent_id, image_id, kind, sha256, width, height, ts, delivery, request_id, run_id) VALUES(?,?,?,?,?,?,?,?,?,?)",
+                        (agent_id, iid, kind, prepared["sha256"], prepared["width"], prepared["height"], time.time(), delivery if delivery in DELIVERY else "unknown",
+                         getattr(turn_state, "request_id", None), run_id))
+    return cur.lastrowid   # the caller may register it for hook-confirmed delivery (flyer.expect_delivery)
 
 
 # ---------------- claim guards (heuristic; documented limits) ----------------

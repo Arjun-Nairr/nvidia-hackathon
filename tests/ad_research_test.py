@@ -120,6 +120,35 @@ def n_req(kinds=None):
 
 turn_state.vision_probe = lambda: "image_part_sent"
 A = lambda agent, tool, args: getattr(ads, tool)(agent, args)
+_api = [0]
+
+
+def HOP(vs, image=True, respond=True):
+    """What Hermes does after a tool batch: ONE model request carrying the tool result(s) (list content with the image parts when its vision gate passes, the text
+    summary otherwise), then that request's response. Drives the same two hook entry points the plugin registers (pre_api_request / post_api_request)."""
+    _api[0] += 1
+    aid = f"ad-api-{_api[0]}"
+    vs = vs if isinstance(vs, list) else [vs]
+    content = [part for v in vs for part in v["content"]] if image else " ".join(v["text_summary"] for v in vs)
+    hp._api_request(request_messages=[{"role": "system", "content": "s"}, {"role": "tool", "tool_call_id": "c1", "content": content}], api_request_id=aid)
+    if respond:
+        hp._api_response(api_request_id=aid)
+    return aid
+
+
+def INSP(image_id):
+    """inspect_image followed by the model round trip that delivers its pixels (a LATER step than any save in the same batch)."""
+    v = hp._inspect_image({"image_id": image_id})
+    if isinstance(v, dict) and v.get("_multimodal"):
+        HOP(v, image=turn_state.image_delivery() == "image_part_sent")
+    return v
+
+
+def insp_row(image_id, request_id):
+    with core.db() as d:
+        return [dict(r) for r in d.execute("SELECT * FROM image_inspections WHERE agent_id='soc' AND image_id=? AND request_id=? ORDER BY id", (image_id, request_id))]
+
+
 
 # ================= A. public backend seams =================
 print("PART A: backend seams (scripted Facebook-ads stand-in; not live)", flush=True)
@@ -372,7 +401,7 @@ S = ads.search("soc", {"query": "bedding"})
 ni = S["ads"][0]["ad_no"]
 DI = ads.detail("soc", {"ad_no": ni})
 IMI = ads.image("soc", {"ad_no": ni, "image_no": 1})
-hp._inspect_image({"image_id": IMI["image_id"]})
+INSP(IMI["image_id"])
 PI = ads.save_package("soc", {**{"summary": "One reference from a fixture ad that carries impressions and spend but no reach.", "selection_basis": "relevance_only"},
                               "references": [{"ad_no": ni, "image_id": IMI["image_id"], "why_relevant": "A quilted bedding ad that is relevant to the merchant's product type.",
                                               "visual_features": ["large product shot"], "observations": "The image shows a quilted coverlet on a plain background."}]})
@@ -437,8 +466,9 @@ base = {"summary": "Researched US Facebook image ads for quilted bedding and sel
 ref = lambda n, i, **kw: {"ad_no": n, "image_id": i, "why_relevant": "A quilted bedding ad whose layout shows what shoppers meet for this product.",
                          "visual_features": ["product large on plain backdrop"], "observations": "The image shows a quilted coverlet on a pale background with a headline.", **kw}
 notinsp = ads.save_package("soc", {**base, "references": [ref(n1_, ia["image_id"])]})
-hp._inspect_image({"image_id": ia["image_id"]})                  # the real inspect_image tool body: trusted inspection log
-hp._inspect_image({"image_id": ib["image_id"]})
+va = hp._inspect_image({"image_id": ia["image_id"]})            # the real inspect_image tool body: trusted inspection log
+vb = hp._inspect_image({"image_id": ib["image_id"]})
+HOP([va, vb])                                                    # the next model request carried both images and its response completed
 unreg = ads.save_package("soc", {**base, "references": [ref(n1_, "ad-1100000000000004-1")]})
 wrongad = ads.save_package("soc", {**base, "references": [ref(n3_, ia["image_id"])]})
 rr = ads.save_package("soc", {**base, "selection_basis": "reach_ranked", "references": [ref(n1_, ia["image_id"])]})
@@ -459,7 +489,7 @@ check("A28 ONE package per request is saved: complete with verified delivery; tw
       and again["package_id"] == PK["package_id"] and pkg["identity"]["agent_id"] == "soc" and pkg["identity"]["company_id"] == "default" and pkg["identity"]["country"] == "US"
       and pkg["identity"]["request_id"] == "req-p1" and pkg["identity"]["run_id"].startswith("adrun-")
       and [r["image_id"] for r in pkg["references"]] == [ia["image_id"], ib["image_id"]] and pkg["references"][0]["sha256"] == ia["sha256"]
-      and pkg["references"][0]["inspection_sha256"] == ia["sha256"] and all(r["delivery"] == "image_part_sent" and r["counts_as_verified_evidence"] for r in pkg["references"])
+      and pkg["references"][0]["inspection_sha256"] == ia["sha256"] and all(r["delivery"] == "image_part_sent" and r["counts_as_verified_evidence"] and r.get("delivery_confirmed") is True and r.get("delivered_at") for r in pkg["references"])
       and pkg["references"][0]["source_url"] == "https://www.facebook.com/ads/library?id=1100000000000001", PK)
 check("A28b the package states the reach gate honestly, keeps campaign grouping and card counts apart from ad counts, and carries exact call accounting; no signed URL or key anywhere",
       pkg["reach_gate"]["state"] == "disabled_reach_unavailable" and pkg["selection_basis"] == "relevance_only"
@@ -483,20 +513,84 @@ pb = ads.get_package(PB["package_id"])
 check("A29 an honest blocker is a saved, retrievable package: status blocked, no references, the blocker text, the two counted searches and an unavailable gate",
       PB["ok"] and PB["status"] == "blocked" and pb["blocker"].startswith("Both queries") and pb["references"] == [] and pb["call_accounting"]["scraper_attempts"] == 2
       and pb["reach_gate"]["state"] == "disabled_reach_unavailable" and pb["counts"]["independent_ads_cited"] == 0, PB)
-# delivery: a text-only vision path is not verified visual evidence
-scope("a-deliv", api=20, img=3)
+# delivery CONFIRMATION: visual evidence exists only once the model REQUEST carried these exact pixels and a response followed (the inspect_flyer mechanism, hooks pre/post_api_request)
+scope("a-deliv", api=40, img=12)
 fb_ctl(first="relevant")
 req("req-v1")
 S = ads.search("soc", {"query": "comforter set"})
-nv = S["ads"][0]["ad_no"]
+nv = {a["source_ad_id"]: a["ad_no"] for a in S["ads"]}["1100000000000001"]
 iv = ads.image("soc", {"ad_no": nv, "image_no": 1})
 turn_state.vision_probe = lambda: "text_fallback"
-hp._inspect_image({"image_id": iv["image_id"]})
+vt = hp._inspect_image({"image_id": iv["image_id"]})
+HOP(vt, image=False)                                 # a text-only request: no pixels reached the model, although a response followed
 turn_state.vision_probe = lambda: "image_part_sent"
 PV = ads.save_package("soc", {**base, "references": [ref(nv, iv["image_id"])]})
-check("A30 an image whose pixels only reached the model as a text fallback is saved but the package is partial: the observation is model text, not verified visual evidence",
-      PV["ok"] and PV["status"] == "partial" and any("text-only fallback" in m for m in PV["missing"])
-      and ads.get_package(PV["package_id"])["references"][0]["counts_as_verified_evidence"] is False, PV)
+check("A30 an image whose pixels only reached the model as a text fallback cannot back a reference: image_not_delivered with a corrective hint, no package saved",
+      code(PV) == "image_not_delivered" and "inspect_image" in (PV.get("hint") or "") and not [p for p in ads.list_packages("soc") if p["request_id"] == "req-v1"], PV)
+v1 = hp._inspect_image({"image_id": iv["image_id"]})  # a fresh inspection: the capability prediction says image_part_sent
+PS = ads.save_package("soc", {**base, "references": [ref(nv, iv["image_id"])]})   # ... but it is saved in the SAME batch, before any request carried it
+row_s = insp_row(iv["image_id"], "req-v1")[-1]
+check("A31 same-batch inspection and save: the predicted delivery (image_part_sent) is NOT confirmation: refused image_not_delivered, the row has no delivered_at",
+      code(PS) == "image_not_delivered" and row_s["delivery"] == "image_part_sent" and row_s["delivered_at"] is None and row_s["boundary_at"] is None, (PS, row_s))
+HOP(v1, respond=False)                               # an image-bearing request was sent but NO response completed (dispatch failed or was cut off)
+PF = ads.save_package("soc", {**base, "references": [ref(nv, iv["image_id"])]})
+row_f = insp_row(iv["image_id"], "req-v1")[-1]
+check("A32 a failed image-bearing request (no response) does not confirm: still image_not_delivered and no delivered_at",
+      code(PF) == "image_not_delivered" and row_f["delivered_at"] is None, (PF, row_f))
+HOP(v1)                                              # the next request carries the pixels and its response completes
+PC = ads.save_package("soc", {**base, "references": [ref(nv, iv["image_id"])]})
+pc = ads.get_package(PC["package_id"]) if PC.get("ok") else {}
+row_c = insp_row(iv["image_id"], "req-v1")[-1]
+rc_ = (pc.get("references") or [{}])[0]
+check("A33 after the request that carried these exact pixels and its response, the same reference saves with CONFIRMED evidence: delivered_at/boundary_at stored, "
+      "counts_as_verified_evidence and delivery_confirmed true, the package complete",
+      PC.get("ok") and PC["status"] == "complete" and row_c["delivered_at"] and row_c["boundary_at"] and rc_.get("counts_as_verified_evidence") is True
+      and rc_.get("delivery_confirmed") is True and rc_.get("delivered_at") and rc_["inspection_request_id"] == "req-v1", (PC, row_c))
+# another request / run / image cannot satisfy the reference
+req("req-v2")
+S2 = ads.search("soc", {"query": "comforter set"})
+no2 = {a["source_ad_id"]: a["ad_no"] for a in S2["ads"]}
+i2a = ads.image("soc", {"ad_no": no2["1100000000000001"], "image_no": 1})
+INSP(i2a["image_id"])                                # request v2 confirms the IDENTICAL bytes of ad 1
+req("req-v3")
+S3 = ads.search("soc", {"query": "comforter set"})
+no3 = {a["source_ad_id"]: a["ad_no"] for a in S3["ads"]}
+i3a = ads.image("soc", {"ad_no": no3["1100000000000001"], "image_no": 1})
+i3b = ads.image("soc", {"ad_no": no3["1100000000000002"], "image_no": 1})
+v3a = hp._inspect_image({"image_id": i3a["image_id"]})   # request v3 inspects ad 1 but nothing has carried it yet
+INSP(i3b["image_id"])                                    # ... while ANOTHER image of this request is confirmed delivered
+PO = ads.save_package("soc", {**base, "references": [ref(no3["1100000000000001"], i3a["image_id"])]})
+check("A34 neither another request's confirmed inspection of identical bytes nor another image's confirmation in this request satisfies the reference: image_not_delivered",
+      i2a["sha256"] == i3a["sha256"] and code(PO) == "image_not_delivered", (code(PO), i2a["sha256"] == i3a["sha256"]))
+# a worker restart between the inspection and the round trip loses the pending confirmation; confirmed rows are in the database and survive
+req("req-v4")
+S4 = ads.search("soc", {"query": "comforter set"})
+no4 = {a["source_ad_id"]: a["ad_no"] for a in S4["ads"]}["1100000000000001"]
+i4 = ads.image("soc", {"ad_no": no4, "image_no": 1})
+v4 = hp._inspect_image({"image_id": i4["image_id"]})
+turn_state.pending_images.clear()                    # the worker process restarted before the model round trip
+HOP(v4)
+PR1 = ads.save_package("soc", {**base, "references": [ref(no4, i4["image_id"])]})
+v4b = hp._inspect_image({"image_id": i4["image_id"]})   # the restarted worker inspects again; this time the round trip completes
+HOP(v4b)
+turn_state.pending_images.clear()                    # another restart AFTER the confirmation: it is stored, not in memory
+PR2 = ads.save_package("soc", {**base, "references": [ref(no4, i4["image_id"])]})
+check("A35 a restart before the round trip loses the confirmation (refused); a confirmation already stored survives a later restart (saved from the database row)",
+      code(PR1) == "image_not_delivered" and PR2.get("ok") and PR2["status"] == "complete", (code(PR1), code(PR2)))
+# a legacy / bound-but-unconfirmed row never counts
+req("req-v5")
+S5 = ads.search("soc", {"query": "comforter set"})
+no5 = {a["source_ad_id"]: a["ad_no"] for a in S5["ads"]}["1100000000000001"]
+i5 = ads.image("soc", {"ad_no": no5, "image_no": 1})
+with core.db() as d:
+    d.execute("INSERT INTO image_inspections(agent_id, image_id, kind, sha256, width, height, ts, delivery, request_id, run_id) VALUES(?,?,?,?,?,?,?,?,?,?)",
+              ("soc", i5["image_id"], "live_ad_image", i5["sha256"], i5["width"], i5["height"], time.time() + 1, "image_part_sent", "req-v5", ads.run_for("soc", "req-v5")["run_id"]))
+PL = ads.save_package("soc", {**base, "references": [ref(no5, i5["image_id"])]})
+check("A36 a legacy-style row (predicted delivery image_part_sent, bound to the request and run, never confirmed) does not qualify", code(PL) == "image_not_delivered", PL)
+# an honest blocker still saves without any visual reference
+PBK = ads.save_package("soc", {"summary": "Relevant ads were found but their images could not be confirmed as delivered to the model, so there is no visual reference.",
+                               "selection_basis": "relevance_only", "references": [], "blocker": "No inspected image reached the model; no reference can be verified."})
+check("A37 a blocker package (no references) is still saved when nothing could be confirmed", PBK.get("ok") and PBK["status"] == "blocked", PBK)
 
 # --- retrieval needs no provider request: stop the stand-in, read the package in a fresh process
 procs[0].terminate()
@@ -573,7 +667,7 @@ req("req-bind-B")
 sb = ads.search("soc", {"query": "comforter set"})
 nB = {a["source_ad_id"]: a["ad_no"] for a in sb["ads"]}["1100000000000004"]
 imB = ads.image("soc", {"ad_no": nB, "image_no": 1})                 # request B downloads and inspects the IDENTICAL ad image bytes
-hp._inspect_image({"image_id": imB["image_id"]})
+INSP(imB["image_id"])                                                 # B's inspection is even CONFIRMED delivered: still not A's
 req("req-bind-A")                                                    # request A resumes with a fresh turn state (as after a restart)
 n0 = n_req()
 ads.image("soc", {"ad_no": nA, "image_no": 1})                       # the first ad tool call re-binds the run (answered from the store)
@@ -581,7 +675,7 @@ save_a1 = ads.save_package("soc", {**base, "references": [ref(nA, imA["image_id"
 check("C1 request B's inspection of identical ad bytes does NOT satisfy resumed request A: image_not_inspected, no package saved, nothing sent",
       imA["image_id"] == imB["image_id"] and imA["sha256"] == imB["sha256"] and code(save_a1) == "image_not_inspected" and n_req() == n0
       and not [p for p in ads.list_packages("soc") if p["request_id"] == "req-bind-A"], (code(save_a1), imA["sha256"] == imB["sha256"]))
-hp._inspect_image({"image_id": imA["image_id"]})                     # now A inspects its own download
+INSP(imA["image_id"])                                                # now A inspects its own download (delivered in the next request)
 save_a2 = ads.save_package("soc", {**base, "references": [ref(nA, imA["image_id"])]})
 pa = ads.get_package(save_a2["package_id"]) if save_a2.get("ok") else {}
 try:
@@ -665,7 +759,7 @@ check("C7 search results: Facebook-only and Facebook+Instagram ads qualify, a mi
 n01, n02, n04 = pp["1100000000000001"]["ad_no"], pp["1100000000000002"]["ad_no"], pp["1100000000000004"]["ad_no"]
 i01, i02, i04 = (ads.image("soc", {"ad_no": n, "image_no": 1}) for n in (n01, n02, n04))   # the unknown-platform ad is still downloadable
 for i in (i01, i02, i04):
-    hp._inspect_image({"image_id": i["image_id"]})
+    INSP(i["image_id"])
 d04 = ads.detail("soc", {"ad_no": n04})                                # its detail now says Instagram-only
 n_c = n_req(["cdn"])
 im04 = ads.image("soc", {"ad_no": n04, "image_no": 1})
@@ -745,7 +839,7 @@ s_r = ads.search("soc", {"query": "bedding"})
 nr = {a["source_ad_id"]: a["ad_no"] for a in s_r["ads"]}
 d_r1, d_r2 = ads.detail("soc", {"ad_no": nr["1100000000000001"]}), ads.detail("soc", {"ad_no": nr["1100000000000004"]})
 i_r = ads.image("soc", {"ad_no": nr["1100000000000001"], "image_no": 1})
-hp._inspect_image({"image_id": i_r["image_id"]})
+INSP(i_r["image_id"])
 rk = ads.save_package("soc", {**base, "selection_basis": "reach_ranked", "references": [ref(nr["1100000000000001"], i_r["image_id"])]})
 ro = ads.save_package("soc", {**base, "selection_basis": "relevance_only", "references": [ref(nr["1100000000000001"], i_r["image_id"])]})
 pr_ = ads.get_package(ro["package_id"]) if ro.get("ok") else {}
@@ -928,7 +1022,7 @@ try:
     check("B8 actual-image delivery, verified on the model request itself: pixels with each registered image's colour and size reached the model (not just a scripted description); "
           "the package records delivery image_part_sent and the stored file hash equals the recorded hash",
           set(refs) == set(want_colors) and all(any(mean_close(g.get("mean"), c) for g in got) for c in want_colors.values())
-          and got and all(g.get("size") == [240, 300] for g in got) and all(x["delivery"] == "image_part_sent" and x["counts_as_verified_evidence"] for x in refs.values())
+          and got and all(g.get("size") == [240, 300] for g in got) and all(x["delivery"] == "image_part_sent" and x["counts_as_verified_evidence"] and x.get("delivery_confirmed") is True and x.get("delivered_at") for x in refs.values())
           and all(file_ok.values()), (set(refs), [g.get("mean") for g in got], file_ok))
     import sqlite3
     con = sqlite3.connect(ROOT / "runtime" / "app.db")
