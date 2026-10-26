@@ -1,0 +1,26 @@
+PREPARED DEMO WEBSITE SNAPSHOT (fictional demonstration material)
+This text was written for the hackathon demo and saved locally. It was NOT fetched from any website: example.com domains are reserved and host no real business.
+Registered demo URL: https://northloom-demo.example.com
+Snapshot id: northloom-demo-2026-10
+
+== Home ==
+Northloom Demo Studio
+Heritage quilts and home textiles, shown with museum-source photographs.
+We present traditional printed and appliqued quilts and explain the patterns and the people who made them.
+
+== About ==
+Northloom Demo Studio is a small, fictional studio that celebrates antique and traditional quilt patterns for the home.
+We write about chintz prints, appliqued flowers, birds and baskets, and about how quilts were made by hand.
+Our readers are people who love heritage patterns, collectors of traditional textiles and anyone choosing a thoughtful gift for a home.
+Our voice is calm, factual and plain-spoken. We do not use hype, countdown timers or exaggerated claims.
+
+== Collection ==
+Featured piece: Chintz Applique Quilt
+Printed and appliqued cotton, about 158.8 x 174 cm, made around 1820-30.
+Held by The Metropolitan Museum of Art (object 2022.147.4); the photographs shown here are public-domain museum images.
+The pattern shows a central basket of flowers, framed by floral borders with birds and flower sprays.
+This is the only piece shown on the demo site.
+
+== Contact ==
+hello@northloom-demo.example.com
+This page makes no statement about prices, stock or delivery. Business goals are not published on this site.

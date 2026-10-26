@@ -389,6 +389,67 @@ def review_policy(msgs, names, user):
     return say(f"Flyer {fid} status {last.get('status')} candidate {pick[0]}" if last.get("ok", True) else f"Flyer {fid} NOT finalized: {last.get('code')}")
 
 
+
+# ---- scripted ONBOARDING stand-in (batch A tests). Like the other policies it is a rule-based test double, NOT a model: it derives its questions and answers from the
+# snapshot text and answer JSON it is handed (so a test can prove they follow the source), and a MOCK_ONBOARDING=<mode> line inside that text selects a failure shape.
+def _onb_snapshot(u):
+    m = re.search(r"\n---\n(.*?)\n---", u, re.S)
+    return m.group(1) if m else ""
+
+
+def onboarding_source_policy(u):
+    snap = _onb_snapshot(u)
+    mode = (re.search(r"MOCK_ONBOARDING=(\w+)", snap) or [None, ""])[1]
+    if mode == "malformed":
+        return {"text": "I read the page. The business seems to sell quilts and it looks nice!"}
+    name = (re.search(r"== Home ==\s*\n(.+)", snap) or [None, "the business"])[1].strip()
+    piece = (re.search(r"Featured piece:\s*(.+)", snap) or [None, "its featured product"])[1].strip()
+    readers = (re.search(r"Our readers are (.+?)\.", snap) or [None, "people who like the products"])[1]
+    audiences = [a.strip(" .") for a in re.split(r",| and ", readers) if len(a.strip(" .")) > 2][:3] or ["Home shoppers", "Gift buyers"]
+    voice = (re.search(r"Our voice is (.+?)\.", snap) or [None, "plain-spoken"])[1]
+    summary = f"From the prepared demo snapshot: {name} presents {piece} and related heritage home textiles. Readers are described as {readers}. Its voice is {voice}."
+    qs = [{"id": "q1", "topic": "products", "question": "Which offer should your specialists treat as the core product?", "options": [piece, "Heritage quilts and home textiles in general"]},
+          {"id": "q2", "topic": "customers", "question": "Who are the customers you most want to reach?", "options": audiences},
+          {"id": "q3", "topic": "goal", "question": "What do you want your specialists to help with first?",
+           "options": ["Promotional flyers for the featured piece", "Competitor prices and listings", "Both promotion and market insight"]},
+          {"id": "q4", "topic": "brand", "question": "How should the brand sound in promotional text?", "options": [f"As the site says: {voice}", "Warmer and story-led"]},
+          {"id": "q5", "topic": "other", "question": "Is there anything the specialists should avoid saying?", "options": ["Hype and exaggerated claims", "Nothing in particular"]}]
+    if mode == "fewq":
+        qs = qs[:3]
+    if mode == "nogoal":
+        qs[2]["topic"] = "other"
+    out = json.dumps({"summary": summary, "questions": qs})
+    return {"text": ("```json\n" + out + "\n```") if mode == "fenced" else out}
+
+
+def onboarding_context_policy(u):
+    snap = _onb_snapshot(u)
+    mode = (re.search(r"MOCK_ONBOARDING=(\w+)", snap) or [None, ""])[1]
+    if mode == "malformed_context":
+        return {"text": "Saved! Everything looks good."}
+    name = (re.search(r"== Home ==\s*\n(.+)", snap) or [None, "the business"])[1].strip()
+    piece = (re.search(r"Featured piece:\s*(.+)", snap) or [None, "its featured product"])[1].strip()
+    try:
+        answers = json.loads(re.search(r"ANSWERS \(JSON\):\s*(\[.*?\])\s*\n", u, re.S).group(1))
+    except (AttributeError, ValueError):
+        answers = []
+    by = {a["topic"]: a["answer"] for a in answers}
+    corr = (re.search(r"OPERATOR CORRECTION:\s*(.*)", u) or [None, ""])[1].strip()
+    fields = {"name": name, "products": by.get("products") or piece, "customers": by.get("customers") or "People who love heritage patterns",
+              "brand": by.get("brand") or "Calm and factual", "competitors": "", "website": "https://northloom-demo.example.com"}
+    if corr and corr != "(none)":
+        fields["products"] += f" (operator note: {corr})"
+        for key, pat in (("name", r"now called ([^.]+)"), ("competitors", r"main competitor is ([^.]+)")):   # a correction can change fields no question asks about
+            m = re.search(pat, corr)
+            if m:
+                fields[key] = m.group(1).strip()
+    if mode == "goal_injection":
+        fields["goal"] = "Maximise worldwide profit at any cost"
+    if mode == "empty_products":
+        fields["products"] = ""
+    return {"text": json.dumps(fields)}
+
+
 def decide(body):
     STATS["requests"] += 1; STATS["last_model"] = body.get("model", "")
     if body["messages"][-1]["role"] == "user" and "SLOW" in json.dumps(body["messages"][-1]["content"]):
@@ -402,6 +463,11 @@ def decide(body):
     if imgs:
         STATS["image_log"].append({"request": STATS["requests"], "images": imgs})   # which pixels reached the model, per request (lineage checks)
     _users = [m for m in msgs if m["role"] == "user"]
+    _u0 = _users[-1]["content"] if _users and isinstance(_users[-1]["content"], str) else ""
+    if "[ONBOARDING TASK: SOURCE SUMMARY]" in _u0:
+        return onboarding_source_policy(_u0)
+    if "[ONBOARDING TASK: CONTEXT]" in _u0:
+        return onboarding_context_policy(_u0)
     if _users and "RESEARCH_AGENT" in json.dumps(_users[-1]["content"]):
         return research_policy(msgs, names)
     if _users and "REVIEW_AGENT" in json.dumps(_users[-1]["content"]):

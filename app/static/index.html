@@ -18,9 +18,12 @@ button{font:inherit;padding:8px 16px;border-radius:8px;border:0;background:var(-
 .notice{margin:0 16px 8px;padding:8px 12px;border-radius:8px;border:1px solid var(--warn);color:var(--warn);font-size:13px;white-space:pre-wrap}
 .notice.info{border-color:var(--line);color:var(--mut)}.m.working{color:var(--mut);font-style:italic}.m details{margin-top:8px}.m .act-item{margin:4px 0 0 8px}
 .st-error{color:var(--warn)}#company label{display:block;font-size:12px;color:var(--mut);margin-top:8px}#company input,#company textarea{width:100%;font:inherit;padding:6px;border-radius:6px;border:1px solid var(--line);background:var(--bg);color:var(--ink)}#company textarea{min-height:52px;resize:vertical}#company .need{color:var(--warn)}.pill.new{color:var(--acc);border-color:var(--acc)}
+.onb h3{margin:14px 0 6px;font-size:15px}.onb label.opt{display:block;margin:2px 0;font-size:14px}.onb input[type=text]{width:100%;font:inherit;padding:6px;border-radius:6px;border:1px solid var(--line);background:var(--bg);color:var(--ink)}
+.onb .q{margin:0 0 12px}.onb .err{color:var(--warn);font-size:13px;margin-top:8px;white-space:pre-wrap}
 </style></head><body>
 <aside>
   <div id="status"></div>
+  <div id="onb-side"></div>
   <h2>Chat with</h2>
   <div class="card agent sel" id="a-main" onclick="select('main')"><b>Main agent</b> <span class="pill" id="pill-main"></span><br><span class="mut">creates specialists</span></div>
   <h2>Created agents</h2><div id="agents"><span class="mut">None yet. Ask the main agent to create one.</span></div>
@@ -28,6 +31,7 @@ button{font:inherit;padding:8px 16px;border-radius:8px;border:0;background:var(-
 </aside>
 <section id="chat">
   <div style="padding:12px 16px;border-bottom:1px solid var(--line)"><b id="title">Main agent</b> <span class="mut" id="sub"></span></div>
+  <div id="onboard" class="onb" style="display:none;flex:1;overflow:auto;padding:16px"></div>
   <div id="log"></div>
   <div id="notice"></div>
   <div id="chatbar"><textarea id="msg" placeholder="Message… (Enter sends, Shift+Enter newline)"></textarea><button id="send">Send</button></div>
@@ -49,9 +53,86 @@ async function init(){
     $('status').innerHTML=(s.problem?`<div class="banner">${esc(s.problem)} Chat returns this error until fixed. Config: <code>${s.secrets_file}</code></div>`:'')+
      `<div class="mut">Provider: <b>${esc(s.provider||'not set')}</b><br>Model: <b>${esc(s.model||'not set')}</b><br>Auth: ${s.problem?'<b>not ready</b>':'ready'}<br>Research tools: <b>granted per specialist</b> (flyer generation: only for a specialist granted generate_flyer; posting: not connected)</div>`;
     await loadCompany();
+    await loadOnboarding();
   }catch(e){$('status').innerHTML=`<div class="banner">Cannot reach the app backend (${esc(e.message)}). Is run.bat still running?</div>`}
   await select('main');
   setInterval(poll,2000);setInterval(tickWorking,1000);
+}
+
+// ---- onboarding (backend-owned state; this only displays it and posts the explicit onboarding operations)
+let ONB=null,onbBusy=false,onbErr='',onbUrl='',onbDraft={a:{},corr:''};   // onbDraft: what the operator typed, kept across every re-render of the question form
+const onbBlocked=()=>!!ONB&&!ONB.chat_unlocked;
+async function loadOnboarding(){try{ONB=await j('/api/onboarding')}catch{return}paintOnboarding()}
+async function onbPost(path,body){
+  let r;try{const x=await fetch('/api/onboarding/'+path,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body||{})});r=await x.json().catch(()=>null)}
+  catch{r={ok:false,error:'The connection to the app was lost, so it is unknown whether this finished. The page reloads the saved state; nothing is repeated automatically.'}}
+  return r||{ok:false,error:'The app answered without details.'};
+}
+function paintOnboarding(){
+  const o=ONB;if(!o)return;const blocked=onbBlocked();
+  $('log').style.display=$('notice').style.display=$('chatbar').style.display=blocked?'none':'';
+  $('onboard').style.display=blocked?'block':'none';
+  let side;
+  if(o.state==='not_started')side='<h2>Onboarding</h2><div class="card"><div class="mut">'+(o.required?'Required first step: ':'Optional demo flow: ')+'main reads a prepared demo website snapshot, asks five questions and saves the answers as the company context. Chat is locked until it finishes.</div>'+(o.required?'':'<div style="margin-top:8px"><button id="onb-start">Start onboarding</button></div>')+`<div class="err">${esc(onbErr)}</div></div>`;
+  else if(o.state==='ready')side='<h2>Onboarding</h2><div class="card"><b>Complete.</b> <span class="mut">Chat is unlocked. Saved from the prepared demo snapshot plus your answers.</span><details open><summary>The two specialist roles</summary>'+
+    o.roles.map(r=>`<div style="margin-top:6px"><b>${esc(r.name)}</b><br><span class="mut">${esc(r.what)}</span></div>`).join('')+`<div class="mut" style="margin-top:6px">${esc(o.roles_note)}</div></details>`+
+    '<details><summary>Where each saved field came from</summary>'+Object.entries(o.provenance).map(([k,v])=>`<div class="mut">${esc(k)}: ${esc(v)}</div>`).join('')+(o.correction?`<div class="mut">Your correction: ${esc(o.correction)}</div>`:'')+'</details></div>';
+  else side='<h2>Onboarding</h2><div class="card"><b>In progress</b> <span class="mut">(chat is locked until it is complete)</span></div>';
+  $('onb-side').innerHTML=side;
+  const sb=document.getElementById('onb-start');if(sb)sb.onclick=startOnboarding;
+  const sv=document.getElementById('company-save');if(sv){sv.disabled=blocked;sv.title=blocked?'Locked until onboarding is complete':''}
+  if(blocked)renderOnboardForm();
+}
+function snapDraft(){
+  if(!ONB||ONB.state!=='awaiting_answers'||!$('onb-corr'))return;
+  onbDraft.corr=$('onb-corr').value;
+  ONB.questions.forEach(q=>{const w=document.querySelector(`[data-w="${q.id}"]`),c=document.querySelector(`input[name="${q.id}"]:checked`);if(w)onbDraft.a[q.id]={w:w.value,c:c?c.value:''}});
+}
+function restoreDraft(el){
+  $('onb-corr').value=onbDraft.corr;
+  ONB.questions.forEach(q=>{const d=onbDraft.a[q.id];if(!d)return;el.querySelector(`[data-w="${q.id}"]`).value=d.w;const r=d.c===''?null:el.querySelector(`input[name="${q.id}"][value="${d.c}"]`);if(r)r.checked=true});
+}
+async function startOnboarding(){const r=await onbPost('start');onbErr=r.ok?'':r.error;await loadOnboarding();if(onbErr)renderOnboardForm()}
+function renderOnboardForm(){
+  const o=ONB,el=$('onboard');if(onbBusy)return;snapDraft();
+  const head=`<h3>Business onboarding</h3><div class="mut">${esc(o.notice)}</div>`;
+  if(o.state==='not_started'){
+    el.innerHTML=head+`<h3>Start here</h3><div class="mut">This is a new installation: chat and manual company edits stay locked until you finish onboarding (about two minutes).</div><div style="margin-top:8px"><button id="onb-start2">Start onboarding</button></div><div class="err">${esc(onbErr)}</div>`;
+    $('onb-start2').onclick=startOnboarding;return;
+  }
+  if(o.state==='awaiting_source'){
+    el.innerHTML=head+`<h3>1. Enter the website link</h3><div class="mut">Only the prepared demo site is available: <code>${esc(o.registered_url)}</code></div>
+      <div style="display:flex;gap:8px;margin-top:8px"><input type="text" id="onb-url" placeholder="${esc(o.registered_url)}" value="${esc(onbUrl)}" style="flex:1"><button id="onb-src">Read the site</button></div>
+      <div class="err" id="onb-err">${esc(onbErr||o.error||'')}</div>`;
+    $('onb-src').onclick=submitSource;return;
+  }
+  if(o.state==='awaiting_answers'){
+    el.innerHTML=head+`<h3>2. What main understood from the snapshot</h3><div class="card" style="white-space:pre-wrap">${esc(o.summary)}</div>
+      <label class="mut" for="onb-corr">Anything wrong or missing in this summary? (optional)</label><input type="text" id="onb-corr" maxlength="600">
+      <h3>3. Questions</h3>`+o.questions.map(q=>`<div class="q"><b>${esc(q.question)}</b>`+
+        q.options.map((t,i)=>`<label class="opt"><input type="radio" name="${q.id}" value="${i}"> ${esc(t)}</label>`).join('')+
+        `<label class="opt mut">or write your own answer:</label><input type="text" data-w="${q.id}" maxlength="400"></div>`).join('')+
+      `<button id="onb-ans">Save answers and unlock chat</button><div class="err" id="onb-err">${esc(onbErr)}</div>`;
+    el.querySelectorAll('[data-w]').forEach(i=>i.addEventListener('input',()=>{if(i.value.trim())el.querySelectorAll(`input[name="${i.dataset.w}"]`).forEach(r=>{r.checked=false})}));
+    restoreDraft(el);$('onb-ans').onclick=submitAnswers;
+  }
+}
+async function submitSource(){
+  const url=$('onb-url').value.trim();onbUrl=url;onbErr='';$('onb-err').textContent='';onbBusy=true;$('onb-src').disabled=true;$('onb-src').textContent='Reading… (up to a minute)';
+  const r=await onbPost('source',{url});onbBusy=false;
+  if(!r.ok)onbErr=r.error+(r.retryable?'\nNothing was saved. You can submit the link again.':'');
+  await loadOnboarding();if(onbErr)renderOnboardForm();
+}
+async function submitAnswers(){
+  const answers={};let missing=0;
+  ONB.questions.forEach(q=>{const w=document.querySelector(`[data-w="${q.id}"]`).value.trim(),c=document.querySelector(`input[name="${q.id}"]:checked`);
+    if(w)answers[q.id]={write_in:w};else if(c)answers[q.id]={choice:Number(c.value)};else missing++});
+  if(missing){onbErr='Please answer every question (pick an option or write your own).';$('onb-err').textContent=onbErr;return}
+  onbErr='';$('onb-err').textContent='';onbBusy=true;$('onb-ans').disabled=true;$('onb-ans').textContent='Saving… (up to a minute)';
+  const r=await onbPost('answers',{answers,correction:$('onb-corr').value.trim()});onbBusy=false;
+  if(!r.ok)onbErr=r.error+(r.retryable?'\nNothing was unlocked. You can submit again.':'');
+  await loadOnboarding();if(onbErr&&onbBlocked())renderOnboardForm();
+  if(ONB&&ONB.state==='ready'){await loadCompany(true);await select('main')}
 }
 const FIELDS=[['name','Company name',0],['products','Products or product categories',1],['customers','Target customers',1],['goal','Business goal (what your specialists should help with)',1],['website','Website (optional)',0],['brand','Brand guidance (optional)',1],['competitors','Known competitors (optional)',1]];
 let companyDirty=false;
@@ -64,7 +145,7 @@ async function loadCompany(force){
     '<div style="margin-top:8px"><button id="company-save">Save company</button> <span id="company-msg" class="mut"></span></div>';
   companyDirty=false;
   $('company').querySelectorAll('[data-f]').forEach(e=>e.addEventListener('input',()=>{companyDirty=true}));
-  $('company-save').addEventListener('click',saveCompany);
+  $('company-save').addEventListener('click',saveCompany);if(onbBlocked())$('company-save').disabled=true;
 }
 async function saveCompany(){
   const f={};$('company').querySelectorAll('[data-f]').forEach(e=>{f[e.dataset.f]=e.value});

@@ -2,7 +2,7 @@
 import json, sys, threading, time, urllib.parse
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
-from app import ads, core, flyer, listing, research, routing, timing, workers
+from app import ads, core, flyer, listing, onboarding, research, routing, timing, workers
 
 STATIC = Path(__file__).parent / "static"
 locks = {}  # one turn at a time per agent
@@ -79,18 +79,32 @@ def public_route(rt):
     return {k: rt.get(k) for k in ("outcome", "domain", "role", "agent_id", "decision_rule", "probabilities", "classifier", "handled_locally", "allow_create_agent")}
 
 
+admit = threading.Lock()   # makes "is chat open?" + "accept this turn" one step, and "start onboarding" + "no turn running on main" one step: whichever comes first wins, the other is refused
+
+
+def start_onboarding():
+    """Onboarding's own model turns switch main's Hermes conversation (the worker restarts), so it may only begin when no accepted turn is running on main."""
+    with admit:
+        if "main" in inflight:
+            return fail("main_busy", "The main agent is still answering an accepted request. Wait for it to finish, then start onboarding again.", 409, retryable=True)
+        return onboarding.start()
+
+
 def chat(agent_id, text, request_id):
     """One accepted turn per agent at a time. Rejections (busy / duplicate / invalid) happen BEFORE anything is saved."""
     prev = done.get(request_id)
     if prev and prev[0] == agent_id:   # intentional retry of a request that already finished: return its result, run nothing
         return 200, {**prev[1], "replayed": True}
     lock = locks.setdefault(agent_id, threading.Lock())
-    if not lock.acquire(blocking=False):
-        same = inflight.get(agent_id, {}).get("request_id") == request_id
-        return fail("duplicate_in_flight" if same else "agent_busy",
-                    "This request is already running." if same else "This agent is already working on another request. Wait for it to finish, then send again.",
-                    409, retryable=True)
-    inflight[agent_id] = {"request_id": request_id, "since": time.time()}
+    with admit:
+        if onboarding.chat_blocked():
+            return fail("onboarding_incomplete", "Onboarding is not complete yet, so chat and manual company edits are locked. Finish the onboarding form first.", 409)
+        if not lock.acquire(blocking=False):
+            same = inflight.get(agent_id, {}).get("request_id") == request_id
+            return fail("duplicate_in_flight" if same else "agent_busy",
+                        "This request is already running." if same else "This agent is already working on another request. Wait for it to finish, then send again.",
+                        409, retryable=True)
+        inflight[agent_id] = {"request_id": request_id, "since": time.time()}
     try:
         t0 = time.perf_counter()
         recent = recent_turns(agent_id) if agent_id == "main" else []   # BEFORE this request is saved, so it is never its own context
@@ -170,6 +184,8 @@ class H(BaseHTTPRequestHandler):
             return self.send(200, {a: {"busy": True, "since": v["since"]} for a, v in list(inflight.items())})
         if p == "/api/workers":
             return self.send(200, workers.status())
+        if p == "/api/onboarding":   # persisted onboarding state (backend-owned; the page only displays it)
+            return self.send(200, onboarding.status())
         if p == "/api/company":   # the single saved company + what is still missing (same data main reads with read_company_context)
             c = core.load_company()
             return self.send(200, {"company": {k: c[k] for k in core.COMPANY_FIELDS}, "updated_at": c["updated_at"], "updated_by": c["updated_by"],
@@ -242,6 +258,17 @@ class H(BaseHTTPRequestHandler):
             b = json.loads(self.rfile.read(int(self.headers.get("Content-Length", 0))) or b"{}")
             timing.log({"kind": "client", **{k: v for k, v in b.items() if isinstance(v, (int, float))}})
             return self.send(200, {})
+        if (parts == ["api", "company"] or (len(parts) == 3 and parts[:2] == ["api", "chat"])) and onboarding.chat_blocked():   # backend gate: no chat and no manual company save until onboarding is complete
+            return self.send(*fail("onboarding_incomplete", "Onboarding is not complete yet, so chat and manual company edits are locked. Finish the onboarding form first.", 409))
+        if len(parts) == 3 and parts[:2] == ["api", "onboarding"] and parts[2] in ("start", "source", "answers"):   # explicit onboarding operations (structured form, not chat)
+            try:
+                body = json.loads(self.rfile.read(int(self.headers.get("Content-Length", 0))) or b"{}")
+                if not isinstance(body, dict):
+                    raise ValueError("body must be a JSON object")
+            except (ValueError, TypeError) as e:
+                return self.send(*fail("invalid_request", f"Request body is not valid JSON: {e}", 400))
+            code, r = (start_onboarding() if parts[2] == "start" else onboarding.submit_source(body.get("url")) if parts[2] == "source" else onboarding.submit_answers(body))
+            return self.send(code, r)
         if parts == ["api", "company"]:   # same validation/storage as main's update_company tool
             try:
                 body = json.loads(self.rfile.read(int(self.headers.get("Content-Length", 0))) or b"{}")
