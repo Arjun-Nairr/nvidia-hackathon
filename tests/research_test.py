@@ -6,6 +6,8 @@ Wipes the copy's runtime/ in part B - run ONLY from a COPY of the project:
   RESEARCH_I_AM_A_COPY=1 venv-python tests/research_test.py"""
 import json, os, shutil, subprocess, sys, tempfile, threading, time, urllib.error, urllib.request
 from pathlib import Path
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+import role_hold
 
 ROOT = Path(__file__).resolve().parent.parent
 if os.environ.get("RESEARCH_I_AM_A_COPY") != "1":
@@ -668,7 +670,8 @@ def stop(p):
 
 
 def tool(agent, name, args, rid=None):
-    st, r = http(APP, f"/api/chat/{agent}", {"message": "CALL_TOOL:" + json.dumps({"name": name, "args": args}), **({"request_id": rid} if rid else {})})
+    with role_hold.second_of_role(ROOT, (args or {}).get('role') if name == 'create_agent' else None):   # older suite: build a second agent of one role (test-only hold)
+        st, r = http(APP, f"/api/chat/{agent}", {"message": "CALL_TOOL:" + json.dumps({"name": name, "args": args}), **({"request_id": rid} if rid else {})})
     outs = [t for t in r.get("tools", []) if t.get("name") == name and t.get("output")]
     return (outs[0]["output"] if outs else None), r
 

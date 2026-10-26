@@ -3,7 +3,7 @@ Protocol: JSON lines. stdin: {"id", "op": "turn"|"ping"|"shutdown", ...}. stdout
 then {"id", "result": {...}} per request. Hermes' own prints/logs go to stderr (fd 1 is redirected to fd 2 below).
 Imports and the AIAgent are built once and reused; conversation history is re-read from the profile's Hermes SessionDB each
 turn (so it is never lost or appended twice). Uses the documented AIAgent library API (`hermes chat -q` hides skill_manage)."""
-import json, os, sys, time, uuid
+import hashlib, json, os, sys, time, uuid
 from pathlib import Path
 from app import timing, turn_state  # imported first: its clock ~= worker start
 
@@ -25,6 +25,40 @@ def vision_status(agent):
         return "image_part_sent"
     except Exception:
         return "unknown"
+
+
+def prompt_stamp(toolsets):
+    """What a saved Hermes system prompt must still match: this profile's SOUL.md, its skill files and the toolsets of this turn. Hermes reuses the system prompt stored with a saved
+    session (and its pinned tool list) for as long as the session lives, so a changed configuration needs this check to take effect."""
+    home = Path(os.environ.get("HERMES_HOME") or ".")
+    h = hashlib.sha256(("|".join(sorted(toolsets))).encode())
+    for f in [home / "SOUL.md", *sorted((home / "skills").glob("*/SKILL.md"))]:
+        h.update(str(f.relative_to(home)).encode())
+        h.update(f.read_bytes() if f.exists() else b"")
+    return h.hexdigest()[:16]
+
+
+def refresh_stored_prompt(db, sid, conversation, stamp):
+    """Smallest supported refresh: when the stamp differs from the one this conversation last ran with, clear the session's STORED system prompt and pinned tool list so Hermes rebuilds
+    them from the current SOUL/skills/toolsets on this turn. Messages, memory and the session itself are untouched. Runs only when a new agent is built (between turns, never mid-turn)."""
+    f = Path(os.environ.get("HERMES_HOME") or ".") / "prompt_stamps.json"
+    try:
+        stamps = json.loads(f.read_text(encoding="utf-8"))
+    except (OSError, ValueError):
+        stamps = {}
+    if stamps.get(conversation) == stamp:
+        return False
+    if db.get_messages_as_conversation(sid):   # a continuing conversation: only then is there an older stored prompt to drop
+        db.update_system_prompt(sid, None)
+        db.update_session_tool_names(sid, None)
+        try:
+            from agent.prompt_builder import clear_skills_system_prompt_cache
+            clear_skills_system_prompt_cache(clear_snapshot=True)   # the skills index cache does not watch the skills folder
+        except Exception:
+            pass
+    stamps[conversation] = stamp
+    f.write_text(json.dumps(stamps), encoding="utf-8")
+    return True
 
 
 def main():
@@ -60,7 +94,8 @@ def main():
         if st["turns"] == 0:
             timing.events.extend(st["startup"])
         t_in = time.perf_counter()
-        sig = (p["provider"], p["model"], tuple(p["toolsets"]), p["conversation"], p.get("max_iterations", 12))
+        stamp = prompt_stamp(p["toolsets"])
+        sig = (p["provider"], p["model"], tuple(p["toolsets"]), p["conversation"], p.get("max_iterations", 12), stamp)
         created = st["agent"] is None or st["sig"] != sig
         if created:  # first turn (or config changed): build the Hermes runtime once
             if st["db"] is None:
@@ -74,6 +109,8 @@ def main():
                 db.set_session_title(sid, p["conversation"])
             with timing.span("provider_resolve"):
                 rt = resolve(p)
+            with timing.span("prompt_refresh"):
+                refresh_stored_prompt(db, sid, p["conversation"], stamp)
             with timing.span("agent_init") as sp:  # includes plugin discovery/loading and tool schema assembly
                 st["agent"] = AIAgent(model=p["model"], api_key=rt.get("api_key"), base_url=rt.get("base_url"), provider=rt.get("provider"),
                                       requested_provider=rt.get("requested_provider"), api_mode=rt.get("api_mode"),
@@ -97,6 +134,7 @@ def main():
         turn_state.route = p.get("route")   # None for specialists (they have no create_agent); main without a route is fail-closed
         turn_state.request_id, turn_state.run_id, turn_state.ad_run_id = p.get("request_id"), None, None   # the backend's manual-request id (research runs are scoped to it)
         turn_state.vision_probe = lambda a=agent: vision_status(a)
+        turn_state.customize = bool(p.get("customize"))   # the operator's Customize mode, from the backend request only
         try:
             with timing.span("run_conversation"):
                 res = agent.run_conversation(p["message"], conversation_history=history)
@@ -107,6 +145,7 @@ def main():
             turn_state.route = None
             turn_state.request_id = turn_state.run_id = turn_state.ad_run_id = None
             turn_state.vision_probe = None
+            turn_state.customize = False
             turn_state.pending_images.clear()
         new = res["messages"][len(history):]
         tools = []

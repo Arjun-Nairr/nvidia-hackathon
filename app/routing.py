@@ -329,6 +329,6 @@ def _result(outcome, rule, role, agent, probs, metas, calls, agents, company, st
         r["context"] = (f"[Routing context from the app backend - trusted] The request was classified as {outcome}. create_agent is permitted for this "
                         f"request, only for role {want}, and the backend refuses it until the company profile has every required detail. "
                         f"{prof} Existing specialists: {names}. If one of them already has role {want}, tell the user and point them to it instead of "
-                        "creating a duplicate, unless the user explicitly asks for another one. Follow the user's message above; generate the "
+                        "creating another: the backend allows only ONE specialist per role (create_agent would answer role_exists). Follow the user's message above; generate the "
                         "company-specific details only from the saved company context.")
     return r

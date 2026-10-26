@@ -8,6 +8,8 @@ Wipes the copy's runtime/ - run ONLY from a COPY of the project:
   SOCIAL_I_AM_A_COPY=1 venv-python tests/social_role_test.py"""
 import hashlib, json, os, re, shutil, subprocess, sys, time, urllib.error, urllib.request
 from pathlib import Path
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+import role_hold
 
 ROOT = Path(__file__).resolve().parent.parent
 if os.environ.get("SOCIAL_I_AM_A_COPY") != "1":
@@ -117,9 +119,9 @@ res = [routing._result(o, "", r, None, {}, [{"model_ms": 0}], 0, [{"agent_id": "
                        {"complete": True, "missing_labels": []}) for o, r in (("create_social_agent", "social_media"), ("create_market_agent", "market_analysis"),
                                                                            ("business_query", None), ("unsupported_role", "email"))]
 check("A11 allow_create_agent is true only for the two creation outcomes; the social context names the role, lists existing specialists with their roles and "
-      "says to point to an existing one unless another is explicitly requested; the unsupported reply offers both supported roles",
+      "says to point to an existing one (only one specialist per role is allowed); the unsupported reply offers both supported roles",
       [r["allow_create_agent"] for r in res] == [True, True, False, False] and "only for role social_media" in res[0]["context"]
-      and "x-analyst, role market_analysis" in res[0]["context"] and "explicitly asks for another" in res[0]["context"]
+      and "x-analyst, role market_analysis" in res[0]["context"] and "only ONE specialist per role" in res[0]["context"]
       and "only for role market_analysis" in res[1]["context"] and "social-media specialist" in res[3]["reply"] and "market-analysis specialist" in res[3]["reply"])
 os.environ.pop("HERMES_HOME", None)
 
@@ -134,7 +136,8 @@ def call(path, body=None, port=APP):
 
 
 def tool(agent, name, a):
-    st, r = call(f"/api/chat/{agent}", {"message": "CALL_TOOL:" + json.dumps({"name": name, "args": a})})
+    with role_hold.second_of_role(ROOT, (a or {}).get('role') if name == 'create_agent' else None):   # older suite: build a second agent of one role (test-only hold)
+        st, r = call(f"/api/chat/{agent}", {"message": "CALL_TOOL:" + json.dumps({"name": name, "args": a})})
     outs = [json.loads(t["output"]) for t in r.get("tools", []) if t.get("name") == name and t.get("output")]
     return (outs[0] if outs else None), r
 

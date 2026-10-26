@@ -436,6 +436,10 @@ try:
         outcomes.append(race_once(rnd))
     check("T02-17 racing 'start onboarding' against 'accepted chat' five times: exactly one wins every time (chat 200 + start 409, or start 200 + chat 409), never both", all(o in ((409, 200), (200, 409)) for o in outcomes), outcomes)
     reset_onboarding_row()
+except Exception:   # a crash must fail the run (sys.exit in `finally` would otherwise hide it)
+    import traceback
+    traceback.print_exc()
+    check('the test run itself completed without an unexpected exception', False)
 finally:
     for p_ in procs:
         if p_.poll() is None:

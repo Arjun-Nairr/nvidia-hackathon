@@ -45,8 +45,8 @@ ROLES = {
             f"({roles.BASELINE_SKILL_NAME}: evidence vs assumptions, competitor comparisons, handling missing information, an action-oriented "
             "output format). Do NOT rewrite or duplicate the baseline. You add what is specific to THIS company: a short name, an objective "
             "that states what the analyst should achieve for this merchant, company-specific instructions (use the merchant's own words for "
-            "products, customers and goal; name only competitors the merchant actually gave you), and 1-3 complementary custom skills for "
-            "this company's needs (for example a review routine for its named competitors or its price tiers). Instructions must match the tools you "
+            "products, customers and goal; name only competitors the merchant actually gave you), and OPTIONALLY up to 3 complementary custom skills for "
+            "this company's needs (for example a review routine for its named competitors or its price tiers); omit skills when the baseline plus your instructions are enough. Instructions must match the tools you "
             "request: WITHOUT the four marketplace_* tools, say that live market research is NOT connected (the analyst works only from "
             "company context and what the user tells it); WITH them, say it may research Facebook Marketplace read-only within a backend "
             "allowance it cannot change, has no other live research, must label anything unsourced as an assumption and never "
@@ -79,6 +79,9 @@ ROLES = {
         # the backend ALWAYS grants these (validated requests are unioned with them), so a specialist can read its company context,
         # load its baseline/custom skills (skill_view) and keep its own memory whatever main requested; eligible minus mandatory = optional
         "mandatory_tools": ["read_company_context", "memory", "skills"],
+        # a tool that works only on results of another tool is useless without it: such selections are refused (never silently extended, no tool is invented)
+        "requires": {"marketplace_search": ["marketplace_locate"], "marketplace_item": ["marketplace_search"], "marketplace_photo": ["marketplace_item"],
+                     "save_listing_draft": ["read_catalogue"]},
         "not_connected": ["web_search", "web_scraping", "email", "social_posting", "image_generation", "scheduling"],
         "approval_requirements": [
             {"action": "read company context / use own memory and skills", "requirement": "none"},
@@ -97,8 +100,8 @@ ROLES["social_media"] = {
         f"({roles.SOCIAL_BASELINE_SKILL_NAME}: supplied facts vs creative choices, responsible use of references, use of the merchant's product photos, a brief "
         "checklist, an output format). Do NOT rewrite or duplicate it. You add what is specific to THIS company: a short name, an objective that states what "
         "promotional creative the specialist should produce for this merchant (use the merchant's own words for products, customers and goal), "
-        "company-specific instructions (brand tone only as the merchant gave it; never invent brand rules, offers or claims), and 1-3 complementary custom "
-        "skills for this company's channel or product type. Include \"brand\" in company_context_refs when the company has brand guidance, so the specialist can "
+        "company-specific instructions (brand tone only as the merchant gave it; never invent brand rules, offers or claims), and OPTIONALLY up to 3 complementary custom "
+        "skills for this company's channel or product type (omit skills when the baseline plus your instructions are enough). Include \"brand\" in company_context_refs when the company has brand guidance, so the specialist can "
         "read it. Instructions must match the tools you request: WITHOUT the fb_* ad tools say that Facebook ad research is NOT connected for this specialist "
         "(it works from the company context, the catalogue and what the user supplies and produces text creative briefs and copy); WITH them (request all of "
         "fb_ads_find_advertiser, fb_ads_search, fb_ad_detail, fb_ad_image, save_ad_research, read_ad_research, plus inspect_image and read_catalogue) say that it may "
@@ -137,6 +140,8 @@ ROLES["social_media"] = {
                        "finalize_flyer": {"toolset": "ecom_flyer_final", "approval": "none",
                                           "what": "Select ONE candidate of this request as the final flyer with a short rationale. Nothing is published or approved."}},
     "mandatory_tools": ["read_company_context", "memory", "skills"],
+    "requires": {"fb_ad_detail": ["fb_ads_search"], "fb_ad_image": ["fb_ad_detail"], "save_ad_research": ["fb_ads_search"],
+                 "generate_flyer": ["read_catalogue", "inspect_image"], "inspect_flyer": ["generate_flyer"], "review_flyer": ["inspect_flyer"], "finalize_flyer": ["generate_flyer"]},
     "not_connected": ["social_posting", "instagram", "email", "web_search", "web_scraping", "scheduling", "marketplace_research"],
     "approval_requirements": [
         {"action": "read company context / read the catalogue / inspect registered images / use own memory and skills", "requirement": "none"},
@@ -359,6 +364,7 @@ def db():
         conversation_id TEXT, state TEXT, created_at REAL);
       CREATE TABLE IF NOT EXISTS messages(id INTEGER PRIMARY KEY AUTOINCREMENT, agent_id TEXT, who TEXT,
         content TEXT, tools TEXT, ts REAL);
+      CREATE TABLE IF NOT EXISTS agent_config_log(id INTEGER PRIMARY KEY AUTOINCREMENT, agent_id TEXT, ts REAL, request_id TEXT, requested TEXT, applied TEXT);
       CREATE TABLE IF NOT EXISTS image_inspections(id INTEGER PRIMARY KEY AUTOINCREMENT, agent_id TEXT, image_id TEXT, kind TEXT,
         sha256 TEXT, width INTEGER, height INTEGER, ts REAL);
       CREATE TABLE IF NOT EXISTS listing_drafts(draft_id TEXT PRIMARY KEY, agent_id TEXT, conversation_id TEXT, product_id TEXT, status TEXT,
@@ -474,9 +480,21 @@ def validate_create_agent(a):
         return None, err("bad_context_refs", f"Invalid company_context_refs {bad!r}.", "company_context_refs", COMPANY_SECTIONS,
                          f"Pass section names; {ESSENTIAL_SECTIONS} are always granted by the backend.")
     refs = sorted(set(refs) | set(ESSENTIAL_SECTIONS))
-    skills = a.get("skills") or []
-    if not isinstance(skills, list) or not 1 <= len(skills) <= MAX_SKILLS:
-        return None, err("bad_skills", f"Provide 1-{MAX_SKILLS} skills as [{{name, content}}].", "skills")
+    skills, e = validate_skills(role, a.get("skills"))
+    if e:
+        return None, e
+    tools, e = validate_tools(role, a.get("requested_tools"))
+    if e:
+        return None, e
+    return {"role": role, "name": name, "objective": a["objective"].strip(), "instructions": a["instructions"].strip(),
+            "refs": refs, "skills": skills, "tools": tools}, None   # validated above, THEN the mandatory foundation
+
+
+def validate_skills(role, skills):
+    """Custom skills are OPTIONAL: None or [] means the baseline skill plus the customized instructions. -> (clean list, None) or (None, error)."""
+    skills = skills or []
+    if not isinstance(skills, list) or len(skills) > MAX_SKILLS:
+        return None, err("bad_skills", f"Custom skills are optional: omit them or provide at most {MAX_SKILLS} as [{{name, content}}].", "skills")
     for s in skills:
         sn = (s.get("name") or "") if isinstance(s, dict) else ""
         if not re.fullmatch(r"[a-z0-9][a-z0-9-]{1,40}", sn):
@@ -488,8 +506,16 @@ def validate_create_agent(a):
         if sn == fnd["baseline_name"] or _similar(c, fnd["baseline"]) >= 0.6:
             return None, err("duplicate_baseline_skill", f"Skill {sn!r} duplicates the baseline skill {fnd['baseline_name']!r}, which the "
                              "backend already provides.", "skills[]", hint="Write a complementary skill specific to this company instead.")
+    if len({s["name"] for s in skills}) != len(skills):
+        return None, err("bad_skills", "Skill names must be unique.", "skills[].name")
+    return [{"name": s["name"], "content": s["content"].strip()} for s in skills], None
+
+
+def validate_tools(role, requested):
+    """Optional eligible tools for `role`, plus the mandatory foundation. Refuses tools of other roles and selections whose prerequisites are missing.
+    -> (sorted granted tool list, None) or (None, error)."""
     eligible = ROLES[role]["eligible_tools"]
-    req = a.get("requested_tools") or []
+    req = requested or []
     if not isinstance(req, list):
         return None, err("bad_tools", "requested_tools must be a list of tool names.", "requested_tools", sorted(eligible))
     bad = [t for t in req if t not in eligible]
@@ -499,9 +525,15 @@ def validate_create_agent(a):
                 if nc else "") + "Request only tools from allowed_values."
         return None, err("tool_not_permitted", f"Tools not permitted for role {role}: {bad}.", "requested_tools",
                          sorted(eligible), hint)
-    return {"role": role, "name": name, "objective": a["objective"].strip(), "instructions": a["instructions"].strip(),
-            "refs": refs, "skills": [{"name": s["name"], "content": s["content"].strip()} for s in skills],
-            "tools": sorted(set(req) | set(ROLES[role]["mandatory_tools"]))}, None   # validated above, THEN the mandatory foundation
+    tools = sorted(set(req) | set(ROLES[role]["mandatory_tools"]))
+    missing = {t: [n for n in need if n not in tools] for t, need in ROLES[role]["requires"].items() if t in tools}
+    missing = {t: m for t, m in missing.items() if m}
+    if missing:
+        return None, err("tool_dependency", "Incomplete tool selection: " + "; ".join(f"{t} requires {', '.join(m)}" for t, m in sorted(missing.items())) + ".",
+                         "requested_tools", sorted(eligible), "Add the missing tools (they are eligible for this role) or remove the tools that need them. Nothing was created or changed.")
+    return tools, None
+
+
 
 
 def profile_config():
@@ -706,7 +738,8 @@ def build_soul(c, company_name):
             "## Limits (enforced by the platform)\n" + limits + "You can "
             "read the company context you were granted, keep your own memory and manage your own skills. Say plainly when you lack evidence or "
             "live access instead of inventing data. You cannot create agents or take external actions. Read the company context for current "
-            "company details: it can be edited after you were created.\n"
+            "company details: it can be edited after you were created. Only the operator, in Customize mode, can change your objective, instructions, custom skills and optional tools; "
+            "you cannot give yourself tools or change your role.\n"
             + research + vision + drafting + catalogue + ad_research + flyer + fnd["start"])
 
 
@@ -754,24 +787,245 @@ def create_agent(args):
     if e:
         return e
     agent_id = _slug(c["name"])
-    with db() as d:
-        if d.execute("SELECT 1 FROM agents WHERE agent_id=?", (agent_id,)).fetchone() or agent_id == "main":
-            return err("name_taken", f"An agent with id {agent_id!r} already exists.", "name", hint="Choose a different name.")
     conv_id = f"conv-{agent_id}"
     granted = c["tools"]  # validated request + the role's mandatory tools; the registry row, the response and run_turn's toolsets all use this list
     approvals = ROLES[c["role"]]["approval_requirements"]
+    pdir = HERMES_ROOT / "profiles" / agent_id
+    existed = pdir.exists()
+    d = db()
+    d.execute("BEGIN IMMEDIATE")   # one write lock for the whole creation: the server and every Hermes worker are separate processes, so concurrent requests for the same role serialize HERE
     try:
-        with timing.span("create_agent.write_profile"):  # nested inside the create_agent tool duration
-            _write_profile(agent_id, c, conv_id)
-    except Exception as ex:  # surface as corrective error, never raise into the agent loop
-        return err("profile_creation_failed", f"{type(ex).__name__}: {ex}")
-    with timing.span("create_agent.registry_insert"), db() as d:
-        d.execute("INSERT INTO agents VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?)",
-                  (agent_id, c["name"], c["role"], COMPANY_ID, c["objective"], c["instructions"], json.dumps(c["refs"]),
-                   json.dumps(c["skills"]), json.dumps(granted), json.dumps(approvals), conv_id, "idle", time.time()))
+        same = d.execute("SELECT agent_id, name FROM agents WHERE role=?", (c["role"],)).fetchone()
+        if same:   # at most ONE specialist per role: never overwrite it, never create a second profile
+            d.rollback()
+            return {**err("role_exists", f"This business already has a {c['role']} specialist: {same['name']!r} (agent_id {same['agent_id']!r}). Only one specialist per role is allowed, "
+                          "so nothing was created or changed.", "role", hint=f"Tell the user to open the chat of {same['agent_id']} and use it; its objective, instructions, skills and tools "
+                          "are changed there in Customize mode, not by creating another."), "agent_id": same["agent_id"]}
+        if d.execute("SELECT 1 FROM agents WHERE agent_id=?", (agent_id,)).fetchone() or agent_id == "main":
+            d.rollback()
+            return err("name_taken", f"An agent with id {agent_id!r} already exists.", "name", hint="Choose a different name.")
+        try:
+            with timing.span("create_agent.write_profile"):  # nested inside the create_agent tool duration
+                _write_profile(agent_id, c, conv_id)
+        except Exception as ex:  # surface as corrective error, never raise into the agent loop; a half-written profile of THIS request is removed
+            d.rollback()
+            if not existed:
+                import shutil
+                shutil.rmtree(pdir, ignore_errors=True)
+            return err("profile_creation_failed", f"{type(ex).__name__}: {ex}")
+        with timing.span("create_agent.registry_insert"):
+            d.execute("INSERT INTO agents VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?)",
+                      (agent_id, c["name"], c["role"], COMPANY_ID, c["objective"], c["instructions"], json.dumps(c["refs"]),
+                       json.dumps(c["skills"]), json.dumps(granted), json.dumps(approvals), conv_id, "idle", time.time()))
+        d.commit()
+    except BaseException:
+        d.rollback()
+        if not existed:
+            import shutil
+            shutil.rmtree(pdir, ignore_errors=True)
+        raise
+    finally:
+        d.close()
     return {"ok": True, "agent_id": agent_id, "conversation_id": conv_id, "granted_tools": granted,
             "approval_requirements": approvals, "state": "idle", "context_refs": c["refs"],
             "skills": [roles.FOUNDATIONS[c["role"]]["baseline_name"]] + [x["name"] for x in c["skills"]]}
+
+
+# ---------- ticket 04: operator-authorized customization of an EXISTING specialist
+CUSTOMIZE_FIELDS = ("objective", "instructions", "skills", "remove_skills", "add_tools", "remove_tools")
+
+
+def is_granted(agent_id, tool):
+    """Live registry check used at execution time: a removed tool is refused by the backend even when a stale schema or the model still offers it."""
+    with db() as d:
+        r = d.execute("SELECT granted_tools FROM agents WHERE agent_id=?", (agent_id,)).fetchone()
+    return bool(r) and tool in json.loads(r["granted_tools"])
+
+
+def customization_log(agent_id, limit=10):
+    with db() as d:
+        return [{"ts": x["ts"], "request_id": x["request_id"], "applied": json.loads(x["applied"])}
+                for x in d.execute("SELECT ts, request_id, applied FROM agent_config_log WHERE agent_id=? ORDER BY id DESC LIMIT ?", (agent_id, limit))]
+
+
+def _settle_staging(pdir, referenced):
+    """Settle the staging folder of removed skills; -> names that still need recovery. A staged skill the saved configuration still REFERENCES while its active folder has no SKILL.md is an
+    unresolved recovery copy (a failed restore): it is put back when the place is free, otherwise it is kept untouched and reported. Everything else is garbage of a successful removal and is
+    deleted (read-only files included). Never raises. Recovery copies stay outside skills/, so Hermes never loads them; the rule reads only the disk and the registry, so it survives a restart."""
+    import shutil, stat
+
+    def writable_then_retry(fn, path, exc_info):
+        os.chmod(path, stat.S_IWRITE)
+        fn(path)
+    root, pending = pdir / ".customize-staging", []
+    try:
+        for batch in sorted(root.iterdir()) if root.is_dir() else []:
+            for f in sorted(batch.iterdir()) if batch.is_dir() else []:
+                active = pdir / "skills" / f.name
+                if f.name in referenced and not (active / "SKILL.md").exists():
+                    try:
+                        if active.exists():
+                            raise FileExistsError(str(active))
+                        os.replace(f, active)
+                        continue
+                    except OSError:
+                        pending.append(f.name)
+                        continue
+                shutil.rmtree(f, onerror=writable_then_retry, ignore_errors=False) if f.is_dir() else f.unlink(missing_ok=True)
+            if batch.is_dir() and not any(batch.iterdir()):
+                batch.rmdir()
+        if root.is_dir() and not any(root.iterdir()):
+            root.rmdir()
+    except OSError:
+        pass
+    return pending
+
+
+def customize_agent(agent_id, changes, request_id=None):
+    """The ONLY way an existing specialist's configuration changes: objective, instructions, custom skills and optional tools, as a PARTIAL update (anything not named is kept).
+    Authorization is NOT decided here: the caller (the customize_specialist tool) runs only in a turn the operator marked as Customize mode. Everything is validated before anything is
+    written; the registry row, SOUL.md and the custom skill files change together or not at all. Identity, role, company facts, foundations, mandatory tools, providers, limits stay."""
+    if not isinstance(changes, dict) or not changes:
+        return err("empty_update", f"Send at least one of: {', '.join(CUSTOMIZE_FIELDS)}.", "fields", list(CUSTOMIZE_FIELDS))
+    bad = sorted(k for k in changes if k not in CUSTOMIZE_FIELDS)
+    if bad:
+        return err("forbidden_field", f"These fields cannot be changed here: {bad}. Nothing was changed.", "fields", list(CUSTOMIZE_FIELDS),
+                   "Identity, role, company facts and context, approvals, providers, credentials, paid limits and posting permissions are fixed by the platform; tools are changed with "
+                   "add_tools/remove_tools from the role's eligible list, skills with skills/remove_skills.")
+    if not agent_id or agent_id == "main":
+        return err("not_customizable", "Only a specialist can be customized.", "agent_id")
+    with db() as d:
+        r = d.execute("SELECT * FROM agents WHERE agent_id=?", (agent_id,)).fetchone()
+    if not r or r["role"] not in ROLES:
+        return err("unknown_agent", f"Unknown specialist {agent_id!r}.", "agent_id")
+    role, new = r["role"], {}
+    for f in ("objective", "instructions"):
+        if f in changes:
+            v = changes[f].strip() if isinstance(changes[f], str) else ""
+            if len(v) < 40:
+                return err("too_short", f"{f} must be company-specific and at least 40 characters.", f)
+            if len(v) > MAX_TEXT:
+                return err("too_long", f"{f} exceeds {MAX_TEXT} characters.", f)
+            new[f] = v
+    pdir = HERMES_ROOT / "profiles" / agent_id
+    custom_now = json.loads(r["skills"])
+    unresolved = _settle_staging(pdir, {x["name"] for x in custom_now})   # first put back / keep any recovery copy of a registered skill; clean only genuine garbage
+    if unresolved:
+        return err("recovery_required", f"The saved skill(s) {unresolved} of this specialist are registered but their files are missing from its active skills folder; the only copy is preserved in "
+                   f"{pdir / '.customize-staging'}. Nothing was changed. Free the place (skills/{unresolved[0]}) or restore the folder from there, then customize again.", "skills", unresolved)
+    custom = list(custom_now)
+    if "remove_skills" in changes:
+        rm = changes["remove_skills"]
+        if not isinstance(rm, list) or any(not isinstance(n, str) for n in rm):
+            return err("bad_skills", "remove_skills must be a list of custom skill names.", "remove_skills")
+        unknown = [n for n in rm if n not in {x["name"] for x in custom}]
+        if unknown:
+            return err("unknown_skill", f"Not custom skills of this specialist (the baseline and the specialist's own skills cannot be removed here): {unknown}.", "remove_skills", [x["name"] for x in custom])
+        custom = [x for x in custom if x["name"] not in rm]
+    if "skills" in changes:
+        ups, e = validate_skills(role, changes["skills"])
+        if e:
+            return e
+        names_now = {x["name"] for x in custom_now}
+        taken = [x["name"] for x in ups if x["name"] not in names_now and (pdir / "skills" / x["name"]).exists()]
+        if taken:
+            return err("skill_name_taken", f"A skill named {taken} already exists in this specialist's own skills; choose another name.", "skills[].name")
+        by_name = {x["name"]: x for x in custom}
+        for x in ups:
+            by_name[x["name"]] = x
+        custom = list(by_name.values())
+        if len(custom) > MAX_SKILLS:
+            return err("bad_skills", f"At most {MAX_SKILLS} custom skills are allowed; remove one first (remove_skills).", "skills")
+    granted = json.loads(r["granted_tools"])
+    if "add_tools" in changes or "remove_tools" in changes:
+        add, rm = changes.get("add_tools") or [], changes.get("remove_tools") or []
+        if not isinstance(add, list) or not isinstance(rm, list) or any(not isinstance(t, str) for t in [*add, *rm]):
+            return err("bad_tools", "add_tools and remove_tools must be lists of tool names.", "add_tools", sorted(ROLES[role]["eligible_tools"]))
+        mand = [t for t in rm if t in ROLES[role]["mandatory_tools"]]
+        if mand:
+            return err("mandatory_tool", f"Mandatory tools cannot be removed: {mand}.", "remove_tools")
+        absent = [t for t in rm if t not in granted]
+        if absent:
+            return err("tool_not_granted", f"Not currently granted, so it cannot be removed: {absent}.", "remove_tools", granted)
+        optional = (set(granted) - set(ROLES[role]["mandatory_tools"]) | set(add)) - set(rm)
+        granted_new, e = validate_tools(role, sorted(optional))
+        if e:
+            return e
+        granted = granted_new
+    applied = {}
+    if new.get("objective") not in (None, r["objective"]):
+        applied["objective"] = new["objective"]
+    if new.get("instructions") not in (None, r["instructions"]):
+        applied["instructions"] = new["instructions"]
+    if custom != custom_now:
+        applied["skills"] = [x["name"] for x in custom]
+    if granted != json.loads(r["granted_tools"]):
+        applied["granted_tools"] = granted
+    kept = [f for f in ("objective", "instructions", "skills", "granted_tools") if f not in applied]
+    if not applied:
+        return {"ok": True, "agent_id": agent_id, "applied": {}, "kept": kept, "note": "Nothing differed from the saved configuration, so nothing was changed."}
+    company = load_company()["name"]
+    soul = build_soul({"name": r["name"], "role": role, "objective": new.get("objective", r["objective"]), "instructions": new.get("instructions", r["instructions"]), "tools": granted}, company)
+    # Files and registry change together or not at all. A removed skill is first MOVED to a staging folder OUTSIDE skills/ (a rename is atomic and works even when the skill holds a
+    # read-only file), so once the move succeeded Hermes can no longer see it; every later step can still be rolled back, and a failure at any step restores the previous state explicitly.
+    import shutil
+    stage = pdir / ".customize-staging" / str(time.time_ns())
+    gone = [x["name"] for x in custom_now if x["name"] not in {y["name"] for y in custom}]
+    undo, moved, made = [], [], []   # undo: (file, previous bytes or None); moved: staged skill folders; made: skill folders created by this call
+    d = db()
+    d.execute("BEGIN IMMEDIATE")
+    try:
+        for n in gone:
+            if (pdir / "skills" / n).exists():
+                stage.mkdir(parents=True, exist_ok=True)
+                os.replace(pdir / "skills" / n, stage / n)
+                moved.append(n)
+        soul_f = pdir / "SOUL.md"
+        undo.append((soul_f, soul_f.read_bytes() if soul_f.exists() else None))
+        soul_f.write_text(soul, encoding="utf-8")
+        for x in custom:
+            if x not in custom_now:
+                folder = pdir / "skills" / x["name"]
+                if not folder.exists():
+                    made.append(folder)
+                f = folder / "SKILL.md"
+                undo.append((f, f.read_bytes() if f.exists() else None))
+                f.parent.mkdir(parents=True, exist_ok=True)
+                f.write_text(_skill_md(x["name"], x["content"]), encoding="utf-8")
+        d.execute("UPDATE agents SET objective=?, instructions=?, skills=?, granted_tools=? WHERE agent_id=?",
+                  (new.get("objective", r["objective"]), new.get("instructions", r["instructions"]), json.dumps(custom), json.dumps(granted), agent_id))
+        d.execute("INSERT INTO agent_config_log(agent_id, ts, request_id, requested, applied) VALUES(?,?,?,?,?)",
+                  (agent_id, time.time(), request_id, json.dumps(changes), json.dumps(applied)))
+        d.commit()
+    except Exception as ex:
+        d.rollback()
+        stuck = []
+        for f, old in reversed(undo):
+            try:
+                if old is None:
+                    f.unlink(missing_ok=True)
+                elif not (f.exists() and f.read_bytes() == old):   # a file this call never managed to change needs no restore
+                    f.write_bytes(old)
+            except OSError as e:
+                stuck.append(f"{f.name}: {e}")
+        for folder in made:
+            try:
+                shutil.rmtree(folder)
+            except OSError as e:
+                stuck.append(f"{folder.name}: {e}")
+        for n in reversed(moved):
+            try:
+                os.replace(stage / n, pdir / "skills" / n)
+            except OSError as e:
+                stuck.append(f"{n}: {e}")
+        _settle_staging(pdir, {x["name"] for x in custom_now})   # a copy that could not be put back is still referenced, so it is kept
+        return err("customization_failed", f"{type(ex).__name__}: {ex}. The configuration was not changed."
+                   + (f" WARNING: restoring some files failed ({'; '.join(stuck)}); check this specialist's profile folder." if stuck else ""))
+    finally:
+        d.close()
+    _settle_staging(pdir, {x["name"] for x in custom})   # best effort: the removed skills are already inactive, whatever remains here is never loaded
+    return {"ok": True, "agent_id": agent_id, "applied": applied, "kept": kept, "granted_tools": granted, "custom_skills": [x["name"] for x in custom],
+            "takes_effect": "from the next message of this specialist (this turn keeps running on the previous configuration)"}
 
 
 def read_company_context(section=None, agent_id=None):
@@ -870,8 +1124,9 @@ def codex_auth_error():
     return res
 
 
-def run_turn(agent_id, message, timeout=300, conv_override=None, route=None, request_id=None):
-    """Run one chat turn on the agent's long-lived Hermes worker (started on first use). Returns dict(text, tools, error)."""
+def run_turn(agent_id, message, timeout=300, conv_override=None, route=None, request_id=None, customize=False):
+    """Run one chat turn on the agent's long-lived Hermes worker (started on first use). Returns dict(text, tools, error).
+    customize=True is the OPERATOR's Customize mode for this one turn (set by the server from the request, never by a model): only then is the customize_specialist tool offered."""
     from app import workers
     sec = load_secrets()
     if agent_id == "main":
@@ -883,7 +1138,7 @@ def run_turn(agent_id, message, timeout=300, conv_override=None, route=None, req
             return {"text": "", "tools": [], "error": f"unknown agent {agent_id!r}"}
         tools = json.loads(r["granted_tools"])
         eligible = ROLES.get(r["role"], ROLES["market_analysis"])["eligible_tools"]   # the agent's OWN role decides what its stored grants mean
-        toolsets = [eligible[t]["toolset"] for t in tools]
+        toolsets = [eligible[t]["toolset"] for t in tools] + (["ecom_customize"] if customize else [])
         conv = r["conversation_id"]
         if any(t in MARKETPLACE_TOOLS or t in AD_RESEARCH_TOOLS or t == "generate_flyer" for t in tools):
             timeout = max(timeout, RESEARCH_TURN_TIMEOUT)
@@ -899,7 +1154,7 @@ def run_turn(agent_id, message, timeout=300, conv_override=None, route=None, req
            **ca_env(), "ECOM_AGENT_ID": agent_id, "ECOM_COMPANY_ID": COMPANY_ID, "PYTHONUTF8": "1"}
     sig = (cfg["provider"], cfg["model"], tuple(toolsets), conv_override or conv)  # any change restarts this agent's worker
     req = {"op": "turn", "message": message, "toolsets": toolsets, "conversation": conv_override or conv,
-           "provider": cfg["provider"], "model": cfg["model"], "route": route, "request_id": request_id,
+           "provider": cfg["provider"], "model": cfg["model"], "route": route, "request_id": request_id, "customize": bool(customize and agent_id != "main"),
            "max_iterations": (FLYER_MAX_ITERATIONS if "generate_flyer" in tools and any(t in AD_RESEARCH_TOOLS for t in tools)
                               else AD_MAX_ITERATIONS if any(t in AD_RESEARCH_TOOLS for t in tools)
                               else RESEARCH_MAX_ITERATIONS if any(t in MARKETPLACE_TOOLS for t in tools) or "generate_flyer" in tools

@@ -52,7 +52,8 @@ def agent_row(r, full=False):
          "conversation_id": r["conversation_id"], "granted_tools": json.loads(r["granted_tools"])}
     if full:
         d.update(objective=r["objective"], instructions=r["instructions"], context_refs=json.loads(r["context_refs"]),
-                 skills=json.loads(r["skills"]), approval_requirements=json.loads(r["approvals"]), company_id=r["company_id"])
+                 skills=json.loads(r["skills"]), approval_requirements=json.loads(r["approvals"]), company_id=r["company_id"],
+                 customizations=core.customization_log(r["agent_id"]))
     return d
 
 
@@ -90,7 +91,7 @@ def start_onboarding():
         return onboarding.start()
 
 
-def chat(agent_id, text, request_id):
+def chat(agent_id, text, request_id, customize=False):
     """One accepted turn per agent at a time. Rejections (busy / duplicate / invalid) happen BEFORE anything is saved."""
     prev = done.get(request_id)
     if prev and prev[0] == agent_id:   # intentional retry of a request that already finished: return its result, run nothing
@@ -125,7 +126,7 @@ def chat(agent_id, text, request_id):
                     r = ({"text": rt["reply"], "tools": [], "error": None} if rt["handled_locally"]
                          else core.run_turn(agent_id, text, route=rt))
             else:
-                r = core.run_turn(agent_id, text, request_id=request_id)
+                r = core.run_turn(agent_id, text, request_id=request_id, **({"customize": True} if customize else {}))   # the operator's Customize mode for THIS turn
         except Exception as e:  # never leave the agent "running" or the transcript without an outcome
             r = {"text": "", "tools": [], "error": f"Backend error while running the turn: {type(e).__name__}: {e}"}
         t2 = time.perf_counter()
@@ -259,6 +260,7 @@ class H(BaseHTTPRequestHandler):
             timing.log({"kind": "client", **{k: v for k, v in b.items() if isinstance(v, (int, float))}})
             return self.send(200, {})
         if (parts == ["api", "company"] or (len(parts) == 3 and parts[:2] == ["api", "chat"])) and onboarding.chat_blocked():   # backend gate: no chat and no manual company save until onboarding is complete
+            self.rfile.read(min(int(self.headers.get("Content-Length", 0) or 0), 1_000_000))   # drain the unread request body: closing with unread data can reset the connection on Windows and the client would never see this 409
             return self.send(*fail("onboarding_incomplete", "Onboarding is not complete yet, so chat and manual company edits are locked. Finish the onboarding form first.", 409))
         if len(parts) == 3 and parts[:2] == ["api", "onboarding"] and parts[2] in ("start", "source", "answers"):   # explicit onboarding operations (structured form, not chat)
             try:
@@ -293,6 +295,9 @@ class H(BaseHTTPRequestHandler):
                 with core.db() as d:
                     if not d.execute("SELECT 1 FROM agents WHERE agent_id=?", (aid,)).fetchone():
                         return self.send(*fail("unknown_agent", f"Unknown agent {aid!r}.", 404))
+            customize = body.get("customize", False)
+            if not isinstance(customize, bool) or (customize and aid == "main"):   # Customize mode is the operator's explicit control and exists only for a specialist's own chat
+                return self.send(*fail("customize_not_available", "customize must be true or false, and only a specialist's own chat has Customize mode.", 400))
             msg = str(body.get("message") or "").strip()
             if not msg:
                 return self.send(*fail("empty_message", "The message is empty.", 400))
@@ -300,7 +305,7 @@ class H(BaseHTTPRequestHandler):
                 return self.send(*fail("message_too_long", f"The message is {len(msg)} characters; the limit is {MAX_MESSAGE}.", 413))
             rid = str(body.get("request_id") or "")[:64] or f"srv-{time.time_ns()}"
             try:
-                code, r = chat(aid, msg, rid)
+                code, r = chat(aid, msg, rid, customize)
             except Exception as e:   # unexpected backend failure: say so, do not pretend the message is safe to resend blindly
                 return self.send(*fail("internal_error", f"Backend error: {type(e).__name__}: {e}. The message may or may not have been recorded; check the transcript before resending.", 500))
             return self.send(code, r)

@@ -457,6 +457,8 @@ def decide(body):
 
     msgs, names = body["messages"], [t["function"]["name"] for t in body.get("tools") or []]
     last = msgs[-1]
+    STATS["last_system"] = msgs[0]["content"] if isinstance(msgs[0]["content"], str) else ""   # what the agent was really told (tests prove a refreshed configuration reached the model)
+    STATS["last_tool_names"] = names
     imgs = image_parts(msgs)
     STATS["last_images"] = imgs
     STATS["image_requests"] += bool(imgs)

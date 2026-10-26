@@ -5,6 +5,7 @@ request_id = None   # the backend's id of the manual chat request being answered
 run_id = None       # the research run opened lazily for (agent, request) by app/research.py during this turn
 ad_run_id = None    # the Facebook ad-research run opened lazily for (agent, request) by app/ads.py during this turn
 pending_images = {}   # inspect_flyer / inspect_image inspections awaiting their model round trip: inspection id -> {urls, request}; this worker process only, cleared each turn (app/flyer.py)
+customize = False   # the OPERATOR's Customize mode for this turn (set by app/worker.py from the backend's request, never model-supplied): only then may customize_specialist act
 vision_probe = None   # set by app/worker.py each turn: callable -> "image_part_sent" | "text_fallback" | "unknown" for the live agent's provider/model
 
 

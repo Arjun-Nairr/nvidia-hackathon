@@ -53,7 +53,7 @@ try:
                                ("web_search tool", {"requested_tools": ["web_search"]}, "tool_not_permitted"),
                                ("unknown tool", {"requested_tools": ["terminal"]}, "tool_not_permitted"),
                                ("bad context ref", {"company_context_refs": ["secrets"]}, "bad_context_refs"),
-                               ("no skills", {"skills": []}, "bad_skills"),
+                               ("too many skills", {"skills": [{"name": f"extra-skill-{i}", "content": "x" * 50} for i in range(4)]}, "bad_skills"),
                                ("short instructions", {"instructions": "be good"}, "too_short")]:
         r = core.create_agent({**base, **patch})
         check(f"validation: {label} -> {code}", r.get("ok") is False and r.get("code") == code and isinstance(r.get("error"), str), r)

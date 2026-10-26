@@ -7,6 +7,8 @@ Wipes the copy's runtime/ in part B - run ONLY from a COPY of the project:
   ADS_I_AM_A_COPY=1 venv-python tests/ad_research_test.py"""
 import hashlib, importlib.util, json, os, re, shutil, subprocess, sys, tempfile, time, urllib.error, urllib.request
 from pathlib import Path
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+import role_hold
 
 ROOT = Path(__file__).resolve().parent.parent
 if os.environ.get("ADS_I_AM_A_COPY") != "1":
@@ -884,7 +886,8 @@ def chat(agent, message, rid=None, timeout=900):
 
 
 def tool(agent, name, a):
-    st, r = chat(agent, "CALL_TOOL:" + json.dumps({"name": name, "args": a}))
+    with role_hold.second_of_role(ROOT, (a or {}).get('role') if name == 'create_agent' else None):   # older suite: build a second agent of one role (test-only hold)
+        st, r = chat(agent, "CALL_TOOL:" + json.dumps({"name": name, "args": a}))
     outs = [json.loads(t["output"]) for t in r.get("tools", []) if t.get("name") == name and t.get("output")]
     return (outs[0] if outs else None), r
 

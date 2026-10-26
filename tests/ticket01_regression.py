@@ -6,6 +6,8 @@ Part A needs no Hermes. Races are provoked, not forced: each loop is repeated un
 acknowledged update must survive, on the unfixed code lost updates show up within the first rounds."""
 import json, os, shutil, subprocess, sys, tempfile, threading, time, urllib.request, urllib.error
 from pathlib import Path
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+import role_hold
 
 ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(ROOT))
@@ -189,7 +191,8 @@ def call(path, body=None, port=APP):
 
 
 def tool(agent, name, args):
-    st, r = call(f"/api/chat/{agent}", {"message": "CALL_TOOL:" + json.dumps({"name": name, "args": args})})
+    with role_hold.second_of_role(ROOT, (args or {}).get('role') if name == 'create_agent' else None):   # older suite: build a second agent of one role (test-only hold)
+        st, r = call(f"/api/chat/{agent}", {"message": "CALL_TOOL:" + json.dumps({"name": name, "args": args})})
     outs = []
     for t in r.get("tools", []):
         if t.get("name") == name and t.get("output"):

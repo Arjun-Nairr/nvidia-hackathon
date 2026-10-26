@@ -34,7 +34,7 @@ button{font:inherit;padding:8px 16px;border-radius:8px;border:0;background:var(-
   <div id="onboard" class="onb" style="display:none;flex:1;overflow:auto;padding:16px"></div>
   <div id="log"></div>
   <div id="notice"></div>
-  <div id="chatbar"><textarea id="msg" placeholder="Message… (Enter sends, Shift+Enter newline)"></textarea><button id="send">Send</button></div>
+  <div id="chatbar"><textarea id="msg" placeholder="Message… (Enter sends, Shift+Enter newline)"></textarea><label id="custwrap" class="mut" style="display:none;white-space:nowrap" title="Operator control: this one message may change this specialist's objective, instructions, skills and optional tools (it keeps its identity, history and memory)"><input type="checkbox" id="cust"> Customize</label><button id="send">Send</button></div>
 </section>
 <aside style="border-right:0" id="inspect"><h2>Inspector</h2><span class="mut">Select a specialist to inspect its generated instructions, tools and skill.</span></aside>
 <script>
@@ -176,7 +176,7 @@ async function poll(){   // who is working (server-side truth); also notices tur
 }
 async function select(id){
   const my=++selSeq;S(cur).draft=$('msg').value;cur=id;S(id).unread=false;$('msg').value=S(id).draft;
-  $('title').textContent=id==='main'?'Main agent':'Specialist chat';$('sub').textContent=id;
+  $('title').textContent=id==='main'?'Main agent':'Specialist chat';$('sub').textContent=id;$('custwrap').style.display=id==='main'?'none':'';$('cust').checked=false;
   await refresh();render();
   if(id==='main'){$('inspect').innerHTML='<h2>Inspector</h2><span class="mut">Select a specialist to inspect it.</span>'}
   else{try{const a=await j('/api/agents/'+id);if(my!==selSeq)return;$('title').textContent=a.name;
@@ -245,11 +245,12 @@ async function send(){
   const id=cur,st=S(id);
   if(busy(id))return;                       // synchronous guard: Enter + click in the same tick, or key repeat, make ONE request
   const text=$('msg').value.trim();if(!text)return;
+  const cust=id!=='main'&&$('cust').checked;   // the operator's Customize mode applies to this one message
   const rid=(st.lastText===text&&st.lastRid)?st.lastRid:newId();   // same text after an unconfirmed failure keeps its id: the backend can then recognise a request that already completed
   st.sending={text,rid,t0:Date.now()};st.err=null;st.lastText=text;st.lastRid=rid;st.draft='';$('msg').value='';
   render();paintSidebar();
   let status=0,data=null,net=null;
-  try{const r=await fetch('/api/chat/'+id,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({message:text,request_id:rid})});
+  try{const r=await fetch('/api/chat/'+id,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({message:text,request_id:rid,customize:cust})});
       status=r.status;data=await r.json().catch(()=>null)}catch(e){net=e}
   const t1=Date.now()-st.sending.t0;st.sending=null;delete remote[id];   // a stale poll result must not keep this agent 'working'
   const keep=(why)=>{st.err={kind:'error',text:why};st.draft=text;if(cur===id)$('msg').value=text};   // message preserved for an intentional retry
@@ -260,6 +261,7 @@ async function send(){
   else if(data&&data.code&&status>=500){keep(data.error+' Your message is back in the box; check the transcript before retrying.')}
   else if(data&&data.code){keep('Not sent: '+data.error+' The backend did not save or run it. Your message is back in the box.')}
   else{keep('The app answered HTTP '+status+' without details; the message may not have been recorded. Your message is back in the box; check the transcript before retrying.')}
+  if(cust){if(cur===id)$('cust').checked=false;if(status===200&&data&&data.ok&&cur===id)await select(id)}   // show the applied configuration in the inspector
   if(cur!==id)st.unread=true;
   await loadRows(id);await refresh();loadCompany().catch(()=>{});if(cur===id){render();loadFlyers(id,selSeq)}
   if(TIMING){fetch('/api/timing',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({chat_roundtrip_ms:t1})}).catch(()=>{})}

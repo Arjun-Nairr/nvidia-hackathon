@@ -5,6 +5,8 @@ real vision evidence is tests/image_live_check.py. Wipes the copy's runtime/ in 
   IMAGE_PATH_I_AM_A_COPY=1 venv-python tests/image_path_test.py"""
 import base64, hashlib, io, json, os, shutil, subprocess, sys, tempfile, time, urllib.error, urllib.request
 from pathlib import Path
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+import role_hold
 
 ROOT = Path(__file__).resolve().parent.parent
 if os.environ.get("IMAGE_PATH_I_AM_A_COPY") != "1":
@@ -144,7 +146,8 @@ def call(path, body=None, port=APP):
 
 
 def tool(agent, name, args):
-    st, r = call(f"/api/chat/{agent}", {"message": "CALL_TOOL:" + json.dumps({"name": name, "args": args})})
+    with role_hold.second_of_role(ROOT, (args or {}).get('role') if name == 'create_agent' else None):   # older suite: build a second agent of one role (test-only hold)
+        st, r = call(f"/api/chat/{agent}", {"message": "CALL_TOOL:" + json.dumps({"name": name, "args": args})})
     outs = [t for t in r.get("tools", []) if t.get("name") == name and t.get("output")]
     return (outs[0]["output"] if outs else None), r
 
