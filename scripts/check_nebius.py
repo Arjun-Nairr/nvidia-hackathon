@@ -9,7 +9,7 @@ sec = core.load_secrets()
 if not sec.get("NEBIUS_API_KEY"):
     sys.exit("NEBIUS_API_KEY is missing. Put it in secrets/local.env (template: secrets/local.env.template).")
 base = sec.get("NEBIUS_BASE_URL", "https://api.tokenfactory.nebius.com/v1")
-model = sec.get("NEBIUS_MODEL") or core.DEFAULT_MODEL
+model = sec.get("NEBIUS_MODEL") or core.NEBIUS_DEFAULT_MODEL
 
 
 def call(path, body=None):

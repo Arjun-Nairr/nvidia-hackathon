@@ -161,7 +161,7 @@ VISION_VERIFIED = {("openai-codex", "gpt-5.6-terra")}
 IMAGE_EXTS = (".jpg", ".jpeg", ".png", ".webp", ".gif")
 IMAGE_FORMATS = ("JPEG", "PNG", "WEBP", "GIF")
 MAX_IMAGE_BYTES, MAX_IMAGE_EDGE = 8_000_000, 1568
-NEBIUS_DEFAULT_MODEL = "nvidia/nemotron-3-super-120b-a12b"  # unverified Nebius id; run scripts/check_nebius.py with a key
+NEBIUS_DEFAULT_MODEL = "nvidia/Nemotron-3.5-Super-VL"  # the candidate verified 2026-10-27 (research/nebius-compat-check-20261027.md); LLM_MODEL, when set, still overrides it
 MARKETPLACE_TOOLS = ("marketplace_locate", "marketplace_search", "marketplace_item", "marketplace_photo")   # live research (app/research.py)
 AD_TOOLS = ("fb_ads_find_advertiser", "fb_ads_search", "fb_ad_detail", "fb_ad_image", "save_ad_research", "read_ad_research")   # Facebook ad research (app/ads.py)
 AD_RESEARCH_TOOLS = AD_TOOLS[:4]   # the tools that spend scraper attempts / image downloads (a specialist holding any of them gets the research-turn limits)
@@ -550,6 +550,9 @@ def profile_config():
            "skills": {"creation_nudge_interval": 0}}
     if (c["provider"], c["model"]) in (VISION_VERIFIED | extra):   # per exact model: any other model keeps Hermes' own (text-only) default
         cfg["providers"] = {c["provider"]: {"models": {c["model"]: {"supports_vision": True}}}}
+    if os.environ.get("ECOM_SINGLE_ATTEMPT") == "1":   # isolated probes only: fewer automatic model requests (api_max_retries=1, no auto-recovery ladder, no memory-review request). It does NOT disable Hermes' primary-transport recovery replay
+        cfg["agent"] = {"api_max_retries": 1, "auto_recovery_cycles": 0}
+        cfg["memory"] = {"nudge_interval": 0}
     return cfg
 
 

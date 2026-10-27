@@ -574,6 +574,8 @@ class H(BaseHTTPRequestHandler):
             if u: c["usage"] = u
             self.wfile.write(b"data: " + json.dumps(c).encode() + b"\n\n"); self.wfile.flush()
         ev({"role": "assistant", "content": ""})
+        if "BIG_REASONING" in json.dumps(body["messages"][-3:]):   # a long streamed reasoning trace (one delta per token, like a thinking model), then the normal reply
+            for _ in range(900): ev({"reasoning_content": "think "})
         if d.get("text"): ev({"content": d["text"]})
         for i_, tc in enumerate(msg.get("tool_calls") or []):
             ev({"tool_calls": [{"index": i_, **tc}]})
