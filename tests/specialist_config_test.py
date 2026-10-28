@@ -412,8 +412,8 @@ try:
     # ---- the operator control: only the backend-read flag, only for specialists
     bad_flag = [chat("main", "hi", customize=True), chat(S_ID, "hi", customize="yes"), chat("nobody", "hi", customize=True)]
     page = urllib.request.urlopen(f"http://127.0.0.1:{APP}/", timeout=30).read().decode("utf-8")
-    check("T04-17 the customize flag is operator-only and validated: refused for main (400), a non-boolean (400) and an unknown agent (404); the page ships the small Customize control and sends the flag",
-          bad_flag[0][0] == 400 and bad_flag[0][1]["code"] == "customize_not_available" and bad_flag[1][0] == 400 and bad_flag[2][0] == 404 and 'id="cust"' in page and "customize:" in page, (bad_flag, 'id="cust"' in page))
+    check("T04-17 the customize flag is operator-only and validated: refused for main (400), a non-boolean (400) and an unknown agent (404); the page ships the Customize bar and sends the flag",
+          bad_flag[0][0] == 400 and bad_flag[0][1]["code"] == "customize_not_available" and bad_flag[1][0] == 400 and bad_flag[2][0] == 404 and 'id="custbar"' in page and "customize:cust" in page, (bad_flag, 'id="custbar"' in page))
 
     print("BATCH B CORRECTIONS: truthful skill removal and the native skill_manage boundary", flush=True)
     import stat

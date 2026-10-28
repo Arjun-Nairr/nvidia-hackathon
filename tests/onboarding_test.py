@@ -236,7 +236,7 @@ try:
           st_e == 502 and r_e["code"] == "generation_failed" and r_e["retryable"] is True and stt["state"] == "awaiting_source" and "summary" not in stt and model_n() - n0 == 1, (st_e, r_e, model_n() - n0))
     check("T01-14 none of this created an agent or wrote ordinary main-chat history", http(APP, "/api/agents")[1] == [] and http(APP, "/api/chat/main")[1] == [])
     page = urllib.request.urlopen(f"http://127.0.0.1:{APP}/", timeout=30).read().decode("utf-8")
-    check("T01-15 the page ships the plain onboarding form hooks (state panel, source form, question form, kept-answers draft)", all(k in page for k in ('id="onboard"', "onb-start", "submitSource", "Read the site", "onbDraft", "restoreDraft")), page[:200])
+    check("T01-15 the page ships the onboarding hooks of the conversation surface (onboarding renderer, start, source form, question cards, kept-answers draft)", all(k in page for k in ("renderOnboarding", "onb-start", "submitSource", "Read the site", "onbDraft", "restoreDraft")), page[:200])
 
     print("TICKET 02: answers -> shared company context -> chat unlock", flush=True)
     import threading
