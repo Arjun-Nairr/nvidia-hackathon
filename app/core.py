@@ -500,6 +500,14 @@ def validate_create_agent(a):
             "refs": refs, "skills": skills, "tools": tools}, None   # validated above, THEN the mandatory foundation
 
 
+_FRONTMATTER = re.compile(r"\A---[ \t]*\r?\n.*?\r?\n---[ \t]*(?:\r?\n|\Z)", re.S)
+
+
+def _skill_body(content):
+    """A model that rewrites a skill usually starts from skill_view's output, which already has a frontmatter block; _skill_md writes the only one, so a leading block is dropped."""
+    return _FRONTMATTER.sub("", content.strip(), count=1).strip()
+
+
 def validate_skills(role, skills):
     """Custom skills are OPTIONAL: None or [] means the baseline skill plus the customized instructions. -> (clean list, None) or (None, error)."""
     skills = skills or []
@@ -509,7 +517,7 @@ def validate_skills(role, skills):
         sn = (s.get("name") or "") if isinstance(s, dict) else ""
         if not re.fullmatch(r"[a-z0-9][a-z0-9-]{1,40}", sn):
             return None, err("bad_skill_name", f"Skill name {sn!r} must be lowercase letters/digits/hyphens.", "skills[].name")
-        c = (s.get("content") or "").strip()
+        c = _skill_body(s.get("content") or "")
         if len(c) < 40 or len(c) > MAX_TEXT:
             return None, err("bad_skill_content", f"Skill {sn!r} content must be 40-{MAX_TEXT} characters.", "skills[].content")
         fnd = roles.FOUNDATIONS[role]
@@ -518,7 +526,7 @@ def validate_skills(role, skills):
                              "backend already provides.", "skills[]", hint="Write a complementary skill specific to this company instead.")
     if len({s["name"] for s in skills}) != len(skills):
         return None, err("bad_skills", "Skill names must be unique.", "skills[].name")
-    return [{"name": s["name"], "content": s["content"].strip()} for s in skills], None
+    return [{"name": s["name"], "content": _skill_body(s["content"])} for s in skills], None
 
 
 def validate_tools(role, requested):

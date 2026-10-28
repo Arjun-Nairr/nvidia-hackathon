@@ -103,6 +103,12 @@ Behavior notes and limits after the corrections:
 
 ## Supabase connection and live verification - 2026-10-28
 
+### Direct Codex connection review — 2026-10-28
+- Inspected the neutral-setting, worker-environment, password-redaction and connection changes, plus the live-check runner and its saved 7/7 output. No additional full review agents or broad regression rerun.
+- Independently ran **5/5 focused checks** for the neutral setting, retired-setting rejection, encoded/decoded password scrubbing, default TLS requirement and preservation of explicit verify-full.
+- Independently queried the existing synthetic request `live-supabase-20261028-054134`: **seven rows**, main identity, request start/end, two linked model starts/completions and one successful read_company_context result. Driver imports at 3.3.4 and the connection uses TLS. An initial connection startup option did not enforce read-only mode through the pooler, so verification was repeated with explicit `SET TRANSACTION READ ONLY`; SHOW confirmed on and SELECT confirmed seven rows. Both inspections were SELECT/SHOW only; no new rows or schema changes.
+- Checkpoint **19e8e035038cd2aae7e513b49088f64991c704a2** independently matched remote main. No new blocking issue within this connection scope. Accepted as a real PostgreSQL logging-pipeline check with scripted model behavior, not a real-model evaluation or full demo verification. Certificate verification remains unconfigured (encryption via sslmode=require only). No paid model calls, driver installation, runtime changes or pushes performed by Codex during this review.
+
 Arjun moved the logbook host from Neon to Supabase (direct SQL kept; no REST rewrite, tracing platform or redesign). Connection notes: `research/supabase-logbook-connection-20261028.md`. The operator saved the Supabase **session-pooler URI** (host `*.pooler.supabase.com`, port 5432, `sslmode=require`) in the ignored `secrets/local.env` as `LOGBOOK_DATABASE_URL`. It was read privately and never printed; the evidence below contains no URI, password or host.
 
 **What changed (code/config).** `app/logbook.py`, `tests/logbook_test.py`, the tracked `secrets/local.env.template` and `requirements-logbook.txt` now use the neutral `LOGBOOK_DATABASE_URL`; the retired `NEON_DATABASE_URL` is not read. The configured value stays in the secret-redaction list. Offline tests remove BOTH names from their own and their servers' environments (LB-32), so an offline run cannot inherit the live connection. Historical reports keep their old wording.

@@ -344,6 +344,17 @@ try:
     check("T04-10 a custom skill can be removed (its folder goes, the baseline and the agent's own skill stay)",
           r_rm.get("ok") and json.loads(row(A_ID)["skills"]) == [] and not skill_file.parent.exists() and base_f.exists() and (own / "SKILL.md").exists(), r_rm)
 
+    # a model that rewrites a skill usually starts from skill_view's output, which carries its own frontmatter: it must not be written twice (blank description, two blocks)
+    fm = {"name": "frontmatter-probe", "content": "---\nname: frontmatter-probe\ndescription: \"Frontmatter probe\"\nversion: 1.0.0\n---\n\n# Frontmatter probe\n1. Compare only the supplied facts.\n2. Mark unknowns."}
+    r_fm = core.customize_agent(A_ID, {"skills": [fm]})
+    fm_file = PROF / A_ID / "skills" / "frontmatter-probe" / "SKILL.md"
+    fm_text = fm_file.read_text(encoding="utf-8") if fm_file.exists() else ""
+    fm_reg = [x for x in json.loads(row(A_ID)["skills"]) if x["name"] == "frontmatter-probe"]
+    check("T04-10b skill content that already starts with a frontmatter block is stored once: the registry holds the body only, the file has exactly one frontmatter block and its description comes from the body",
+          r_fm.get("ok") and fm_reg and not fm_reg[0]["content"].startswith("---") and [ln for ln in fm_text.splitlines() if ln == "---"].__len__() == 2 and fm_text.count("name: frontmatter-probe") == 1
+          and 'description: "Frontmatter probe"' in fm_text and "Mark unknowns" in fm_text, (r_fm, fm_text[:300]))
+    core.customize_agent(A_ID, {"remove_skills": ["frontmatter-probe"]})
+
     # ---- effective configuration: the NEXT turn really runs on the new instructions, tools and skill; identity, history and memory stay
     NEW_INSTR = "You work for Acme Linens. Answer in short ZEBRA-STYLE bullet points, quote prices in USD, and say plainly what you could not verify."
     res_i, r_i = tool(A_ID, "customize_specialist", {"instructions": NEW_INSTR, "skills": [sk]}, customize=True)

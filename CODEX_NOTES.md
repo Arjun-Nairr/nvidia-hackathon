@@ -1,5 +1,7 @@
 # Codex working agreement
 
+- Clarified 2026-10-27 after overstating Hermes recovery as a blocker: distinguish observed defects, acceptable trade-offs and optional improvements. Surface material scope/behavior/cost/schedule decisions to Arjun before recording them as requirements. Routine implementation stays autonomous. Hermes recovery is accepted; do not reintroduce removing it as required work.
+
 Confirmed by Arjun on 2026-10-09. Codex-facing working preferences only: NOT a project brief and not startup context for Claude. Project scope, terminology and state live solely in HANDOUT.md. The pre-2026-10-25 version of this file (with historical scope/expansion notes) is archived at docs/archive/superseded-20261025/CODEX_NOTES.md.
 
 - Act as orchestrator, discussion partner, researcher, planner, evaluator, and implementation-prompt author.
