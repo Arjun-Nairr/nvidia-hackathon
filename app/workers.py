@@ -1,7 +1,7 @@
 """Backend-owned Hermes workers: one process per active profile, started lazily on first use, reused for later turns,
 turns serialized per agent, all stopped when the server exits. Local only: no queue, pool framework or remote services."""
 import atexit, json, queue, subprocess, threading, time
-from app import core
+from app import core, logbook
 
 
 class WorkerError(Exception):
@@ -32,6 +32,8 @@ class Worker:
                 continue  # protocol lines are JSON; anything else is ignored
             if obj.get("event") == "ready":
                 self.ready = obj
+            elif obj.get("event") == "log":   # execution-logbook rows from the worker's hooks (best effort; never a turn result)
+                logbook.accept(obj.get("rows"))
             else:
                 self.q.put(obj)
         self.q.put(None)  # EOF: worker exited

@@ -1,0 +1,3 @@
+# Optional Postgres driver for the execution logbook (Supabase Postgres) (ticket 05). Install it into the Hermes Python only when you turn the logbook on:
+#   "%LOCALAPPDATA%\hermes\hermes-agent\venv\Scripts\python.exe" -m pip install -r requirements-logbook.txt
+psycopg[binary]==3.3.4

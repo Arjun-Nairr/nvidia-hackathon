@@ -8,7 +8,7 @@ Main is asked through the existing Hermes worker (core.run_turn, own conversatio
 Model output is validated; a failure is stored and reported, never retried automatically. Results are persisted, so reload/restart/repeat never calls the model again."""
 import hashlib, json, os, re, threading, time
 from pathlib import Path
-from app import core
+from app import core, logbook
 
 DEMO_URL = "https://northloom-demo.example.com"      # the ONE registered demo source (a reserved example domain: no real website exists or is fetched)
 SNAPSHOT_ID = "northloom-demo-2026-10"
@@ -119,7 +119,7 @@ def _json_object(text):
 
 def _ask_main(message):
     """ONE turn on main's existing Hermes worker. No route is passed, so create_agent and update_company are refused for this turn (fail closed)."""
-    r = core.run_turn("main", message, timeout=TURN_TIMEOUT, conv_override=CONV)
+    r = core.run_turn("main", message, timeout=TURN_TIMEOUT, conv_override=CONV, request_id=logbook.current_request())
     if r.get("error"):
         return None, r["error"]
     return r.get("text") or "", None
@@ -169,6 +169,7 @@ SOURCE_PROMPT = (
     "SNAPSHOT (url {url}):\n---\n{text}\n---")
 
 
+@logbook.step("onboarding.source")
 def submit_source(url):
     with _lock:
         r = _row()
@@ -270,6 +271,7 @@ def _provenance(resolved, fields, correction):
     return pv
 
 
+@logbook.step("onboarding.answers")
 def submit_answers(body):
     with _lock:
         r = _row()

@@ -3,9 +3,9 @@ Protocol: JSON lines. stdin: {"id", "op": "turn"|"ping"|"shutdown", ...}. stdout
 then {"id", "result": {...}} per request. Hermes' own prints/logs go to stderr (fd 1 is redirected to fd 2 below).
 Imports and the AIAgent are built once and reused; conversation history is re-read from the profile's Hermes SessionDB each
 turn (so it is never lost or appended twice). Uses the documented AIAgent library API (`hermes chat -q` hides skill_manage)."""
-import hashlib, json, os, sys, time, uuid
+import hashlib, json, os, sys, threading, time, uuid
 from pathlib import Path
-from app import timing, turn_state  # imported first: its clock ~= worker start
+from app import logbook, timing, turn_state  # imported first: its clock ~= worker start
 
 AGENT_DIR = Path(os.environ.get("LOCALAPPDATA", "")) / "hermes" / "hermes-agent"
 sys.path.insert(0, str(AGENT_DIR))
@@ -66,9 +66,13 @@ def main():
     os.dup2(2, 1)
     sys.stdout = sys.stderr  # nothing from Hermes may reach the protocol channel
 
+    wlock = threading.Lock()   # hooks of parallel tool calls may send log rows while nothing else writes; one line at a time
+
     def send(obj):
-        proto.write(json.dumps(obj) + "\n")
-        proto.flush()
+        with wlock:
+            proto.write(json.dumps(obj) + "\n")
+            proto.flush()
+    logbook.attach_worker(send)
 
     with timing.span("import_hermes"):
         from hermes_state import SessionDB

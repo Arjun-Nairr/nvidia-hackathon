@@ -508,8 +508,9 @@ def _routing_context(**kw):
 
 
 def register(ctx):
-    from app import timing
+    from app import logbook, timing
     timing.register_hooks(ctx)  # no-op unless ECOM_TIMING=1
+    logbook.register_hooks(ctx)  # no-op unless the server enabled the execution logbook (ECOM_LOGBOOK=1): observer hooks only
     me = os.environ.get("ECOM_AGENT_ID", "main")
     ctx.register_tool(name="read_company_context", toolset="ecom_company", schema=CONTEXT_SCHEMA,
                       handler=lambda p, **kw: json.dumps(core.read_company_context(p.get("section"), me)))

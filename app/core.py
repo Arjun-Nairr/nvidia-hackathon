@@ -4,7 +4,7 @@ Imported by the web server AND by the Hermes plugin (inside the Hermes process),
 model only *requests* things and this code decides what is granted.
 """
 import base64, contextlib, hashlib, io, json, os, re, sqlite3, time
-from app import timing, roles, turn_state
+from app import logbook, timing, roles, turn_state
 from pathlib import Path
 
 ROOT = Path(os.environ.get("ECOM_APP_ROOT") or Path(__file__).resolve().parent.parent)
@@ -314,7 +314,17 @@ def company_status(c=None):
 
 
 def update_company(fields, source="form"):
-    """The ONLY writer of the company context; used by both the web form and main's update_company tool (same validation and storage).
+    """The ONLY writer of the company context (validation and storage in _update_company). The logbook records a save that did not come through main's update_company tool (the
+    web form, onboarding); a save made by main is already recorded as that tool's own call event, with the same result."""
+    r = _update_company(fields, source)
+    if source != "main":
+        logbook.emit("context.save", "success" if r.get("ok") else "failure", agent_id=None if source == "onboarding" else "operator", inputs={"source": source, "fields": fields},
+                     result={k: r.get(k) for k in ("ok", "code", "error", "changed", "complete")})
+    return r
+
+
+def _update_company(fields, source="form"):
+    """Used by both the web form and main's update_company tool (same validation and storage).
     Partial update: only the keys given change. An empty string clears an optional field. Returns {ok, company, changed, ...} or err()."""
     if not isinstance(fields, dict) or not fields:
         return err("empty_update", "Provide at least one company field to update.", "fields", list(COMPANY_FIELDS))
@@ -1154,7 +1164,9 @@ def run_turn(agent_id, message, timeout=300, conv_override=None, route=None, req
     cfg = llm_config()
     env = {**os.environ, **({k: v for k, v in sec.items() if k.startswith("NEBIUS_")} if cfg["provider"] == "nebius-token-factory" else {}),
            "HERMES_HOME": str(HERMES_ROOT / "profiles" / agent_id), "ECOM_APP_ROOT": str(ROOT),
-           **ca_env(), "ECOM_AGENT_ID": agent_id, "ECOM_COMPANY_ID": COMPANY_ID, "PYTHONUTF8": "1"}
+           **ca_env(), "ECOM_AGENT_ID": agent_id, "ECOM_COMPANY_ID": COMPANY_ID, "PYTHONUTF8": "1", "ECOM_LOGBOOK": "1" if logbook.enabled() else "0"}
+    for k in logbook.DB_ENV_VARS:   # only the server's single writer holds the logbook database credential, even when it came from the process environment
+        env.pop(k, None)
     sig = (cfg["provider"], cfg["model"], tuple(toolsets), conv_override or conv)  # any change restarts this agent's worker
     req = {"op": "turn", "message": message, "toolsets": toolsets, "conversation": conv_override or conv,
            "provider": cfg["provider"], "model": cfg["model"], "route": route, "request_id": request_id, "customize": bool(customize and agent_id != "main"),

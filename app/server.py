@@ -2,7 +2,7 @@
 import json, sys, threading, time, urllib.parse
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
-from app import ads, core, flyer, listing, onboarding, research, routing, timing, workers
+from app import ads, core, flyer, listing, logbook, onboarding, research, routing, timing, workers
 
 STATIC = Path(__file__).parent / "static"
 locks = {}  # one turn at a time per agent
@@ -95,6 +95,7 @@ def chat(agent_id, text, request_id, customize=False):
     """One accepted turn per agent at a time. Rejections (busy / duplicate / invalid) happen BEFORE anything is saved."""
     prev = done.get(request_id)
     if prev and prev[0] == agent_id:   # intentional retry of a request that already finished: return its result, run nothing
+        logbook.emit("request.duplicate", "success", request_id=request_id, agent_id=agent_id, result={"reason": "completed_request_replayed", "executed_again": False, "original_ok": prev[1].get("ok")})
         return 200, {**prev[1], "replayed": True}
     lock = locks.setdefault(agent_id, threading.Lock())
     with admit:
@@ -102,18 +103,23 @@ def chat(agent_id, text, request_id, customize=False):
             return fail("onboarding_incomplete", "Onboarding is not complete yet, so chat and manual company edits are locked. Finish the onboarding form first.", 409)
         if not lock.acquire(blocking=False):
             same = inflight.get(agent_id, {}).get("request_id") == request_id
+            if same:
+                logbook.emit("request.duplicate", "failure", request_id=request_id, agent_id=agent_id, result={"reason": "already_running", "executed_again": False})
             return fail("duplicate_in_flight" if same else "agent_busy",
                         "This request is already running." if same else "This agent is already working on another request. Wait for it to finish, then send again.",
                         409, retryable=True)
         inflight[agent_id] = {"request_id": request_id, "since": time.time()}
+    stage, ended, agent_ok = "setup", False, None   # where an unexpected exception happened, for the one terminal failure event (the logbook never causes or repeats agent work)
     try:
         t0 = time.perf_counter()
+        logbook.emit("request.start", "unknown", request_id=request_id, agent_id=agent_id, inputs={"message_chars": len(text), "message_preview": logbook.preview(text), "customize": bool(customize)})
         recent = recent_turns(agent_id) if agent_id == "main" else []   # BEFORE this request is saved, so it is never its own context
+        stage = "initial_transcript_write"
         with core.db() as d:
             d.execute("INSERT INTO messages(agent_id,who,content,tools,ts) VALUES(?,?,?,?,?)", (agent_id, "user", text, "[]", time.time()))
             d.execute("UPDATE agents SET state='running' WHERE agent_id=?", (agent_id,))
         t1 = time.perf_counter()
-        rt = None
+        stage, rt = "run", None
         try:
             if agent_id == "main":   # Laya runs BEFORE the main Hermes agent; specialists are unchanged in this increment
                 with core.db() as d:
@@ -124,12 +130,13 @@ def chat(agent_id, text, request_id, customize=False):
                     r = {"text": "", "tools": [], "error": f"Request routing failed, so nothing was sent to the agent: {e}"}
                 else:
                     r = ({"text": rt["reply"], "tools": [], "error": None} if rt["handled_locally"]
-                         else core.run_turn(agent_id, text, route=rt))
+                         else core.run_turn(agent_id, text, route=rt, request_id=request_id))
             else:
                 r = core.run_turn(agent_id, text, request_id=request_id, **({"customize": True} if customize else {}))   # the operator's Customize mode for THIS turn
         except Exception as e:  # never leave the agent "running" or the transcript without an outcome
             r = {"text": "", "tools": [], "error": f"Backend error while running the turn: {type(e).__name__}: {e}"}
         t2 = time.perf_counter()
+        stage, agent_ok = "final_transcript_write", not r["error"]
         with core.db() as d:
             body = r["text"] or (f"[error] {r['error']}" if r["error"] else "")
             d.execute("INSERT INTO messages(agent_id,who,content,tools,ts,meta) VALUES(?,?,?,?,?,?)",
@@ -143,11 +150,19 @@ def chat(agent_id, text, request_id, customize=False):
                         "api_calls": sum(e["stage"] == "api_end" for e in ev), "tool_calls": sum(e["stage"] == "tool" for e in ev),
                         "parent": tw.get("parent"), "worker": wk, "pre_run_ms": tw["pre_run_ms"], "turn_ms": tw["turn_ms"], "events": ev})
         r = {"ok": not r["error"], **r, "activity": activity(r["tools"]), "request_id": request_id, "route": public_route(rt) if rt else None}
+        logbook.emit("request.end", "success" if r["ok"] else "failure", request_id=request_id, agent_id=agent_id, duration_ms=(time.perf_counter() - t0) * 1000,
+                     result={"route_outcome": (rt or {}).get("outcome"), "handled_locally": bool((rt or {}).get("handled_locally")), "tool_calls": [a["tool"] for a in r["activity"]],
+                             "error": r.get("error"), "model_provided_final_answer_preview": logbook.preview(r.get("text"))})
+        ended = True
         if r["ok"]:  # failed turns are never replayed: an intentional retry must actually run again
             done[request_id] = (agent_id, r)
             while len(done) > 200:
                 done.pop(next(iter(done)))
         return 200, r
+    except BaseException as e:   # the transcript (SQLite) failed outside the guarded agent run: one terminal failure event, then the error propagates exactly as before
+        if not ended:
+            logbook.emit("request.end", "failure", request_id=request_id, agent_id=agent_id, result={"stage": stage, "exception": type(e).__name__, "error": str(e), "agent_run_ok": agent_ok})
+        raise
     finally:
         inflight.pop(agent_id, None)
         with core.db() as d:  # also covers an exception after the 'running' update
@@ -185,6 +200,8 @@ class H(BaseHTTPRequestHandler):
             return self.send(200, {a: {"busy": True, "since": v["since"]} for a, v in list(inflight.items())})
         if p == "/api/workers":
             return self.send(200, workers.status())
+        if p == "/api/logbook":   # concise local diagnostic of the best-effort execution logbook (never contains the connection string)
+            return self.send(200, logbook.diagnostics())
         if p == "/api/onboarding":   # persisted onboarding state (backend-owned; the page only displays it)
             return self.send(200, onboarding.status())
         if p == "/api/company":   # the single saved company + what is still missing (same data main reads with read_company_context)
@@ -317,6 +334,7 @@ def main(port=8800):
         d.execute("UPDATE agents SET state='idle' WHERE state='running'")  # crash recovery
     core.sync_profiles()
     c = core.llm_config()
+    print("Logbook:", logbook.start()["reason"], flush=True)
     if not routing.explicit_off():
         threading.Thread(target=routing.prewarm, daemon=True).start()   # load Laya once, in the background; first message waits only if it is still loading
     print(f"Provider {c['provider']!r} model {c['model']!r} | problem: {core.llm_problem()} | UI: http://127.0.0.1:{port}", flush=True)
