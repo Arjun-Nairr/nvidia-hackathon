@@ -3,7 +3,7 @@ import os, subprocess, sys
 from pathlib import Path
 ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(ROOT))
-from app import core
+from app import core, roles
 
 env = {**os.environ, "HERMES_HOME": str(core.HERMES_ROOT), "PYTHONUTF8": "1"}
 core.HERMES_ROOT.mkdir(parents=True, exist_ok=True)
@@ -61,6 +61,7 @@ request, one initial paid attempt, needs a configured Gemini key and the merchan
 granted generate_flyer; with the flyer review tools it may review the image's actual pixels, make at most ONE correction and select one final candidate (a
 fallible agent review, never human approval), and without them the result stays UNCHECKED. Nothing can be posted, published or emailed by anyone. Say so when it matters. Editing company details later updates the saved context; it does not rewrite existing
 specialists' saved instructions.
-""", encoding="utf-8")
+
+""" + roles.MAIN_REPLY_STYLE, encoding="utf-8")
 core.ca_env()
 print("setup ok:", core.HERMES_ROOT)

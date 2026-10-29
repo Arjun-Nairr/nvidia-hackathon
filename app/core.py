@@ -426,12 +426,17 @@ def db():
     if "meta" not in [r[1] for r in c.execute("PRAGMA table_info(messages)")]:   # routing metadata (added later; existing rows keep NULL)
         c.execute("ALTER TABLE messages ADD COLUMN meta TEXT")
     cols = [r[1] for r in c.execute("PRAGMA table_info(listing_drafts)")]
-    for col in ("evidence_source", "research_run_id"):   # which evidence a draft used (additive; old rows stay NULL = recorded sample)
+    for col in ("evidence_source", "research_run_id", "request_id"):   # which evidence a draft used (additive; old rows stay NULL = recorded sample)
         if col not in cols:
             try:
                 c.execute(f"ALTER TABLE listing_drafts ADD COLUMN {col} TEXT")
             except sqlite3.OperationalError:   # another process added it first
                 pass
+    if "message_id" not in cols:   # the user message of the turn that saved the draft (INTEGER, like the run tables)
+        try:
+            c.execute("ALTER TABLE listing_drafts ADD COLUMN message_id INTEGER")
+        except sqlite3.OperationalError:   # another process added it first
+            pass
     if "selected_location_call" not in [r[1] for r in c.execute("PRAGMA table_info(research_runs)")]:   # the lookup the specialist currently relies on (additive)
         try:
             c.execute("ALTER TABLE research_runs ADD COLUMN selected_location_call INTEGER")
@@ -588,6 +593,26 @@ def sync_profiles():
         if new != cur:
             f.parent.mkdir(parents=True, exist_ok=True)
             f.write_text(yaml.safe_dump(new), encoding="utf-8")
+    refresh_specialist_souls()
+
+
+def refresh_specialist_souls():
+    """Rebuild each EXISTING specialist's SOUL.md from its registry row, so a changed platform foundation (for example the reply rule) reaches profiles created earlier. Only SOUL.md is
+    rewritten, and only when its text differs: the registry row, custom and own skills, memory, sessions and history are never touched, no profile is created, and a changed SOUL.md makes
+    the worker clear the saved system prompt (prompt_stamp), so the next turn runs on it with the conversation intact. -> the agent ids that were rewritten."""
+    done = []
+    with db() as d:
+        rows = [dict(r) for r in d.execute("SELECT agent_id, name, role, objective, instructions, granted_tools FROM agents")]
+    company = load_company()["name"]
+    for r in rows:
+        f = HERMES_ROOT / "profiles" / r["agent_id"] / "SOUL.md"
+        if not f.parent.is_dir() or (r["role"] or "market_analysis") not in roles.FOUNDATIONS:
+            continue
+        new = build_soul({"name": r["name"], "role": r["role"], "objective": r["objective"], "instructions": r["instructions"], "tools": json.loads(r["granted_tools"] or "[]")}, company)
+        if not f.exists() or f.read_text(encoding="utf-8") != new:
+            f.write_text(new, encoding="utf-8")
+            done.append(r["agent_id"])
+    return done
 
 
 def image_roots():
@@ -761,7 +786,7 @@ def build_soul(c, company_name):
             "live access instead of inventing data. You cannot create agents or take external actions. Read the company context for current "
             "company details: it can be edited after you were created. Only the operator, in Customize mode, can change your objective, instructions, custom skills and optional tools; "
             "you cannot give yourself tools or change your role.\n"
-            + research + vision + drafting + catalogue + ad_research + flyer + fnd["start"])
+            + research + vision + drafting + catalogue + ad_research + flyer + fnd["start"] + "\n" + roles.REPLY_STYLE)
 
 
 def _skill_md(name, content):

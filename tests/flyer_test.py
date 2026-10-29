@@ -847,8 +847,8 @@ try:
           all(c_ == 404 for c_ in odd), odd)
     page = http(APP, "/", raw=True)[1].decode("utf-8")
     sts = http(APP, "/api/status")[1]
-    check("B6 the existing UI renders the saved flyer card from backend records (status UNCHECKED, error, image) and the status API reports whether generation is configured, without a key",
-          "Saved flyers" in page and "/api/flyers?agent_id=" in page and "UNCHECKED" in page and sts["image_generation_configured"] is True and KEY not in json.dumps(sts), sts)
+    check("B6 the page renders saved flyers as result cards from backend records (/api/results: status text, error, image, enlarge) and the status API reports whether generation is configured, without a key",
+          "/api/results?agent_id=" in page and "cardHTML" in page and "data-zoom" in page and "Saved results" in page and sts["image_generation_configured"] is True and KEY not in json.dumps(sts), sts)
     if os.environ.get("FLYER_EVIDENCE_DIR"):   # the preserved, inspectable scripted flyer: image, record, exact provider request, the photographs sent
         ev = Path(os.environ["FLYER_EVIDENCE_DIR"])
         (ev / "inputs").mkdir(parents=True, exist_ok=True)
@@ -908,13 +908,14 @@ try:
     st_img, img_err, _ = http(APP, f"/api/flyers/images/{flyer_id}", raw=False)
     rd_d, _ = tool(F_ID, "read_flyer", {})   # (the stored Activity output is cut at 3000 characters, so the list view is what can be parsed here)
     page2 = http(APP, "/", raw=True)[1].decode("utf-8")
+    card_d = next(c for c in http(APP, f"/api/results?agent_id={lst_d[flyer_id]['agent_id']}")[1] if c["key"] == f"flyer:{flyer_id}")   # the same failure as the chat card shows it
     check("B12 a damaged saved image (truncated on disk) is an explicit storage-integrity failure everywhere: list and detail show storage_failure with no image reference, the image "
           "endpoint answers 409 artifact_integrity_failed (never the bytes), the specialist's read_flyer says so, the original outcome/attempt count are unchanged, and the UI "
           "has a rendering for it; zero provider requests",
           lst_d[flyer_id]["status"] == "storage_failure" and lst_d[flyer_id]["image"] is None and lst_d[flyer_id]["outcome"] == "ok" and lst_d[flyer_id]["error_kind"] == "storage_integrity"
           and det_d["status"] == "storage_failure" and det_d["attempts"]["used"] == 1 and det_d["attempt"]["output"] is None and st_img == 409
           and img_err.get("code") == "artifact_integrity_failed" and rd_d and next(x for x in rd_d["flyers"] if x["flyer_id"] == flyer_id)["status"] == "storage_failure"
-          and "STORAGE / INTEGRITY FAILURE" in page2 and "x.error_kind" in page2 and gem_n() == 0, (lst_d[flyer_id]["status"], st_img))
+          and card_d["status"] == "storage_failure" and card_d["image"] is None and "integrity" in card_d["status_text"].lower() and "storage_failure" in page2 and gem_n() == 0, (lst_d[flyer_id]["status"], st_img))
     if os.environ.get("FLYER_EVIDENCE_DIR"):   # correction evidence: what the API says about a damaged saved image (scripted; no real Gemini involved)
         cdir = Path(os.environ["FLYER_EVIDENCE_DIR"]) / "corrections"
         cdir.mkdir(parents=True, exist_ok=True)

@@ -265,8 +265,8 @@ try:
     check("B17 neither specialist profile contains the other's name, skills or memory text",
           "price-tier-review" not in tree_text(ps) and "feed-flyer-checklist" not in tree_text(pm) and "Acme Social Media Specialist" not in tree_text(pm), "")
     page = urllib.request.urlopen(f"http://127.0.0.1:{APP}/", timeout=30).read().decode("utf-8")
-    check("B19 the served page no longer claims blanket 'live market research: not connected' and labels the goal role-neutrally (string changes only)",
-          "granted per specialist" in page and "Live market research: <b>not connected" not in page and "Competitor-analysis goal" not in page and "Business goal" in page)
+    check("B19 the served page makes no blanket 'live market research: not connected' claim and labels the goal role-neutrally (string changes only; the old status wall is gone)",
+          "Live market research: <b>not connected" not in page and "Competitor-analysis goal" not in page and "Business goal" in page)
     check("B18 creating a second social specialist with the same name is refused (name_taken); duplicate protection is unchanged",
           (tool("main", "create_agent", args())[0] or {}).get("code") == "name_taken")
 finally:

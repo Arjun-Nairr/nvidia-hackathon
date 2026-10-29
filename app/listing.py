@@ -416,12 +416,20 @@ def save_draft(agent_id, a):
     with core.db() as d:
         row = ag
         d.execute("INSERT INTO listing_drafts(draft_id, agent_id, conversation_id, product_id, status, title, description, visual_brief, rationale, limitations, missing, "
-                  "merchant_snapshot, product_snapshot, listing_evidence, image_evidence, created_at, evidence_source, research_run_id) VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)",
+                  "merchant_snapshot, product_snapshot, listing_evidence, image_evidence, created_at, evidence_source, research_run_id, request_id, message_id) VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)",
                   (did, agent_id, row["conversation_id"] if row else None, pid, status, title, desc, brief, json.dumps(claims), limits, json.dumps(missing),
-                   json.dumps(merchant_snap), json.dumps(prod), json.dumps(listing_snaps), json.dumps(image_snaps), time.time(), want, run["run_id"] if run else None))
+                   json.dumps(merchant_snap), json.dumps(prod), json.dumps(listing_snaps), json.dumps(image_snaps), time.time(), want, run["run_id"] if run else None, *_identity(agent_id)))
     return {"ok": True, "draft_id": did, "status": status, "missing": missing, "product_id": pid, "evidence_source": want, "listings_cited": listing_ids,
             "images_cited": sorted(used_images), "retrieve": f"/api/drafts/{did}",
-            "note": "Saved. Nothing was published. Tell the user the draft ID and, if status is partial, what is missing."}
+            "note": "Saved, and shown to the user as a card under your reply. Nothing was published. Mention it in one short sentence and, if status is partial, say what is missing."}
+
+
+def _identity(agent_id):
+    """(request id, message id) of the turn saving a draft: the backend's request id of this turn and the agent's latest user message, exactly as the research, ad and flyer runs record them.
+    Never model-supplied; either part is None when unknown."""
+    with core.db() as d:
+        m = d.execute("SELECT id FROM messages WHERE agent_id=? AND who='user' ORDER BY id DESC LIMIT 1", (agent_id,)).fetchone()
+    return getattr(turn_state, "request_id", None), (m["id"] if m else None)
 
 
 def _draft(r, full):

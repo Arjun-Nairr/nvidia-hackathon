@@ -1177,7 +1177,7 @@ try:
     page = http(APP, "/", raw=True)[1].decode("utf-8")
     check("B12 the existing saved-flyer card has minimal renderings for the new states (final selection, agent review passed / unresolved issues / unchecked, candidate count, unresolved "
           "issues) from backend data",
-          all(s in page for s in ("AGENT REVIEW PASSED", "UNRESOLVED ISSUES", "AWAITING SELECTION", "unresolved_issues")), [s for s in ("AGENT REVIEW PASSED", "UNRESOLVED ISSUES", "AWAITING SELECTION") if s not in page])
+          all(s in page for s in ("cardHTML", "rc-issues", "unresolved_issues", "awaiting_selection")), [s for s in ("cardHTML", "rc-issues", "unresolved_issues", "awaiting_selection") if s not in page])
     check("B13 no stored grant or saved SOUL was widened or rewritten by any of this",
           (lambda now: all(now.get(k) == v for k, v in grants_before.items()))({a["agent_id"]: a["granted_tools"] for a in http(APP, "/api/agents")[1]})
           and (ROOT / "runtime" / "hermes_home" / "profiles" / S / "SOUL.md").read_text(encoding="utf-8") == soul)

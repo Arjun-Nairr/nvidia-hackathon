@@ -2,7 +2,7 @@
 import json, sys, threading, time, urllib.parse
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
-from app import ads, core, flyer, listing, logbook, onboarding, research, routing, timing, workers
+from app import ads, core, flyer, listing, logbook, onboarding, research, results, routing, timing, workers
 
 STATIC = Path(__file__).parent / "static"
 locks = {}  # one turn at a time per agent
@@ -59,11 +59,11 @@ def agent_row(r, full=False):
 
 def history(agent_id):
     with core.db() as d:
-        rows = d.execute("SELECT who, content, tools, meta, ts FROM messages WHERE agent_id=? ORDER BY id", (agent_id,)).fetchall()
+        rows = d.execute("SELECT id, who, content, tools, meta, ts FROM messages WHERE agent_id=? ORDER BY id", (agent_id,)).fetchall()
     out = []
     for r in rows:
         tools = json.loads(r["tools"] or "[]")
-        out.append({"who": r["who"], "content": r["content"], "tools": tools, "activity": activity(tools), "ts": r["ts"],
+        out.append({"id": r["id"], "who": r["who"], "content": r["content"], "tools": tools, "activity": activity(tools), "ts": r["ts"],
                     "route": json.loads(r["meta"]) if r["meta"] else None})
     return out
 
@@ -210,6 +210,12 @@ class H(BaseHTTPRequestHandler):
             c = core.load_company()
             return self.send(200, {"company": {k: c[k] for k in core.COMPANY_FIELDS}, "updated_at": c["updated_at"], "updated_by": c["updated_by"],
                                    "status": core.company_status(c)})
+        if p == "/api/results":     # saved results as chat cards, tied to the producing message by backend-owned identity (app/results.py); ?agent_id= is required. Reads SQLite only.
+            q = urllib.parse.parse_qs(self.path.split("?", 1)[1]) if "?" in self.path else {}
+            aid = (q.get("agent_id") or [""])[0]
+            if not aid:
+                return self.send(*fail("agent_required", "agent_id is required.", 400))
+            return self.send(200, results.cards(aid))
         if p == "/api/roles":
             return self.send(200, core.ROLES)
         if p == "/api/drafts":      # saved listing drafts (summaries); ?agent_id= filters. Reads SQLite only.

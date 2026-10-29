@@ -1066,7 +1066,7 @@ def save_package(agent_id, a):
     return _with_allowance({"ok": True, "package_id": pid, "status": status, "missing": missing, "references_saved": len(out_refs), "independent_ads_cited": len(cited),
                             "ads_recorded": len(ads), "excluded_ads": excluded_ads, "campaigns_cited": len({(ads[n].get("campaign") or {}).get("campaign_id") or f"ad-{n}" for n in cited}),
                             "reach_gate": gate, "retrieve": f"/api/ads/packages/{pid}",
-                            "note": "Saved. Nothing was published. Tell the user the package id, the reach-gate state and, if status is partial or blocked, what is missing."}, run)
+                            "note": "Saved, and shown to the user as a card under your reply. Nothing was published. Mention it in one short sentence, say whether reach ranking was available and, if status is partial or blocked, what is missing."}, run)
 
 
 def read_package(agent_id, args):

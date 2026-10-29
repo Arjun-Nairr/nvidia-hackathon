@@ -102,8 +102,21 @@ dialog::backdrop{background:rgba(0,0,0,.45)}
 .db label{display:block;font-size:13px;color:var(--mut);margin:12px 0 4px}
 .db textarea.f{min-height:56px;resize:vertical;font:inherit}
 .db details{margin-top:14px;font-size:13px;color:var(--mut)}
-.fly{margin:0 0 14px}.fly img{max-width:100%;border:1px solid var(--line);border-radius:10px;margin-top:8px;display:block;background:var(--imgbg)}
-.fly a{display:block;background:var(--imgbg);border-radius:10px}
+/* result cards (UI-02) */
+.rcard{margin:12px 0 4px;padding:14px 16px;border-radius:14px;background:var(--soft);max-width:100%;color:var(--ink)}
+.rc-head{display:flex;justify-content:space-between;gap:4px 12px;flex-wrap:wrap;align-items:baseline;margin-bottom:4px}
+.rc-head b{font-size:14px}.rc-status{font-size:12px;color:var(--mut)}.rc-status.warn{color:var(--warn)}
+.rc-f{margin:8px 0 0}.rc-l{display:block;font-size:12px;color:var(--mut)}.rc-t{white-space:pre-wrap;word-break:break-word}
+.rc-issues{margin:8px 0 0;padding-left:18px;color:var(--warn);font-size:13px}
+.rc-err{color:var(--warn);font-size:13px;margin:8px 0 0;white-space:pre-wrap}
+.rc-note{margin:8px 0 0;font-size:13px;color:var(--mut)}
+.thumb{display:block;padding:0;border:0;background:var(--imgbg);border-radius:10px;cursor:zoom-in;max-width:100%;margin:8px 0 0}
+.thumb img{display:block;max-width:100%;max-height:340px;margin:0 auto;border-radius:10px}
+.rc-more{margin-top:10px;font-size:13px;color:var(--mut)}.rc-more summary{cursor:pointer}.rc-more ul{padding-left:18px;margin:6px 0}.rc-more li{margin:2px 0}
+.rc-more .d{margin:8px 0 0;white-space:pre-wrap;word-break:break-word}.rc-more .d b{color:var(--ink);font-weight:600}.rc-more a{color:var(--fg-acc);word-break:break-word}
+#img-big{max-width:100%;display:block;margin:0 auto;background:var(--imgbg);border-radius:10px}
+.bot .more-reply{margin-top:6px;font-size:13px;color:var(--mut)}.bot .more-reply summary{cursor:pointer}
+.bot:has(details.more-reply[open]) .excerpt{display:none}
 @media (max-width:760px){
   #app{flex-direction:column}
   #side{width:auto;flex:none;border-right:0;border-bottom:1px solid var(--line);padding:8px 10px 6px}
@@ -142,14 +155,15 @@ dialog::backdrop{background:rgba(0,0,0,.45)}
 </div>
 <div id="srlive" class="sr" role="status" aria-live="polite"></div>
 <dialog id="dlg-biz" aria-labelledby="dlg-biz-t"><div class="dh"><h2 id="dlg-biz-t">Business details</h2><button class="btn ghost" type="button" data-close>Close</button></div><div class="db" id="biz-body"></div></dialog>
-<dialog id="dlg-fly" aria-labelledby="dlg-fly-t"><div class="dh"><h2 id="dlg-fly-t">Saved flyers</h2><button class="btn ghost" type="button" data-close>Close</button></div><div class="db" id="fly-body"></div></dialog>
+<dialog id="dlg-res" aria-labelledby="dlg-res-t"><div class="dh"><h2 id="dlg-res-t">Saved results</h2><button class="btn ghost" type="button" data-close>Close</button></div><div class="db" id="res-body"></div></dialog>
+<dialog id="dlg-img" aria-labelledby="dlg-img-t"><div class="dh"><h2 id="dlg-img-t">Generated flyer</h2><button class="btn ghost" type="button" data-close>Close</button></div><div class="db"><img id="img-big" alt=""><p class="mut" id="img-cap"></p></div></dialog>
 <script>
 let stateReady=false,cur='main',TIMING=false,selSeq=0,agentsCache=[],offline=false,custArmed=false,COMPANY=null,PROBLEM='';const $=id=>document.getElementById(id);
 const esc=s=>String(s??'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
 const newId=()=>(crypto.randomUUID?crypto.randomUUID():Date.now().toString(36)+Math.random().toString(36).slice(2));
 // Per-agent client state. A response only ever touches the state of the agent it was sent to.
-const T={},remote={},AG={};
-const S=id=>T[id]||(T[id]={rows:null,sending:null,draft:'',err:null,unread:false,lastText:'',lastRid:null});
+const T={},remote={},AG={},LOOSE={},OPEN=new Set();   // LOOSE: per agent, the saved results that are NOT tied to a conversation message; OPEN: result cards whose Sources & details are open
+const S=id=>T[id]||(T[id]={rows:null,cards:[],sending:null,draft:'',err:null,unread:false,lastText:'',lastRid:null});
 const j=async u=>{const r=await fetch(u);if(!r.ok)throw new Error('HTTP '+r.status+' from '+u);return r.json()};
 const busy=id=>!!(S(id).sending||remote[id]);
 const ROLE={market_analysis:'Market analyst',social_media:'Social-media specialist'};
@@ -303,8 +317,10 @@ async function select(id){
   if(my===selSeq)$('log').scrollTop=1e9;
 }
 async function loadRows(id){
-  try{S(id).rows=await j('/api/chat/'+id);if(S(id).err&&S(id).err.kind==='load')S(id).err=null}
-  catch(e){if(!S(id).err)S(id).err={kind:'load',text:'Could not load the conversation: '+e.message}}
+  try{
+    const [rows,cards]=await Promise.all([j('/api/chat/'+id),id==='main'?[]:j('/api/results?agent_id='+encodeURIComponent(id)).catch(()=>S(id).cards)]);   // a failed results lookup keeps the cards already shown
+    S(id).rows=rows;S(id).cards=cards;if(S(id).err&&S(id).err.kind==='load')S(id).err=null;
+  }catch(e){if(!S(id).err)S(id).err={kind:'load',text:'Could not load the conversation: '+e.message}}
   if(id===cur)render();
 }
 
@@ -316,6 +332,30 @@ function fmt(t){   // tiny safe formatter: escape first, then **bold**, `code`, 
     if(m){if(!list){out+='<ul>';list=true}out+='<li>'+f(m[1])+'</li>'}else{if(list){out+='</ul>';list=false}if(h)out+='<p><b>'+f(h[1])+'</b></p>';else if(l.trim())out+='<p>'+f(l)+'</p>'}}
   return out+(list?'</ul>':'');
 }
+const ZOOM_URL=/^\/api\/flyers\/images\/[a-z0-9-]+$/;
+function safeLink(u){try{const x=new URL(u);return (x.protocol==='https:'||x.protocol==='http:')&&x.host?x.href:null}catch{return null}}   // only plain http(s) links are ever offered
+const WARN_ST=['failed','unresolved_issues','storage_failure','in_progress_or_unknown','awaiting_selection','partial','blocked'];
+function cardHTML(c){
+  const dl=(c.details||[]).map(d=>`<div class="d"><b>${esc(d.label)}</b>\n${esc(d.text)}</div>`).join('');
+  const links=(c.sources||[]).map(x=>({l:x.label,u:safeLink(x.url)})).filter(x=>x.u).map(x=>`<li><a href="${esc(x.u)}" target="_blank" rel="noopener noreferrer">${esc(x.l)}</a></li>`).join('');
+  const more=links||dl?`<details class="rc-more" data-more="${esc(c.key)}" ${OPEN.has(c.key)?'open':''}><summary>Sources &amp; details</summary>${links?`<div class="d"><b>Sources</b></div><ul>${links}</ul>`:''}${dl}</details>`:'';
+  const img=c.image&&ZOOM_URL.test(c.image.url)?`<button type="button" class="thumb" data-zoom="${esc(c.key)}" aria-label="Enlarge: ${esc(c.heading)}"><img src="${esc(c.image.url)}" alt="${esc(c.image.alt||c.heading)}" loading="lazy"></button>`:'';
+  return `<section class="rcard" data-card="${esc(c.key)}" aria-label="${esc(c.heading)}"><div class="rc-head"><b>${esc(c.heading)}</b><span class="rc-status ${WARN_ST.includes(c.status)?'warn':''}">${esc(c.status_text)}</span></div>${img}`+
+    (c.fields||[]).map(f=>`<div class="rc-f"><span class="rc-l">${esc(f.label)}</span><div class="rc-t">${esc(f.text)}</div></div>`).join('')+
+    (c.issues&&c.issues.length?`<ul class="rc-issues">${c.issues.map(i=>`<li>${esc(i)}</li>`).join('')}</ul>`:'')+(c.error?`<p class="rc-err">${esc(c.error)}</p>`:'')+more+'</section>';
+}
+function placeCards(rows,cards){   // result -> the REPLY to the user message the backend recorded for it; anything else is "loose" (never attached by guessing)
+  const at={},loose=[],userAt={};
+  rows.forEach((r,i)=>{if(r.who==='user'&&r.id!=null)userAt[r.id]=i});
+  cards.forEach(c=>{
+    const ui=c.associated&&c.message_id!=null?userAt[c.message_id]:undefined;
+    if(ui===undefined){loose.push(c);return}
+    let ri=-1;for(let k=ui+1;k<rows.length&&rows[k].who!=='user';k++){ri=k;break}
+    if(ri<0){if(!busy(cur))loose.push(c);return}   // no reply recorded yet: it waits while the agent works, and is listed separately if the request never completed
+    (at[ri]=at[ri]||[]).push(c);
+  });
+  return {at,loose};
+}
 function createdChip(m){   // main's own stored create_agent result (backend-written activity of that message), shown only while that specialist really exists
   if(cur!=='main'||!m.activity)return '';
   for(const a of m.activity){if(a.tool!=='create_agent'||a.status!=='ok')continue;let o;try{o=JSON.parse(a.output||'')}catch{continue}
@@ -323,11 +363,19 @@ function createdChip(m){   // main's own stored create_agent result (backend-wri
     if(ag)return `<div class="card soft created"><div><b>${esc(ag.name)}</b> was created<div class="mut">${esc(roleName(ag.role))}</div></div><button class="btn" type="button" data-open="${esc(ag.agent_id)}">Open chat</button></div>`}
   return '';
 }
-function msgHTML(m){
+const LONG_AT=800;
+function excerpt(t){   // the first paragraph(s) of a long reply, cut on a word boundary; the complete text stays behind the disclosure
+  let out='';for(const p of String(t).split(/\n+/)){if(!p.trim())continue;if(out&&out.length+p.length>360)break;out+=(out?'\n':'')+p;if(out.length>=240)break}
+  if(out.length>420)out=out.slice(0,out.lastIndexOf(' ',400)>200?out.lastIndexOf(' ',400):400);
+  return out+(out.length<String(t).trim().length?' …':'');
+}
+function msgHTML(m,cards){
   if(m.who==='user')return usr(m.content);
   const err=m.who==='error',text=err?String(m.content).replace(/^\[error\]\s*/,''):m.content;
   const steps=m.activity&&m.activity.length?`<details class="steps"><summary>What it did (${m.activity.length})</summary>`+m.activity.map(a=>`<div>${esc(a.label)}${a.status==='error'?' <span class="st-error">(failed)</span>':''}</div>`).join('')+'</details>':'';
-  return `<div class="row"><span class="av ${cur==='main'?'':'sp'}" aria-hidden="true">${cur==='main'?'M':esc(initials((AG[cur]||{}).name))}</span><div class="bot ${err?'err':''}">${err?'<p><b>That did not work.</b></p>':''}${fmt(text)}${steps}${createdChip(m)}</div></div>`;
+  const body=!err&&String(text).length>LONG_AT?`<div class="excerpt">${fmt(excerpt(text))}</div><details class="more-reply"><summary>Show the full reply</summary>${fmt(text)}</details>`:fmt(text);
+  const cs=cards&&cards.length?(err?'<p class="rc-note">Saved before it stopped:</p>':'')+cards.map(cardHTML).join(''):'';
+  return `<div class="row"><span class="av ${cur==='main'?'':'sp'}" aria-hidden="true">${cur==='main'?'M':esc(initials((AG[cur]||{}).name))}</span><div class="bot ${err?'err':''}">${err?'<p><b>That did not work.</b></p>':''}${body}${steps}${createdChip(m)}${cs}</div></div>`;
 }
 function onboardedCard(empty){   // shown at the top of main's conversation once onboarding is saved (state comes from the backend, so it survives reload)
   if(!ONB||ONB.state!=='ready')return '';
@@ -349,7 +397,9 @@ function render(){   // draws ONLY the current agent's state
   const rows=st.rows||[];let h='';
   if(cur==='main'){h+=onboardedCard(!rows.length&&!st.sending);if(!rows.length&&!st.sending&&(!ONB||ONB.state!=='ready'))h+=bot('<p>Hello. Ask me about your business, or ask me to set up a specialist for the work you need.</p>')}
   else h+=introHTML(cur,!rows.length&&!st.sending);
-  h+=rows.map(msgHTML).join('');
+  const pl=placeCards(rows,cur==='main'?[]:st.cards||[]);LOOSE[cur]=pl.loose;
+  h+=rows.map((m,i)=>msgHTML(m,pl.at[i])).join('');
+  if($('dlg-res').open)setTimeout(paintResults,0);
   if(st.sending)h+=usr(st.sending.text);
   log.innerHTML='<div class="col">'+h+'</div><div class="col" id="workslot"></div>';
   log.querySelectorAll('[data-open]').forEach(b=>b.onclick=()=>select(b.dataset.open));
@@ -389,7 +439,7 @@ function menuItems(){
   const it=[];
   if(!onbBlocked()){
     if(cur!=='main'){it.push(['Customize this specialist…',()=>{custArmed=true;paintComposer();$('msg').focus()}]);it.push(['About this specialist',()=>{const d=document.querySelector('#intro>details');if(d){d.open=true;d.scrollIntoView({block:'nearest'});d.querySelector('summary').focus()}}])}
-    it.push(['Saved flyers',()=>openFlyers()]);
+    if(cur!=='main'){const n=(LOOSE[cur]||[]).length;it.push([n?`Saved results (${n} not in the conversation)`:'Saved results',()=>openResults()])}
   }
   it.push(['Business details',()=>{if(!companyDirty)paintBiz();$('dlg-biz').showModal();if(companyDirty)$('company-msg').textContent='Your unsaved edits are kept. Save them or choose Discard changes.'}]);
   if(ONB&&ONB.state==='not_started'&&!ONB.required&&cur==='main')it.push(['Set up business onboarding (optional)',async()=>{await startOnboarding();select('main')}]);
@@ -408,24 +458,30 @@ menu.addEventListener('keydown',e=>{const b=[...menu.querySelectorAll('button')]
   if(e.key==='Escape'){e.preventDefault();closeMenu()}else if(e.key==='ArrowDown'){e.preventDefault();b[(i+1)%b.length].focus()}else if(e.key==='ArrowUp'){e.preventDefault();b[(i-1+b.length)%b.length].focus()}else if(e.key==='Tab')closeMenu(false)});
 document.addEventListener('click',e=>{if(!menu.hidden&&!menu.contains(e.target)&&e.target!==mbtn)closeMenu(false)});
 document.querySelectorAll('dialog [data-close]').forEach(b=>b.onclick=()=>b.closest('dialog').close());
-document.querySelectorAll('dialog').forEach(d=>d.addEventListener('close',()=>mbtn.focus()));   // the item that opened a dialog is gone with the menu: return focus to the menu button
+document.querySelectorAll('dialog').forEach(d=>d.addEventListener('close',()=>{
+  if(d.id==='dlg-img'){const b=zoomKey&&[...document.querySelectorAll('[data-zoom]')].find(x=>x.dataset.zoom===zoomKey);(b&&!b.closest('dialog:not([open])')?b:mbtn).focus();$('img-big').removeAttribute('src');return}
+  if(d.id==='dlg-res')$('res-body').innerHTML='';   // nothing of another agent's list stays in the page
+  if(!document.querySelector('dialog[open]'))mbtn.focus()   // the item that opened a dialog is gone with the menu: return focus to the menu button
+}));
 $('custcancel').onclick=()=>{custArmed=false;paintComposer();$('msg').focus()};
 
-// ---- saved flyers (on demand; saved output stays reachable until it moves into the conversation)
-async function openFlyers(){
-  const body=$('fly-body');body.innerHTML='<div class="mut">Loading…</div>';$('dlg-fly').showModal();
-  let f;try{f=await j('/api/flyers'+(cur==='main'?'':'?agent_id='+encodeURIComponent(cur)))}catch(e){body.innerHTML=`<div class="bn">Could not load the saved flyers: ${esc(e.message)}</div>`;return}
-  if(!f.length){body.innerHTML='<div class="mut">No saved flyers yet.</div>';return}
-  const LAB={unchecked:'Not reviewed',agent_review_passed:'Automated review passed (not human approval)',unresolved_issues:'Unresolved issues - unapproved draft',awaiting_selection:'Awaiting selection',storage_failure:'Storage or integrity failure',failed:'Generation failed',in_progress_or_unknown:'Outcome unknown'};
-  body.innerHTML=f.map(x=>`<div class="card soft fly"><b>Generated flyer</b> <span class="mut">- ${esc(LAB[x.status]||x.status)}</span>`+
-    (x.image?`<a href="${esc(x.image.url)}" target="_blank" rel="noopener"><img src="${esc(x.image.url)}" alt="Generated flyer, ${x.image.width} by ${x.image.height} pixels" loading="lazy"></a><div class="mut">${x.image.width}x${x.image.height}. Open the image to see it full size.</div>`:'')+
-    (x.note?`<div class="mut">${esc(x.note)}</div>`:'')+
-    (x.final&&x.final.rationale?`<div class="mut">Selection: ${esc(x.final.rationale)}</div>`:'')+
-    (x.review?`<div class="mut">Review: ${esc(x.review.verdict)}${x.review.verified?'':' (pixels not confirmed delivered)'}</div>`:'')+
-    (x.unresolved_issues&&x.unresolved_issues.length?'<div class="st-error">Known issues: '+x.unresolved_issues.map(i=>esc(i.check)+': '+esc(i.description)).join('; ')+'</div>':'')+
-    (x.error?`<div class="st-error">${esc(x.error_kind||x.outcome||'error')}: ${esc(x.error)}</div>`:'')+
-    (x.inputs_synthetic?'<div class="mut">Inputs were synthetic test stand-ins.</div>':'')+'</div>').join('');
+// ---- saved results that cannot be tied to a conversation message (older results without a recorded identity): a separate, clearly labelled list, never attached by guessing
+function paintResults(){   // also called by render(): the list follows the data while the dialog is open
+  if(S(cur).rows===null){$('res-body').innerHTML='<p class="mut">Loading saved results…</p>';return}
+  const l=LOOSE[cur]||[];
+  $('res-body').innerHTML=l.length?'<p class="mut">These saved results cannot be tied to a message in this conversation (they were saved before results were linked to their request). Results that belong to a message are shown under that reply and are not repeated here.</p>'+l.map(cardHTML).join(''):'<p class="mut">Every saved result is shown under the reply it belongs to.</p>';
 }
+function openResults(){paintResults();$('dlg-res').showModal()}
+// ---- enlarged flyer (keyboard: Esc or Close dismisses it, focus returns to the image button that opened it)
+let zoomKey=null;
+function openZoom(key){
+  const c=[...(S(cur).cards||[])].find(x=>x.key===key);if(!c||!c.image||!ZOOM_URL.test(c.image.url))return;
+  zoomKey=key;$('img-big').src=c.image.url;$('img-big').alt=c.image.alt||c.heading;$('dlg-img-t').textContent=c.heading;
+  $('img-cap').textContent=c.status_text+(c.issues&&c.issues.length?'. Known issues: '+c.issues.join(' '):'');$('dlg-img').showModal();
+}
+document.addEventListener('click',e=>{const z=e.target.closest&&e.target.closest('[data-zoom]');if(z)openZoom(z.dataset.zoom)});
+$('dlg-img').addEventListener('click',e=>{if(e.target===e.currentTarget)e.currentTarget.close()});
+document.addEventListener('toggle',e=>{const k=e.target.dataset&&e.target.dataset.more;if(k){if(e.target.open)OPEN.add(k);else OPEN.delete(k)}},true);   // a re-render keeps Sources & details as the reader left them
 
 // ---- sending
 async function send(){
