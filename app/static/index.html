@@ -50,6 +50,7 @@ button,input,textarea{font:inherit;color:inherit}
 #banner{padding:0 24px}
 .bn{margin:10px 0 0;padding:9px 12px;border-radius:10px;border:1px solid var(--warn);background:var(--warn-soft);color:var(--warn);font-size:13px;white-space:pre-wrap}
 .bn.info{border-color:var(--line);background:var(--soft);color:var(--mut)}
+.bn button{font:inherit;color:inherit;background:none;border:0;padding:0 0 0 6px;text-decoration:underline;cursor:pointer}
 #log{flex:1;overflow-y:auto;padding:22px 24px 8px;min-height:0}
 .col{max-width:760px;margin:0 auto}
 .row{display:flex;gap:14px;margin:0 0 20px;align-items:flex-start}
@@ -163,7 +164,7 @@ const esc=s=>String(s??'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&g
 const newId=()=>(crypto.randomUUID?crypto.randomUUID():Date.now().toString(36)+Math.random().toString(36).slice(2));
 // Per-agent client state. A response only ever touches the state of the agent it was sent to.
 const T={},remote={},AG={},LOOSE={},OPEN=new Set();   // LOOSE: per agent, the saved results that are NOT tied to a conversation message; OPEN: result cards whose Sources & details are open
-const S=id=>T[id]||(T[id]={rows:null,cards:[],sending:null,draft:'',err:null,unread:false,lastText:'',lastRid:null});
+const S=id=>T[id]||(T[id]={rows:null,cards:[],resErr:false,resTry:0,resMsg:'',sending:null,draft:'',err:null,unread:false,lastText:'',lastRid:null});   // resErr: the saved-results lookup failed (the cards kept are the last good ones)
 const j=async u=>{const r=await fetch(u);if(!r.ok)throw new Error('HTTP '+r.status+' from '+u);return r.json()};
 const busy=id=>!!(S(id).sending||remote[id]);
 const ROLE={market_analysis:'Market analyst',social_media:'Social-media specialist'};
@@ -304,6 +305,7 @@ async function poll(){   // who is working (server-side truth); also notices tur
   for(const id of Object.keys(was)){if(!remote[id]&&!S(id).sending){ended=true;await loadRows(id);if(id!==cur){S(id).unread=true}else $('srlive').textContent='New reply'}}
   if(ended)await refresh();
   paintSidebar();paintComposer();if(!S(cur).sending)paintWorking();
+  if(cur!=='main'&&S(cur).resErr&&!S(cur).sending&&Date.now()-S(cur).resTry>8000)retryResults(cur);   // gentle automatic retry of the read; a success clears the warning
 }
 async function select(id){
   const my=++selSeq;if(!onbBlocked())S(cur).draft=$('msg').value;cur=id;S(id).unread=false;custArmed=false;
@@ -317,11 +319,17 @@ async function select(id){
   if(my===selSeq)$('log').scrollTop=1e9;
 }
 async function loadRows(id){
+  let bad=false;
   try{
-    const [rows,cards]=await Promise.all([j('/api/chat/'+id),id==='main'?[]:j('/api/results?agent_id='+encodeURIComponent(id)).catch(()=>S(id).cards)]);   // a failed results lookup keeps the cards already shown
-    S(id).rows=rows;S(id).cards=cards;if(S(id).err&&S(id).err.kind==='load')S(id).err=null;
+    const [rows,cards]=await Promise.all([j('/api/chat/'+id),id==='main'?[]:j('/api/results?agent_id='+encodeURIComponent(id)).catch(()=>{bad=true;return S(id).cards})]);   // a failed results lookup keeps the cards already shown, and says so
+    S(id).rows=rows;S(id).cards=cards;S(id).resErr=bad;S(id).resMsg='';if(bad)S(id).resTry=Date.now();if(S(id).err&&S(id).err.kind==='load')S(id).err=null;
   }catch(e){if(!S(id).err)S(id).err={kind:'load',text:'Could not load the conversation: '+e.message}}
   if(id===cur)render();
+}
+async function retryResults(id,manual){   // re-READS the saved results only: no message, request or agent action is sent
+  const st=S(id);st.resTry=Date.now();
+  try{st.cards=await j('/api/results?agent_id='+encodeURIComponent(id));st.resErr=false;st.resMsg='';if(id===cur)render()}
+  catch{if(manual)st.resMsg='Still not reachable.';if(id===cur){paintNotice();if($('dlg-res').open)paintResults()}}
 }
 
 // ---- conversation rendering
@@ -414,7 +422,9 @@ function paintWorking(){
   slot.appendChild(d);tickWorking();$('log').scrollTop=1e9;
 }
 function tickWorking(){const w=document.getElementById('working');if(w)w.lastChild.textContent=w.dataset.lead+Math.max(0,Math.round((Date.now()-w.dataset.since)/1000))+'s'}
-function paintNotice(){const e=S(cur).err;$('notice').innerHTML=e?`<div class="bn ${e.kind==='info'?'info':''}">${esc(e.text)}</div>`:''}
+function paintNotice(){const s=S(cur),e=s.err;
+  $('notice').innerHTML=(e?`<div class="bn ${e.kind==='info'?'info':''}">${esc(e.text)}</div>`:'')+(cur!=='main'&&s.resErr?`<div class="bn">Saved results could not be loaded, so drafts, research or flyers saved for this agent may be missing here. What was already loaded is still shown. ${esc(s.resMsg)}<button type="button" id="res-retry">Try again</button></div>`:'');
+  const rb=$('res-retry');if(rb)rb.onclick=()=>retryResults(cur,true)}
 function autosize(){const m=$('msg');m.style.height='auto';m.style.height=Math.min(m.scrollHeight,150)+'px'}
 function paintComposer(){
   const blocked=onbBlocked(),b=busy(cur),isCust=custArmed&&cur!=='main';
@@ -468,8 +478,9 @@ $('custcancel').onclick=()=>{custArmed=false;paintComposer();$('msg').focus()};
 // ---- saved results that cannot be tied to a conversation message (older results without a recorded identity): a separate, clearly labelled list, never attached by guessing
 function paintResults(){   // also called by render(): the list follows the data while the dialog is open
   if(S(cur).rows===null){$('res-body').innerHTML='<p class="mut">Loading saved results…</p>';return}
-  const l=LOOSE[cur]||[];
-  $('res-body').innerHTML=l.length?'<p class="mut">These saved results cannot be tied to a message in this conversation (they were saved before results were linked to their request). Results that belong to a message are shown under that reply and are not repeated here.</p>'+l.map(cardHTML).join(''):'<p class="mut">Every saved result is shown under the reply it belongs to.</p>';
+  const l=LOOSE[cur]||[],warn=S(cur).resErr?'<p class="rc-err">Saved results could not be loaded just now, so this list may be incomplete. Use Try again in the notice under the conversation.</p>':'';
+  if(warn&&!l.length){$('res-body').innerHTML=warn;return}
+  $('res-body').innerHTML=warn+(l.length?'<p class="mut">These saved results cannot be tied to a message in this conversation (they were saved before results were linked to their request). Results that belong to a message are shown under that reply and are not repeated here.</p>'+l.map(cardHTML).join(''):'<p class="mut">Every saved result is shown under the reply it belongs to.</p>');
 }
 function openResults(){paintResults();$('dlg-res').showModal()}
 // ---- enlarged flyer (keyboard: Esc or Close dismisses it, focus returns to the image button that opened it)

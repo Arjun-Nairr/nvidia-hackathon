@@ -4,6 +4,8 @@ Date: 2026-10-29. Research only, using installed source and primary upstream sou
 
 ## Decision
 
+Arjun confirmed2026-10-29: metadata-only is the FINAL scope for this demo, not a temporary first phase toward conversation capture. No prompt/reply/tool-content/image export, no sanitized-content expansion. Minimal real execution evidence is sufficient; do not build extra instrumentation merely for presentation. Implementation/credentials/export remain separate actions.
+
 Feasible as a small optional integration after UI-02 verification. Use the INSTALLED bundled observability/langfuse plugin, retain Hermes0.21.4 and current providers, and test a constrained SDK4.7.0 install. Do not follow instructions to upgrade Hermes, replace the plugin with the new catalog version, install latest SDK unpinned, migrate Supabase logging or create an observability framework. This plan reduces risk; seamless behavior is not yet established.
 
 ## Verified app-specific facts

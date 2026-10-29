@@ -601,17 +601,21 @@ def refresh_specialist_souls():
     rewritten, and only when its text differs: the registry row, custom and own skills, memory, sessions and history are never touched, no profile is created, and a changed SOUL.md makes
     the worker clear the saved system prompt (prompt_stamp), so the next turn runs on it with the conversation intact. -> the agent ids that were rewritten."""
     done = []
-    with db() as d:
+    d = db()
+    try:
+        d.execute("BEGIN IMMEDIATE")   # the registry write lock customize_agent also takes: from the registry read to the last file write no Customize can commit, so no snapshot here is ever older than what is written
         rows = [dict(r) for r in d.execute("SELECT agent_id, name, role, objective, instructions, granted_tools FROM agents")]
-    company = load_company()["name"]
-    for r in rows:
-        f = HERMES_ROOT / "profiles" / r["agent_id"] / "SOUL.md"
-        if not f.parent.is_dir() or (r["role"] or "market_analysis") not in roles.FOUNDATIONS:
-            continue
-        new = build_soul({"name": r["name"], "role": r["role"], "objective": r["objective"], "instructions": r["instructions"], "tools": json.loads(r["granted_tools"] or "[]")}, company)
-        if not f.exists() or f.read_text(encoding="utf-8") != new:
-            f.write_text(new, encoding="utf-8")
-            done.append(r["agent_id"])
+        company = load_company()["name"]
+        for r in rows:
+            f = HERMES_ROOT / "profiles" / r["agent_id"] / "SOUL.md"
+            if not f.parent.is_dir() or (r["role"] or "market_analysis") not in roles.FOUNDATIONS:
+                continue
+            new = build_soul({"name": r["name"], "role": r["role"], "objective": r["objective"], "instructions": r["instructions"], "tools": json.loads(r["granted_tools"] or "[]")}, company)
+            if not f.exists() or f.read_text(encoding="utf-8") != new:
+                f.write_text(new, encoding="utf-8")
+                done.append(r["agent_id"])
+    finally:
+        d.close()   # releases the lock (nothing was written to the registry, so there is nothing to commit)
     return done
 
 

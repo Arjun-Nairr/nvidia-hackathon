@@ -47,13 +47,15 @@ if MODE in ("ready", "results") and src:   # make the flyer tables exist in the 
     subprocess.run([sys.executable, "-c", "from app import flyer; flyer.list_flyers()"], cwd=ROOT, env=ENV, check=True, capture_output=True)
 procs.append(subprocess.Popen([sys.executable, "tests/mock_llm.py", str(MOCK)], cwd=ROOT, env=ENV, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL))
 time.sleep(1)
-def seed_results(src):
+def seed_results(src, extra=False):
     """Mode 'results': saved results with BACKEND identities in the shapes the real tools store (rows written with SQL; no tool, model, provider or paid call). The licensed flyer image is copied
     READ-ONLY from the project runtime named by UI_FIXTURE_FLYER_FROM. Layout of the history (analyst A, social S):
       A: u1 -> reply + draft D1 (research run, hostile link/markup); u2 -> reply + PARTIAL draft D2 (direct identity); a LEGACY draft with no identity; u3 -> error reply with NO saved result;
          a long legacy reply (disclosure).
       S: u4 -> error reply with an ad-research package AND a failed flyer (partial work plus failure); u5 -> reply with the real flyer (agent review passed); u6 -> reply with a flyer that has
-         unresolved issues; a LEGACY flyer with no identity."""
+         unresolved issues; a LEGACY flyer with no identity.
+    extra=True (UI_FIXTURE_EXTRA=1, used by the correction journey only) adds: A: a draft saved from a demonstration catalogue whose description does not mention it; S: a reviewed flyer whose OTHER saved
+    candidate has no image file (integrity problem)."""
     db = sqlite3.connect(ROOT / "runtime" / "app.db")
     db.row_factory = sqlite3.Row
     t = time.time() - 3000
@@ -67,7 +69,7 @@ def seed_results(src):
     msg(A, "agent", "I saved one listing draft built from two comparable Dallas listings. Next step: check the asking prices in the sources before you set yours.", 2)
     u2 = msg(A, "user", "Make a tighter second draft.", 3)
     msg(A, "agent", "The second draft is partial: only one comparable had full details. Add a second search if you want a fuller comparison.", 4)
-    u3 = msg(A, "user", "Compare against sold prices.", 5)
+    msg(A, "user", "Compare against sold prices.", 5)
     msg(A, "error", "[error] Backend error while running the turn: no sold-price source is connected.", 6)
     long = " ".join(f"Point {i}: the earlier version of this agent wrote a long reply with several observations, caveats and recommendations that are kept intact." for i in range(1, 17))
     msg(A, "agent", long, 7)
@@ -85,11 +87,11 @@ def seed_results(src):
     img_ev = [{"image_id": "111", "kind": "live_listing_photo", "listing_id": "111", "sha256": sha, "model_observations": "A quilt laid flat with appliqued bonneted figures.", "counts_as_verified_evidence": True}]
     cols = "(draft_id, agent_id, conversation_id, product_id, status, title, description, visual_brief, rationale, limitations, missing, merchant_snapshot, product_snapshot, listing_evidence, image_evidence, created_at, evidence_source, research_run_id, request_id, message_id)"
 
-    def draft(did, title, status, req, mid, run, missing, dt):
+    def draft(did, title, status, req, mid, run, missing, dt, snap=None, desc=None):
         db.execute(f"INSERT INTO listing_drafts{cols} VALUES({','.join('?' * 20)})", (did, A, "conv-" + A, "chintz-applique-quilt-demo", status, title,
-                   "Demonstration listing for a Chintz Applique Quilt: cotton, 158.8 x 174 cm, ca. 1820-30. The USD 79 amount is a demonstration value. <script>alert('x')</script>",
+                   desc or "Demonstration listing for a Chintz Applique Quilt: cotton, 158.8 x 174 cm, ca. 1820-30. The USD 79 amount is a demonstration value. <script>alert('x')</script>",
                    "Lead with the full front view; use the close-up for the motifs.", json.dumps([{"claim": "Comparable listings lead with a full-quilt photo.", "listing_ids": ["111"], "image_ids": ["111"]}]),
-                   "Asking prices only, one search area, no sold prices.", json.dumps(missing), json.dumps({"merchant": {"name": "Northloom Demo Studio"}}),
+                   "Asking prices only, one search area, no sold prices.", json.dumps(missing), json.dumps(snap or {"merchant": {"name": "Northloom Demo Studio"}}),
                    json.dumps({"name": "Chintz Applique Quilt", "source_url": "https://www.metmuseum.org/art/collection/search/854568"}), json.dumps(listing_ev), json.dumps(img_ev), t + dt,
                    "live_research" if run else "recorded_sample", run, req, mid))
 
@@ -135,6 +137,18 @@ def seed_results(src):
                                          "layout_readability": {"result": "fail", "observation": "The inset covers part of the quilt."}})}
     clone("fly-5ee0000003", "cand-5ee0000003", "seed-req-s3", u6, 12, review=issues)
     clone("fly-5ee0000004", "cand-5ee0000004", None, None, 14)           # legacy: no identity at all
+    if extra:
+        u7 = msg(A, "user", "Draft a listing for the catalogue quilt.", 20)
+        msg(A, "agent", "I saved the listing draft; it is ready for you to review.", 21)
+        draft("draft-seed-demo", "Catalogue quilt - listing draft", "complete", "seed-req-a4", u7, None, [], 21,
+              snap={"merchant": {"name": "Northloom Demo Studio"}, "demo": True, "notice": "Catalogue notice: a public-domain museum object shown as a demonstration; the USD 79 amount is a test value, not a retail offer."},
+              desc="Hand-finished cotton quilt, 158.8 x 174 cm, in calm blues and creams.")
+        u8 = msg(S, "user", "Make another flyer from the catalogue photos.", 22)
+        msg(S, "agent", "The flyer is saved and passed the automated review.", 23)
+        clone("fly-5ee0000006", "cand-5ee0000006", "seed-req-s4", u8, 22, final=False)
+        a2 = dict(real["flyer_attempts"][0])
+        a2.update(candidate_id="cand-5ee0000007", run_id="fly-5ee0000006", attempt_no=2, out_path="cand-5ee0000007.jpg", created_at=t + 22)   # its file never exists: integrity problem
+        db.execute(f"INSERT INTO flyer_attempts({','.join(a2)}) VALUES({','.join('?' * len(a2))})", tuple(a2.values()))
     db.commit()
     db.close()
 
@@ -165,7 +179,7 @@ try:
                     "instructions": "Use only the catalogue facts and the supplied photographs. Never invent a fact.", "requested_tools": ["read_catalogue", "inspect_image", "fb_ads_search", "fb_ad_detail", "fb_ad_image", "save_ad_research", "generate_flyer", "inspect_flyer", "review_flyer", "finalize_flyer"],
                     "company_context_refs": ["brand", "products", "goal"]})
             if MODE == "results":
-                seed_results(src)
+                seed_results(src, extra=os.environ.get("UI_FIXTURE_EXTRA") == "1")
         if src and MODE == "ready":
             sdb = sqlite3.connect(f"file:{Path(src) / 'app.db'}?mode=ro", uri=True)
             sdb.row_factory = sqlite3.Row

@@ -6,7 +6,7 @@ the card is returned with message_id None and associated False, and the page lis
 "latest" result. Cards hold only displayable text (no hashes, run/candidate ids, tool payloads or provider data) plus an internal `key`; links are limited to http(s). The text is
 returned as stored (plain strings): the page escapes it, nothing is rewritten here.
 Read-only: no model, provider or paid call, no accounting change."""
-import json, re
+import re
 from urllib.parse import urlsplit
 from app import ads, core, flyer, listing
 
@@ -81,9 +81,12 @@ def _draft_card(d, r):
     if full.get("limitations"):
         details.append({"label": "Limitations", "text": _text(full["limitations"], 800)})
     status = full["status"]
+    snap = full["merchant_snapshot"] if isinstance(full.get("merchant_snapshot"), dict) else {}
+    notice = _text(snap.get("notice"), 500)
+    demo = [{"label": "Demonstration", "text": notice or "This draft was made from demonstration data, not a real retail offer."}] if (notice or snap.get("demo")) else []   # the STORED catalogue status, shown whatever the model wrote
     return _card("listing_draft", r["draft_id"], r["agent_id"], _identity(d, r["agent_id"], req, mid), r["created_at"], _text(full["title"], 200) or "Listing draft", status,
                  "Listing draft" if status == "complete" else "Partial listing draft",
-                 fields=[{"label": "Description", "text": _text(full["description"], 2000)}, {"label": "Photo direction", "text": _text(full["visual_brief"], 1200)}],
+                 fields=demo + [{"label": "Description", "text": _text(full["description"], 2000)}, {"label": "Photo direction", "text": _text(full["visual_brief"], 1200)}],
                  issues=[_text(m, 300) for m in full["missing"]], sources=sources, details=details)
 
 
@@ -142,11 +145,15 @@ def _flyer_card(d, s, message_id, created_at):
         details.append({"label": "Attempts", "text": f"{s['candidates_total']} versions were generated" + (" (one correction)." if s.get("correction_used") else ".")})
     if s.get("inputs_synthetic"):
         details.append({"label": "Test input", "text": "The inputs were synthetic test stand-ins."})
+    damaged = [_text(x.get("problem"), 200) for x in s.get("damaged_candidates") or [] if isinstance(x, dict)]
+    if damaged and st != "storage_failure":   # a usable candidate stands, but another saved one failed its integrity check: say so without its internal id (nothing was regenerated or selected)
+        issues.append(("Another saved version" if len(damaged) == 1 else f"{len(damaged)} other saved versions") + f" of this flyer failed the integrity check ({'; '.join(dict.fromkeys(damaged))}) and cannot be used. "
+                      "It was not generated again and no final version was selected.")
     fields = []
     if st == "agent_review_passed":   # a pass is a fallible automated check, never a statement that nothing is wrong
         fields.append({"label": "Check it yourself", "text": "The automated review can miss problems. Look at the image before using it."})
     if s.get("note") and st in ("unchecked", "awaiting_selection", "storage_failure"):
-        fields.append({"label": "Note", "text": _text(s["note"], 500)})
+        fields.append({"label": "Note", "text": _text(re.split(r"\s*Candidate \S+ cannot be used", s["note"])[0], 500)})   # the damaged-candidate sentence (it names an id) is the issue above
     card = _card("flyer", s["flyer_id"], s["agent_id"], (s["request_id"], None, False), created_at, "Generated flyer", st, STATUS_TEXT.get(st, st), fields=fields, issues=issues,
                  image=({"url": img["url"], "width": img.get("width"), "height": img.get("height"), "alt": "Generated flyer"} if img else None), error=_text(s.get("error"), 500) or None, details=details)
     card["_message_id"] = message_id
