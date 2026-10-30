@@ -156,6 +156,7 @@ dialog::backdrop{background:rgba(0,0,0,.45)}
 </div>
 <div id="srlive" class="sr" role="status" aria-live="polite"></div>
 <dialog id="dlg-biz" aria-labelledby="dlg-biz-t"><div class="dh"><h2 id="dlg-biz-t">Business details</h2><button class="btn ghost" type="button" data-close>Close</button></div><div class="db" id="biz-body"></div></dialog>
+<dialog id="dlg-reset" aria-labelledby="dlg-reset-t" aria-describedby="reset-q"><div class="dh"><h2 id="dlg-reset-t">Restart demo</h2></div><div class="db"><p id="reset-q"><b>Restart onboarding and clear current demo progress?</b></p><p class="mut">The business details, specialists, chats and their private memory are archived on this computer, then removed from the app, and you start again at the website step. API keys, the sign-in, the catalogue and photos, the model settings, paid-call counters and this theme are kept.</p><div class="err" id="reset-err" role="alert"></div><div style="display:flex;gap:10px;margin-top:14px;flex-wrap:wrap"><button class="btn" id="reset-go" type="button">Restart demo</button><button class="btn ghost" id="reset-no" type="button" data-close>Cancel</button></div></div></dialog>
 <dialog id="dlg-res" aria-labelledby="dlg-res-t"><div class="dh"><h2 id="dlg-res-t">Saved results</h2><button class="btn ghost" type="button" data-close>Close</button></div><div class="db" id="res-body"></div></dialog>
 <dialog id="dlg-img" aria-labelledby="dlg-img-t"><div class="dh"><h2 id="dlg-img-t">Generated flyer</h2><button class="btn ghost" type="button" data-close>Close</button></div><div class="db"><img id="img-big" alt=""><p class="mut" id="img-cap"></p></div></dialog>
 <script>
@@ -455,6 +456,7 @@ function menuItems(){
   if(ONB&&ONB.state==='not_started'&&!ONB.required&&cur==='main')it.push(['Set up business onboarding (optional)',async()=>{await startOnboarding();select('main')}]);
   it.push(null,[effTheme()==='dark'?'Switch to light mode':'Switch to dark mode',()=>setTheme(effTheme()==='dark'?'light':'dark')]);
   if(chosenTheme())it.push(['Use the system theme',()=>setTheme(null)]);
+  it.push(null,['Restart demo…',()=>openRestart()]);
   return it;
 }
 function openMenu(){
@@ -474,6 +476,17 @@ document.querySelectorAll('dialog').forEach(d=>d.addEventListener('close',()=>{
   if(!document.querySelector('dialog[open]'))mbtn.focus()   // the item that opened a dialog is gone with the menu: return focus to the menu button
 }));
 $('custcancel').onclick=()=>{custArmed=false;paintComposer();$('msg').focus()};
+// ---- restart the demo: one question, then the SAME backend reset fresh_demo.bat uses; on success the page reloads into the website step (only the theme survives in this browser)
+function openRestart(){$('reset-err').textContent='';$('reset-go').disabled=false;$('dlg-reset').showModal();$('reset-no').focus()}   // Cancel is the default focus
+$('reset-go').onclick=async()=>{
+  const b=$('reset-go');b.disabled=true;$('reset-err').textContent='Restarting…';
+  try{
+    const r=await fetch('/api/demo/reset',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({confirm:true})}),d=await r.json().catch(()=>({}));
+    if(r.ok&&d.ok){location.reload();return}
+    $('reset-err').textContent=d.error||('The restart did not complete (HTTP '+r.status+').');
+  }catch(e){$('reset-err').textContent='The app did not answer ('+e.message+'). Reload the page to see whether the restart happened.'}
+  b.disabled=false;
+};
 
 // ---- saved results that cannot be tied to a conversation message (older results without a recorded identity): a separate, clearly labelled list, never attached by guessing
 function paintResults(){   // also called by render(): the list follows the data while the dialog is open

@@ -2,7 +2,7 @@
 import json, sys, threading, time, urllib.parse
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
-from app import ads, core, flyer, listing, logbook, onboarding, research, results, routing, timing, workers
+from app import ads, core, demo_reset, flyer, listing, logbook, onboarding, research, results, routing, timing, workers
 
 STATIC = Path(__file__).parent / "static"
 locks = {}  # one turn at a time per agent
@@ -81,11 +81,78 @@ def public_route(rt):
 
 
 admit = threading.Lock()   # makes "is chat open?" + "accept this turn" one step, and "start onboarding" + "no turn running on main" one step: whichever comes first wins, the other is refused
+resetting, busy_ops = False, 0   # a demo restart is running; onboarding steps / company saves running (both only read or changed while holding `admit`)
+
+
+def _closed():
+    """A refusal while the demo restarts (or an earlier restart is unfinished), else None. Call while holding `admit`."""
+    if resetting:
+        return fail("demo_restarting", "The demo is restarting. Wait a moment, then reload the page.", 409, retryable=True)
+    p = demo_reset.pending()
+    if p:
+        return fail("demo_restart_incomplete", demo_reset.guard_message(p), 409)
+    return None
+
+
+def guarded(op):
+    """Onboarding steps and company saves: refused while the demo restarts, and counted while they run so a restart cannot begin underneath them."""
+    global busy_ops
+    with admit:
+        closed = _closed()
+        if closed:
+            return closed
+        busy_ops += 1
+    try:
+        return op()
+    finally:
+        with admit:
+            busy_ops -= 1
+
+
+def onboarding_op(step, body):
+    if step == "start":
+        return start_onboarding()
+    return guarded(lambda: onboarding.submit_source(body.get("url")) if step == "source" else onboarding.submit_answers(body))
+
+
+def save_company(body):   # same validation/storage as main's update_company tool
+    def op():
+        r = core.update_company(body.get("fields", body), source="form")
+        if not r["ok"]:
+            return 503 if r["code"] == "company_storage_error" else 400, r
+        return 200, {**r, "status": core.company_status()}
+    return guarded(op)
+
+
+def reset_demo(body):
+    """The operator's Restart demo (also used by fresh_demo.bat when the app is running): refused while anything runs; while it runs, every new operation is refused."""
+    global resetting
+    if not isinstance(body, dict) or body.get("confirm") is not True:
+        return fail("confirmation_required", "Restarting the demo clears the current onboarding, company details, specialists and chats (they are archived first). Confirm to proceed.", 400)
+    with admit:
+        if resetting:
+            return fail("demo_restarting", "The demo is already restarting.", 409, retryable=True)
+        if inflight or busy_ops:
+            who = sorted(inflight)
+            return fail("demo_busy", f"Something is still running ({', '.join(who) if who else 'an onboarding step or a company save'}). Wait for it to finish, then restart the demo.",
+                        409, retryable=True, running=who)
+        resetting = True
+    try:
+        r = demo_reset.reset(stop_workers=workers.stop_all)
+        if r["ok"] or r["code"] == "reset_incomplete":
+            done.clear()   # no finished request of the old demo can be replayed into the new one
+        return (200 if r["ok"] else 503 if r["code"] == "archive_failed" else 500), r
+    finally:
+        with admit:
+            resetting = False
 
 
 def start_onboarding():
     """Onboarding's own model turns switch main's Hermes conversation (the worker restarts), so it may only begin when no accepted turn is running on main."""
     with admit:
+        closed = _closed()
+        if closed:
+            return closed
         if "main" in inflight:
             return fail("main_busy", "The main agent is still answering an accepted request. Wait for it to finish, then start onboarding again.", 409, retryable=True)
         return onboarding.start()
@@ -93,12 +160,19 @@ def start_onboarding():
 
 def chat(agent_id, text, request_id, customize=False):
     """One accepted turn per agent at a time. Rejections (busy / duplicate / invalid) happen BEFORE anything is saved."""
+    with admit:
+        closed = _closed()
+    if closed:   # checked before the replay cache too: nothing of the old demo is answered while it is being restarted
+        return closed
     prev = done.get(request_id)
     if prev and prev[0] == agent_id:   # intentional retry of a request that already finished: return its result, run nothing
         logbook.emit("request.duplicate", "success", request_id=request_id, agent_id=agent_id, result={"reason": "completed_request_replayed", "executed_again": False, "original_ok": prev[1].get("ok")})
         return 200, {**prev[1], "replayed": True}
     lock = locks.setdefault(agent_id, threading.Lock())
     with admit:
+        closed = _closed()
+        if closed:
+            return closed
         if onboarding.chat_blocked():
             return fail("onboarding_incomplete", "Onboarding is not complete yet, so chat and manual company edits are locked. Finish the onboarding form first.", 409)
         if not lock.acquire(blocking=False):
@@ -294,19 +368,15 @@ class H(BaseHTTPRequestHandler):
                     raise ValueError("body must be a JSON object")
             except (ValueError, TypeError) as e:
                 return self.send(*fail("invalid_request", f"Request body is not valid JSON: {e}", 400))
-            code, r = (start_onboarding() if parts[2] == "start" else onboarding.submit_source(body.get("url")) if parts[2] == "source" else onboarding.submit_answers(body))
-            return self.send(code, r)
-        if parts == ["api", "company"]:   # same validation/storage as main's update_company tool
+            return self.send(*onboarding_op(parts[2], body))
+        if parts in (["api", "company"], ["api", "demo", "reset"]):
             try:
                 body = json.loads(self.rfile.read(int(self.headers.get("Content-Length", 0))) or b"{}")
                 if not isinstance(body, dict):
                     raise ValueError("body must be a JSON object")
             except (ValueError, TypeError) as e:
                 return self.send(*fail("invalid_request", f"Request body is not valid JSON: {e}", 400))
-            r = core.update_company(body.get("fields", body), source="form")
-            if not r["ok"]:
-                return self.send(503 if r["code"] == "company_storage_error" else 400, r)
-            return self.send(200, {**r, "status": core.company_status()})
+            return self.send(*(save_company(body) if parts[1] == "company" else reset_demo(body)))
         if len(parts) == 3 and parts[:2] == ["api", "chat"]:
             aid = parts[2]
             try:
@@ -338,6 +408,7 @@ class H(BaseHTTPRequestHandler):
 
 
 def main(port=8800):
+    demo_reset.refuse_if_pending()   # never serve a half-cleared demo; the message says how to finish the restart
     with core.db() as d:
         d.execute("UPDATE agents SET state='idle' WHERE state='running'")  # crash recovery
     core.sync_profiles()

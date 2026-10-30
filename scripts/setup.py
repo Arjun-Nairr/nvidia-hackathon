@@ -3,7 +3,9 @@ import os, subprocess, sys
 from pathlib import Path
 ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(ROOT))
-from app import core, roles
+from app import core, demo_reset, roles
+
+demo_reset.refuse_if_pending()   # an interrupted demo restart must be finished first (fresh_demo.bat), not started over as a demo
 
 env = {**os.environ, "HERMES_HOME": str(core.HERMES_ROOT), "PYTHONUTF8": "1"}
 core.HERMES_ROOT.mkdir(parents=True, exist_ok=True)

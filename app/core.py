@@ -375,6 +375,7 @@ def db():
       CREATE TABLE IF NOT EXISTS messages(id INTEGER PRIMARY KEY AUTOINCREMENT, agent_id TEXT, who TEXT,
         content TEXT, tools TEXT, ts REAL);
       CREATE TABLE IF NOT EXISTS agent_config_log(id INTEGER PRIMARY KEY AUTOINCREMENT, agent_id TEXT, ts REAL, request_id TEXT, requested TEXT, applied TEXT);
+      CREATE TABLE IF NOT EXISTS retired_agents(agent_id TEXT PRIMARY KEY, retired_at REAL, archive TEXT);
       CREATE TABLE IF NOT EXISTS image_inspections(id INTEGER PRIMARY KEY AUTOINCREMENT, agent_id TEXT, image_id TEXT, kind TEXT,
         sha256 TEXT, width INTEGER, height INTEGER, ts REAL);
       CREATE TABLE IF NOT EXISTS listing_drafts(draft_id TEXT PRIMARY KEY, agent_id TEXT, conversation_id TEXT, product_id TEXT, status TEXT,
@@ -464,6 +465,15 @@ def err(code, message, field=None, allowed=None, hint=None):
 
 def _slug(s):
     return re.sub(r"[^a-z0-9]+", "-", s.lower()).strip("-")[:30]
+
+
+def free_agent_id(d, base):
+    """base, else base-2, base-3, ...: an id retired by a demo restart (app/demo_reset.py) is never handed out again, so that agent's saved results can never attach to a new specialist."""
+    agent_id, n = base, 1
+    while d.execute("SELECT 1 FROM retired_agents WHERE agent_id=?", (agent_id,)).fetchone():
+        n += 1
+        agent_id = f"{base}-{n}"
+    return agent_id
 
 
 def _similar(a, b):
@@ -836,7 +846,11 @@ def create_agent(args):
         c, e = validate_create_agent(args)
     if e:
         return e
-    agent_id = _slug(c["name"])
+    d = db()
+    try:
+        agent_id = free_agent_id(d, _slug(c["name"]))   # retired ids only change during a demo restart, which never runs while a turn (and so this tool) is running
+    finally:
+        d.close()
     conv_id = f"conv-{agent_id}"
     granted = c["tools"]  # validated request + the role's mandatory tools; the registry row, the response and run_turn's toolsets all use this list
     approvals = ROLES[c["role"]]["approval_requirements"]
